@@ -1,6 +1,43 @@
--- ============================================
--- DATABASE FILM - CREATE TABLES
--- ============================================
+USE pix_database;
+
+-- Jalankan query ini untuk memperbaiki database
+USE pix_database;
+
+-- 1. ALTER tabel Film - tambahkan kolom poster_url
+ALTER TABLE Film 
+ADD COLUMN poster_url VARCHAR(500) DEFAULT 'https://via.placeholder.com/300x450' AFTER sipnosis;
+
+-- 2. Perbaiki tabel Aktor - hapus id_film (ini salah, seharusnya many-to-many)
+ALTER TABLE Aktor 
+DROP FOREIGN KEY IF EXISTS aktor_ibfk_1;
+
+ALTER TABLE Aktor 
+DROP COLUMN IF EXISTS id_film;
+
+-- 3. Buat tabel junction Film_Aktor untuk relasi many-to-many
+CREATE TABLE IF NOT EXISTS Film_Aktor (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_film INT NOT NULL,
+    id_aktor INT NOT NULL,
+    peran VARCHAR(100) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_film) REFERENCES Film(id_film) ON DELETE CASCADE,
+    FOREIGN KEY (id_aktor) REFERENCES Aktor(id_aktor) ON DELETE CASCADE,
+    UNIQUE KEY unique_film_aktor (id_film, id_aktor)
+);
+
+-- 4. Tambahkan index untuk performa
+CREATE INDEX idx_film_aktor_film ON Film_Aktor(id_film);
+CREATE INDEX idx_film_aktor_aktor ON Film_Aktor(id_aktor);
+
+-- 5. Jika ada data lama di Aktor yang punya id_film, migrate ke Film_Aktor
+-- (Skip ini jika database masih kosong)
+
+-- 6. Update data sample jika perlu
+UPDATE Film 
+SET poster_url = 'https://via.placeholder.com/300x450' 
+WHERE poster_url IS NULL OR poster_url = '';
+
 
 -- 1. TABEL GENRE
 CREATE TABLE Genre (
@@ -138,3 +175,15 @@ SELECT
 FROM Film f
 JOIN Aktor a ON f.id_film = a.id_film
 GROUP BY f.id_film, f.judul_film;
+
+ALTER TABLE Aktor 
+ADD COLUMN photo_url VARCHAR(500) DEFAULT 'https://via.placeholder.com/300x300' 
+AFTER negara_asal;
+
+-- 2. Update data yang sudah ada (jika ada)
+UPDATE Aktor 
+SET photo_url = 'https://via.placeholder.com/300x300' 
+WHERE photo_url IS NULL OR photo_url = '';
+
+-- 3. Verifikasi struktur tabel sudah benar
+DESCRIBE Aktor;
