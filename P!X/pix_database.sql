@@ -1,144 +1,140 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Waktu pembuatan: 27 Okt 2025 pada 15.18
--- Versi server: 10.4.32-MariaDB
--- Versi PHP: 8.2.12
+-- ============================================
+-- DATABASE FILM - CREATE TABLES
+-- ============================================
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+-- 1. TABEL GENRE
+CREATE TABLE Genre (
+    id_genre INT PRIMARY KEY AUTO_INCREMENT,
+    nama_genre VARCHAR(50) NOT NULL,
+    deskripsi TEXT
+);
 
+-- 2. TABEL FILM
+CREATE TABLE Film (
+    id_film INT PRIMARY KEY AUTO_INCREMENT,
+    judul_film VARCHAR(200) NOT NULL,
+    tahun_rilis YEAR NOT NULL,
+    durasi_menit INT NOT NULL,
+    sipnosis TEXT,
+    rating DECIMAL(3,1) CHECK (rating >= 0 AND rating <= 10),
+    id_genre INT,
+    FOREIGN KEY (id_genre) REFERENCES Genre(id_genre) ON DELETE SET NULL
+);
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+-- 3. TABEL AKTOR
+CREATE TABLE Aktor (
+    id_aktor INT PRIMARY KEY AUTO_INCREMENT,
+    nama_aktor VARCHAR(100) NOT NULL,
+    tanggal_lahir DATE,
+    negara_asal VARCHAR(50),
+    id_film INT,
+    FOREIGN KEY (id_film) REFERENCES Film(id_film) ON DELETE CASCADE
+);
 
---
--- Database: `pix_database`
---
+-- 4. TABEL BIOSKOP
+CREATE TABLE Bioskop (
+    id_bioskop INT PRIMARY KEY AUTO_INCREMENT,
+    nama_bioskop VARCHAR(100) NOT NULL,
+    kota VARCHAR(50) NOT NULL,
+    alamat_bioskop TEXT NOT NULL,
+    jumlah_studio INT NOT NULL
+);
 
--- --------------------------------------------------------
+-- 5. TABEL JADWAL_TAYANG
+CREATE TABLE Jadwal_Tayang (
+    id_tayang INT PRIMARY KEY AUTO_INCREMENT,
+    id_film INT NOT NULL,
+    id_bioskop INT NOT NULL,
+    nama_tayang VARCHAR(100),
+    tanggal_tayang DATE NOT NULL,
+    jam_mulai TIME NOT NULL,
+    jam_selesai TIME NOT NULL,
+    harga_tiket DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (id_film) REFERENCES Film(id_film) ON DELETE CASCADE,
+    FOREIGN KEY (id_bioskop) REFERENCES Bioskop(id_bioskop) ON DELETE CASCADE
+);
 
---
--- Struktur dari tabel `genres`
---
+-- ============================================
+-- INDEX untuk performa query yang lebih baik
+-- ============================================
 
-CREATE TABLE `genres` (
-  `id` int(11) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `slug` varchar(50) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE INDEX idx_film_genre ON Film(id_genre);
+CREATE INDEX idx_film_judul ON Film(judul_film);
+CREATE INDEX idx_aktor_film ON Aktor(id_film);
+CREATE INDEX idx_jadwal_film ON Jadwal_Tayang(id_film);
+CREATE INDEX idx_jadwal_bioskop ON Jadwal_Tayang(id_bioskop);
+CREATE INDEX idx_jadwal_tanggal ON Jadwal_Tayang(tanggal_tayang);
 
---
--- Dumping data untuk tabel `genres`
---
+-- ============================================
+-- CONTOH INSERT DATA
+-- ============================================
 
-INSERT INTO `genres` (`id`, `name`, `slug`, `created_at`) VALUES
-(1, 'Action', 'action', '2025-10-27 04:59:12'),
-(2, 'Horror', 'horror', '2025-10-27 04:59:12'),
-(3, 'Drama', 'drama', '2025-10-27 04:59:12'),
-(4, 'Comedy', 'comedy', '2025-10-27 04:59:12'),
-(5, 'Sci-Fi', 'sci-fi', '2025-10-27 04:59:12'),
-(6, 'Thriller', 'thriller', '2025-10-27 04:59:12'),
-(7, 'Romance', 'romance', '2025-10-27 04:59:12'),
-(8, 'Fantasy', 'fantasy', '2025-10-27 04:59:12'),
-(9, 'Animation', 'animation', '2025-10-27 04:59:12'),
-(10, 'Documentary', 'documentary', '2025-10-27 04:59:12');
+-- Insert Genre
+INSERT INTO Genre (nama_genre, deskripsi) VALUES
+('Action', 'Film dengan adegan aksi dan pertarungan'),
+('Drama', 'Film dengan cerita emosional dan konflik'),
+('Comedy', 'Film yang menghibur dan lucu'),
+('Horror', 'Film menakutkan dan menegangkan'),
+('Sci-Fi', 'Film fiksi ilmiah dan teknologi masa depan');
 
--- --------------------------------------------------------
+-- Insert Film
+INSERT INTO Film (judul_film, tahun_rilis, durasi_menit, sipnosis, rating, id_genre) VALUES
+('Pengabdi Setan 2', 2022, 119, 'Keluarga Rini kembali diteror oleh sosok ibu mereka yang telah meninggal', 7.5, 4),
+('Dilan 1990', 2018, 110, 'Kisah cinta remaja antara Dilan dan Milea di tahun 1990', 8.0, 2),
+('The Raid', 2011, 101, 'Tim polisi khusus menyerbu gedung yang dikuasai gembong narkoba', 8.5, 1),
+('Keluarga Cemara', 2019, 110, 'Keluarga yang harus bangkit dari keterpurukan ekonomi', 7.8, 2),
+('Gundala', 2019, 123, 'Seorang pemuda mendapat kekuatan petir dan menjadi superhero', 7.0, 5);
 
---
--- Struktur dari tabel `movies`
---
+-- Insert Bioskop
+INSERT INTO Bioskop (nama_bioskop, kota, alamat_bioskop, jumlah_studio) VALUES
+('CGV Balikpapan', 'Balikpapan', 'Balikpapan Plaza Lt.3, Jl. Jend. Sudirman', 6),
+('XXI E-Walk', 'Balikpapan', 'E-Walk Supermall Lt.2, Jl. MT. Haryono', 5),
+('Cinepolis BPP', 'Balikpapan', 'Balikpapan Pentacity Lt.3', 4),
+('CGV Grand Mall', 'Samarinda', 'Grand Mall Samarinda Lt.3', 5),
+('XXI Lembuswana', 'Samarinda', 'Lembuswana Mall Lt.2', 4);
 
-CREATE TABLE `movies` (
-  `id` int(11) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `director` varchar(100) NOT NULL,
-  `genre_id` int(11) NOT NULL,
-  `duration` int(11) NOT NULL COMMENT 'Durasi dalam menit',
-  `release_date` date NOT NULL,
-  `status` enum('akan_tayang','sedang_tayang','telah_tayang') NOT NULL,
-  `rating` decimal(3,1) DEFAULT NULL COMMENT 'Rating 0.0 - 10.0',
-  `synopsis` text DEFAULT NULL,
-  `poster_url` varchar(500) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Insert Aktor
+INSERT INTO Aktor (nama_aktor, tanggal_lahir, negara_asal, id_film) VALUES
+('Reza Rahadian', '1987-03-05', 'Indonesia', 4),
+('Iqbaal Ramadhan', '1999-12-28', 'Indonesia', 2),
+('Vanesha Prescilla', '1999-06-19', 'Indonesia', 2),
+('Iko Uwais', '1983-02-12', 'Indonesia', 3),
+('Tara Basro', '1990-06-11', 'Indonesia', 1);
 
---
--- Dumping data untuk tabel `movies`
---
+-- Insert Jadwal_Tayang
+INSERT INTO Jadwal_Tayang (id_film, id_bioskop, nama_tayang, tanggal_tayang, jam_mulai, jam_selesai, harga_tiket) VALUES
+(1, 1, 'Pengabdi Setan 2 - Premiere', '2024-11-20', '19:00:00', '21:00:00', 50000),
+(2, 1, 'Dilan 1990 - Regular', '2024-11-20', '14:30:00', '16:30:00', 35000),
+(3, 2, 'The Raid - Action Night', '2024-11-21', '21:00:00', '23:00:00', 45000),
+(4, 3, 'Keluarga Cemara - Family Time', '2024-11-22', '10:00:00', '12:00:00', 30000),
+(5, 1, 'Gundala - Weekend Special', '2024-11-23', '16:00:00', '18:30:00', 55000);
 
-INSERT INTO `movies` (`id`, `title`, `director`, `genre_id`, `duration`, `release_date`, `status`, `rating`, `synopsis`, `poster_url`, `created_at`, `updated_at`) VALUES
-(1, 'IT: Welcome to Derry', 'Andy Muschietti', 2, 120, '2025-11-15', 'akan_tayang', 7.2, 'Prequel dari IT yang menceritakan awal mula teror Pennywise di kota Derry.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/nyy3BITeIjviv6PFIXtqvc8i6xi.jpg', '2025-10-27 14:00:19', '2025-10-27 14:02:15'),
-(2, 'A House of Dynamite', 'Michael Bay', 1, 135, '2024-10-28', 'sedang_tayang', 6.6, 'Film action penuh ledakan dan aksi spektakuler dari sutradara Michael Bay.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/AiJ8L90ftPAwVf3SDx7Fj9IMZoy.jpg', '2025-10-27 14:00:19', '2025-10-27 14:01:18'),
-(3, 'Good Boy', 'Viljar Bøe', 6, 110, '2024-10-25', 'sedang_tayang', 7.0, 'Thriller psikologis tentang seorang pria yang terjebak dalam situasi berbahaya.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/pvMHRi09ur2L1drXh2dXFtuMFgl.jpg', '2025-10-27 14:00:19', '2025-10-27 14:01:50'),
-(4, 'Mayor of Kingstown', 'Taylor Sheridan', 3, 125, '2024-10-20', 'sedang_tayang', 7.8, 'Drama kriminal tentang keluarga yang menjadi mediator antara polisi dan penjahat.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/bCoVQckqnqVtiAZua0EO17eI2Y1.jpg', '2025-10-27 14:00:19', '2025-10-27 14:06:49'),
-(5, 'SpiderMan Across the spider-verse', 'Francis Lawrence', 8, 140, '2025-12-20', 'telah_tayang', 6.9, '', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg', '2025-10-27 14:00:19', '2025-10-27 14:05:31'),
-(6, 'TRON: Ares', 'Joachim Rønning', 5, 130, '2025-10-10', 'akan_tayang', 6.4, 'Sekuel TRON yang membawa petualangan baru di dunia digital.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/chpWmskl3aKm1aTZqUHRCtviwPy.jpg', '2025-10-27 14:00:19', '2025-10-27 14:03:14'),
-(7, 'Weapons', 'Zach Cregger', 2, 115, '2024-11-01', 'sedang_tayang', 7.4, 'Film horor thriller tentang senjata misterius yang mengubah pemiliknya.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/cpf7vsRZ0MYRQcnLWteD5jK9ymT.jpg', '2025-10-27 14:00:19', '2025-10-27 14:04:10'),
-(8, 'Dead of Winter', 'Brian ', 4, 113, '2024-09-15', 'telah_tayang', 5.1, 'dingin tapi tidak kejam ihh takotnyee', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/5DcrN62sGAiRJxt8rXSRlSRLwIE.jpg', '2025-10-27 04:59:14', '2025-10-27 14:08:18'),
-(9, 'Gladiator II', 'Ridley Scott', 1, 155, '2024-11-15', 'telah_tayang', 7.8, 'Sekuel epik dari Gladiator yang legendaris dengan pertarungan spektakuler.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/2cxhvwyEwRlysAmRH4iodkvo0z5.jpg', '2025-10-27 14:00:19', '2025-10-27 14:03:45'),
-(10, 'Dune: Part Three', 'Denis Villeneuve', 5, 165, '2026-12-18', 'akan_tayang', 8.5, 'Kelanjutan epik dari saga Dune yang memukau dengan visual luar biasa.', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/d1Xd1R45mz2iFAenTs7ofDp0OIv.jpg', '2025-10-27 14:00:19', '2025-10-27 14:02:44'),
-(13, 'Abadi Nan Jaya', 'Kimo Stamboel', 2, 158, '2025-03-21', 'sedang_tayang', 5.7, '', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/qD8RChlG2mqvIwGFxq7xNR4sa8s.jpg', '2025-10-27 09:27:33', '2025-10-27 09:27:33'),
-(14, 'The Fantastic 4: First Steps', 'Matt Shakman', 8, 155, '2025-10-10', 'telah_tayang', 9.1, '', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/cm8TNGBGG0aBfWj0LgrESHv8tir.jpg', '2025-10-27 09:53:02', '2025-10-27 09:53:02'),
-(15, 'Avatar', 'Herwin Novianto', 8, 140, '2025-08-10', 'sedang_tayang', 8.9, '', 'https://media.themoviedb.org/t/p/w440_and_h660_face/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg', '2025-10-27 09:55:59', '2025-10-27 09:55:59'),
-(16, 'Rangga &amp;amp; Cinta', 'Riri riza', 3, 159, '2025-10-28', 'sedang_tayang', 9.4, '', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/iutKnkc5dPHVxwrCB5ri26r86PF.jpg', '2025-10-27 13:51:30', '2025-10-27 13:52:47'),
-(17, 'The Conjuring Last rites', 'Michael Chaves', 6, 215, '2025-09-03', 'sedang_tayang', 7.0, '', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/7JzOmJ1fIU43I3gLHYsY8UzNzjG.jpg', '2025-10-27 13:55:16', '2025-10-27 13:55:16'),
-(18, 'Black Phone 2', 'Scott Derrickson', 6, 154, '2025-10-15', 'sedang_tayang', 7.1, '', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/evbguUd1BwExQgXMjG9n9AHMQpN.jpg', '2025-10-27 13:57:21', '2025-10-27 13:57:21'),
-(19, 'Chainsaw Man The Movie', 'Tatsuya Yoshihara', 8, 140, '2025-09-26', 'akan_tayang', 8.1, '', 'https://media.themoviedb.org/t/p/w600_and_h900_bestv2/xdzLBZjCVSEsic7m7nJc4jNJZVW.jpg', '2025-10-27 13:58:50', '2025-10-27 13:58:50');
+-- ============================================
+-- QUERY CONTOH UNTUK TESTING
+-- ============================================
 
---
--- Indexes for dumped tables
---
+-- Lihat semua film dengan genre
+SELECT f.judul_film, f.tahun_rilis, g.nama_genre, f.rating
+FROM Film f
+JOIN Genre g ON f.id_genre = g.id_genre
+ORDER BY f.rating DESC;
 
---
--- Indeks untuk tabel `genres`
---
-ALTER TABLE `genres`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `slug` (`slug`);
+-- Lihat jadwal tayang per bioskop
+SELECT 
+    b.nama_bioskop,
+    f.judul_film,
+    jt.tanggal_tayang,
+    jt.jam_mulai,
+    jt.harga_tiket
+FROM Jadwal_Tayang jt
+JOIN Film f ON jt.id_film = f.id_film
+JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
+ORDER BY jt.tanggal_tayang, jt.jam_mulai;
 
---
--- Indeks untuk tabel `movies`
---
-ALTER TABLE `movies`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_genre` (`genre_id`);
-
---
--- AUTO_INCREMENT untuk tabel yang dibuang
---
-
---
--- AUTO_INCREMENT untuk tabel `genres`
---
-ALTER TABLE `genres`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT untuk tabel `movies`
---
-ALTER TABLE `movies`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
-
---
--- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
---
-
---
--- Ketidakleluasaan untuk tabel `movies`
---
-ALTER TABLE `movies`
-  ADD CONSTRAINT `fk_genre` FOREIGN KEY (`genre_id`) REFERENCES `genres` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Lihat aktor per film
+SELECT 
+    f.judul_film,
+    GROUP_CONCAT(a.nama_aktor SEPARATOR ', ') as daftar_aktor
+FROM Film f
+JOIN Aktor a ON f.id_film = a.id_film
+GROUP BY f.id_film, f.judul_film;
