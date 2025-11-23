@@ -30,7 +30,9 @@
     <div class="header-section">
         <h2>Semua Film (<?php echo count($films); ?>)</h2>
         <div>
-            <a href="index.php?module=film&action=create" class="btn btn-primary">Tambah</a>
+            <?php if(isset($_SESSION) && isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin'): ?>
+                <a href="index.php?module=film&action=create" class="btn btn-primary">Tambah</a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -76,10 +78,12 @@
                         </div>
                         <div class="card-actions-overlay">
                             <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">👁️ Detail</a>
-                            <a href="index.php?module=film&action=edit&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
-                            <a href="index.php?module=film&action=delete&id=<?php echo $film['id_film']; ?>" 
-                               class="btn btn-danger btn-sm" 
-                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
+                            <?php if(isset($_SESSION) && isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin'): ?>
+                                <a href="index.php?module=film&action=edit&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
+                                <a href="index.php?module=film&action=delete&id=<?php echo $film['id_film']; ?>" 
+                                   class="btn btn-danger btn-sm" 
+                                   onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div class="movie-info-scroll">
