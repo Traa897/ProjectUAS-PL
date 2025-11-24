@@ -58,13 +58,15 @@
                 <p><?php echo nl2br(htmlspecialchars($filmData['sipnosis'] ?? 'Tidak ada sinopsis')); ?></p>
             </div>
 
-            <div class="detail-actions">
-                <a href="index.php?module=film&action=edit&id=<?php echo $filmData['id_film']; ?>" 
-                   class="btn btn-warning"> Edit </a>
-                <a href="index.php?module=film&action=delete&id=<?php echo $filmData['id_film']; ?>" 
-                   class="btn btn-danger" 
-                   onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')">Hapus</a>
-            </div>
+                <div class="detail-actions">
+                     <?php if(isset($_SESSION) && isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin'): ?>
+                          <a href="index.php?module=film&action=edit&id=<?php echo $filmData['id_film']; ?>" 
+                              class="btn btn-warning"> Edit </a>
+                          <a href="index.php?module=film&action=delete&id=<?php echo $filmData['id_film']; ?>" 
+                              class="btn btn-danger" 
+                              onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')">Hapus</a>
+                     <?php endif; ?>
+                </div>
         </div>
     </div>
 </div>
