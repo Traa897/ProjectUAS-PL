@@ -2,13 +2,13 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>Tambah</h1>
-        <a href="index.php?module=film" class="btn btn-secondary">⬅Kembali</a>
+        <h1>➕ Tambah Film</h1>
+        <a href="index.php?module=film" class="btn btn-secondary">⬅️ Kembali</a>
     </div>
 
     <?php if(isset($_GET['error'])): ?>
         <div class="alert alert-error">
-             <?php echo htmlspecialchars($_GET['error']); ?>
+            ❌ <?php echo htmlspecialchars($_GET['error']); ?>
         </div>
     <?php endif; ?>
 
@@ -67,18 +67,9 @@
                           placeholder="Masukkan sinopsis film..."></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="aktor_names">Nama Aktor (Multiple - Pisahkan dengan koma)</label>
-                <textarea id="aktor_names" name="aktor_names" rows="3" 
-                          placeholder="Contoh: Iko Uwais, Reza Rahadian, Tara Basro"></textarea>
-                <small style="color: #666; display: block; margin-top: 5px;">
-                     Masukkan nama aktor yang dibintangi, pisahkan dengan koma (,)
-                </small>
-            </div>
-
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">impan</button>
-                <a href="index.php?module=film" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary">💾 Simpan Film</button>
+                <a href="index.php?module=film" class="btn btn-secondary">❌ Batal</a>
             </div>
         </form>
     </div>

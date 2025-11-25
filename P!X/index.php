@@ -1,14 +1,13 @@
 <?php
-// index.php - Main Router (Film sebagai Welcome Page)
+// index.php - Main Router (Tanpa Aktor)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Start session for auth
 if(session_status() == PHP_SESSION_NONE) session_start();
 
-// Include semua controllers
+// Include controllers yang dipakai
 require_once __DIR__ . '/controllers/FilmController.php';
-require_once __DIR__ . '/controllers/AktorController.php';
 require_once __DIR__ . '/controllers/BioskopController.php';
 require_once __DIR__ . '/controllers/JadwalController.php';
 require_once __DIR__ . '/controllers/AuthController.php';
@@ -21,9 +20,6 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 switch($module) {
     case 'film':
         $controller = new FilmController();
-        break;
-    case 'aktor':
-        $controller = new AktorController();
         break;
     case 'bioskop':
         $controller = new BioskopController();

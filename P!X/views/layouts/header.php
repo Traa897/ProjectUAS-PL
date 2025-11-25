@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P!X</title>
+    <title>P!X - Sistem Bioskop</title>
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -12,8 +12,7 @@
             <a href="index.php?module=film" class="nav-brand">P!X</a>
             <div class="nav-actions">
                 <div class="nav-menu">
-                    <a href="index.php?module=film">Dashboard</a>
-                    <a href="index.php?module=aktor">Aktor</a>
+                    <a href="index.php?module=film">Film</a>
                     <a href="index.php?module=bioskop">Bioskop</a>
                     <a href="index.php?module=jadwal">Jadwal</a>
                 </div>
@@ -22,6 +21,9 @@
                 if(session_status() == PHP_SESSION_NONE) session_start();
                 if(isset($_SESSION['user'])): ?>
                     <span class="nav-user"><?php echo htmlspecialchars($_SESSION['user']['username']); ?></span>
+                    <span class="nav-user" style="background: #01b4e4; color: white;">
+                        <?php echo strtoupper($_SESSION['user']['role']); ?>
+                    </span>
                     <a href="index.php?module=auth&action=logout" class="btn btn-link">Logout</a>
                 <?php else: ?>
                     <a href="index.php?module=auth&action=index" class="btn btn-link">Login</a>
@@ -63,4 +65,3 @@
             setTimeout(function(){ t.classList.add('show'); }, 50);
         })();
     </script>
-    

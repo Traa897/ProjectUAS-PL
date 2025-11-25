@@ -1,52 +1,210 @@
 <?php
-// models/User.php - simple JSON-backed user store
+// models/User.php
+require_once 'models/QueryBuilder.php';
+
 class User {
-    private $file;
+    private $conn;
+    private $qb;
+    private $table_name = "User";
 
-    public function __construct($file = null) {
-        $this->file = $file ? $file : __DIR__ . '/../data/users.json';
-        if(!file_exists(dirname($this->file))) {
-            mkdir(dirname($this->file), 0755, true);
+    public $id_user;
+    public $username;
+    public $email;
+    public $password;
+    public $nama_lengkap;
+    public $no_telpon;
+    public $tanggal_lahir;
+    public $alamat;
+    public $tanggal_daftar;
+    public $status_akun;
+
+    public function __construct($db = null) {
+        if ($db) {
+            $this->conn = $db;
+            $this->qb = new QueryBuilder($db);
         }
+    }
 
-        if(!file_exists($this->file)) {
-            // create default admin user
-            $default = [
-                ['username' => 'admin', 'password' => password_hash('admin123', PASSWORD_DEFAULT), 'role' => 'admin']
-            ];
-            file_put_contents($this->file, json_encode($default, JSON_PRETTY_PRINT));
+    // CREATE - Register User Baru
+    public function create() {
+        $data = [
+            'username' => htmlspecialchars(strip_tags($this->username)),
+            'email' => htmlspecialchars(strip_tags($this->email)),
+            'password' => password_hash($this->password, PASSWORD_DEFAULT),
+            'nama_lengkap' => htmlspecialchars(strip_tags($this->nama_lengkap)),
+            'no_telpon' => htmlspecialchars(strip_tags($this->no_telpon)),
+            'tanggal_lahir' => htmlspecialchars(strip_tags($this->tanggal_lahir)),
+            'alamat' => htmlspecialchars(strip_tags($this->alamat)),
+            'status_akun' => 'aktif'
+        ];
+
+        return $this->qb->reset()->table($this->table_name)->insert($data);
+    }
+
+    // READ ALL Users
+    public function readAll() {
+        $stmt = $this->qb->reset()
+            ->table($this->table_name)
+            ->select('*')
+            ->orderBy('tanggal_daftar', 'DESC')
+            ->get();
+        
+        return $stmt;
+    }
+
+    // READ ONE User by ID
+    public function readOne() {
+        $row = $this->qb->reset()
+            ->table($this->table_name)
+            ->select('*')
+            ->where('id_user', '=', $this->id_user)
+            ->first();
+
+        if ($row) {
+            $this->username = $row['username'];
+            $this->email = $row['email'];
+            $this->nama_lengkap = $row['nama_lengkap'];
+            $this->no_telpon = $row['no_telpon'];
+            $this->tanggal_lahir = $row['tanggal_lahir'];
+            $this->alamat = $row['alamat'];
+            $this->tanggal_daftar = $row['tanggal_daftar'];
+            $this->status_akun = $row['status_akun'];
+            return true;
         }
+        
+        return false;
     }
 
-    private function readAll() {
-        $json = file_get_contents($this->file);
-        $data = json_decode($json, true);
-        return is_array($data) ? $data : [];
-    }
-
-    private function writeAll($arr) {
-        file_put_contents($this->file, json_encode($arr, JSON_PRETTY_PRINT));
-    }
-
+    // Find User by Username
     public function findByUsername($username) {
-        $users = $this->readAll();
-        foreach($users as $u) {
-            if(strtolower($u['username']) === strtolower($username)) return $u;
-        }
-        return null;
+        $row = $this->qb->reset()
+            ->table($this->table_name)
+            ->select('*')
+            ->where('username', '=', $username)
+            ->first();
+        
+        return $row;
     }
 
-    public function create($username, $password) {
-        $users = $this->readAll();
-        // prevent duplicate usernames
-        foreach($users as $u) {
-            if(strtolower($u['username']) === strtolower($username)) return false;
-        }
+    // Find User by Email
+    public function findByEmail($email) {
+        $row = $this->qb->reset()
+            ->table($this->table_name)
+            ->select('*')
+            ->where('email', '=', $email)
+            ->first();
+        
+        return $row;
+    }
 
-        $users[] = ['username' => $username, 'password' => password_hash($password, PASSWORD_DEFAULT), 'role' => 'user'];
-        $this->writeAll($users);
-        return true;
+    // UPDATE User Profile
+    public function update() {
+        $data = [
+            'username' => htmlspecialchars(strip_tags($this->username)),
+            'email' => htmlspecialchars(strip_tags($this->email)),
+            'nama_lengkap' => htmlspecialchars(strip_tags($this->nama_lengkap)),
+            'no_telpon' => htmlspecialchars(strip_tags($this->no_telpon)),
+            'tanggal_lahir' => htmlspecialchars(strip_tags($this->tanggal_lahir)),
+            'alamat' => htmlspecialchars(strip_tags($this->alamat))
+        ];
+
+        return $this->qb->reset()
+            ->table($this->table_name)
+            ->where('id_user', '=', htmlspecialchars(strip_tags($this->id_user)))
+            ->update($data);
+    }
+
+    // Update Password
+    public function updatePassword($new_password) {
+        $data = [
+            'password' => password_hash($new_password, PASSWORD_DEFAULT)
+        ];
+
+        return $this->qb->reset()
+            ->table($this->table_name)
+            ->where('id_user', '=', $this->id_user)
+            ->update($data);
+    }
+
+    // Update Status Akun
+    public function updateStatus($status) {
+        $data = [
+            'status_akun' => $status
+        ];
+
+        return $this->qb->reset()
+            ->table($this->table_name)
+            ->where('id_user', '=', $this->id_user)
+            ->update($data);
+    }
+
+    // DELETE User
+    public function delete() {
+        return $this->qb->reset()
+            ->table($this->table_name)
+            ->where('id_user', '=', htmlspecialchars(strip_tags($this->id_user)))
+            ->delete();
+    }
+
+    // COUNT Total Users
+    public function countTotal() {
+        return $this->qb->reset()
+            ->table($this->table_name)
+            ->count();
+    }
+
+    // Get User Transaction History
+    public function getTransactionHistory($id_user, $limit = 10) {
+        $stmt = $this->qb->reset()
+            ->table('Transaksi t')
+            ->select('t.*, COUNT(dt.id_detail) as jumlah_tiket_detail')
+            ->leftJoin('Detail_Transaksi dt', 't.id_transaksi', '=', 'dt.id_transaksi')
+            ->where('t.id_user', '=', $id_user)
+            ->groupBy('t.id_transaksi')
+            ->orderBy('t.tanggal_transaksi', 'DESC')
+            ->limit($limit)
+            ->get();
+        
+        return $stmt;
+    }
+
+    // Verify Login
+    public function verifyLogin($username, $password) {
+        $user = $this->findByUsername($username);
+        
+        if ($user && $user['status_akun'] === 'aktif') {
+            if (password_verify($password, $user['password'])) {
+                return $user;
+            }
+        }
+        
+        return false;
+    }
+
+    // Check if Username exists
+    public function usernameExists($username, $exclude_id = null) {
+        $qb = $this->qb->reset()
+            ->table($this->table_name)
+            ->where('username', '=', $username);
+        
+        if ($exclude_id) {
+            $qb->where('id_user', '!=', $exclude_id);
+        }
+        
+        return $qb->count() > 0;
+    }
+
+    // Check if Email exists
+    public function emailExists($email, $exclude_id = null) {
+        $qb = $this->qb->reset()
+            ->table($this->table_name)
+            ->where('email', '=', $email);
+        
+        if ($exclude_id) {
+            $qb->where('id_user', '!=', $exclude_id);
+        }
+        
+        return $qb->count() > 0;
     }
 }
-
 ?>
