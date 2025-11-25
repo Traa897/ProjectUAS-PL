@@ -484,3 +484,4 @@ INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
 
 -- Cek tabel User
 SELECT * FROM User LIMIT 5;
+=======
