@@ -1,5 +1,283 @@
+-- ============================================
+-- DATABASE UPDATE P!X BIOSKOP SYSTEM
+-- Sesuai ERD: Tanpa Aktor, dengan User & Admin
+-- ============================================
+
 USE pix_database;
 
+-- 1. DROP tabel yang tidak dipakai
+DROP TABLE IF EXISTS Film_Aktor;
+DROP TABLE IF EXISTS Aktor;
+
+-- 2. Buat tabel USER
+CREATE TABLE IF NOT EXISTS User (
+    id_user INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nama_lengkap VARCHAR(100) NOT NULL,
+    no_telpon VARCHAR(20),
+    tanggal_lahir DATE,
+    alamat TEXT,
+    tanggal_daftar TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_akun ENUM('aktif', 'nonaktif') DEFAULT 'aktif'
+);
+
+-- 3. Buat tabel ADMIN
+CREATE TABLE IF NOT EXISTS Admin (
+    id_admin INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nama_lengkap VARCHAR(100),
+    role ENUM('super_admin', 'operator', 'kasir') DEFAULT 'operator',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Update tabel JADWAL_TAYANG - tambah kapasitas
+ALTER TABLE Jadwal_Tayang 
+ADD COLUMN IF NOT EXISTS kapasitas_tersedia INT DEFAULT 100 AFTER harga_tiket,
+ADD COLUMN IF NOT EXISTS kapasitas_total INT DEFAULT 100 AFTER kapasitas_tersedia;
+
+-- Update data existing
+UPDATE Jadwal_Tayang 
+SET kapasitas_tersedia = 100, kapasitas_total = 100 
+WHERE kapasitas_tersedia IS NULL;
+
+-- 5. Buat tabel TRANSAKSI
+CREATE TABLE IF NOT EXISTS Transaksi (
+    id_transaksi INT PRIMARY KEY AUTO_INCREMENT,
+    id_user INT NOT NULL,
+    id_admin INT,
+    kode_booking VARCHAR(50) UNIQUE NOT NULL,
+    tanggal_transaksi DATETIME DEFAULT CURRENT_TIMESTAMP,
+    jumlah_tiket INT NOT NULL,
+    total_harga DECIMAL(10,2) NOT NULL,
+    metode_pembayaran ENUM('transfer', 'e-wallet', 'kartu_kredit', 'tunai') DEFAULT 'tunai',
+    status_pembayaran ENUM('pending', 'berhasil', 'gagal', 'expired') DEFAULT 'pending',
+    tanggal_pembayaran DATETIME,
+    FOREIGN KEY (id_user) REFERENCES User(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_admin) REFERENCES Admin(id_admin) ON DELETE SET NULL
+);
+
+-- 6. Buat tabel DETAIL_TRANSAKSI
+CREATE TABLE IF NOT EXISTS Detail_Transaksi (
+    id_detail INT PRIMARY KEY AUTO_INCREMENT,
+    id_transaksi INT NOT NULL,
+    id_jadwal_tayang INT NOT NULL,
+    nomor_kursi VARCHAR(10) NOT NULL,
+    harga_tiket DECIMAL(10,2) NOT NULL,
+    jenis_tiket ENUM('reguler', 'vip') DEFAULT 'reguler',
+    FOREIGN KEY (id_transaksi) REFERENCES Transaksi(id_transaksi) ON DELETE CASCADE,
+    FOREIGN KEY (id_jadwal_tayang) REFERENCES Jadwal_Tayang(id_tayang) ON DELETE CASCADE
+);
+
+-- ============================================
+-- INDEX untuk performa
+-- ============================================
+
+CREATE INDEX idx_user_email ON User(email);
+CREATE INDEX idx_admin_username ON Admin(username);
+CREATE INDEX idx_transaksi_user ON Transaksi(id_user);
+CREATE INDEX idx_transaksi_kode ON Transaksi(kode_booking);
+CREATE INDEX idx_detail_transaksi ON Detail_Transaksi(id_transaksi);
+CREATE INDEX idx_detail_jadwal ON Detail_Transaksi(id_jadwal_tayang);
+
+-- ============================================
+-- INSERT DATA SAMPLE
+-- ============================================
+
+-- Insert Admin Default
+INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
+('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Super Admin', 'super_admin'),
+('operator1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Operator Bioskop', 'operator');
+-- Password default: password
+
+-- Insert User Sample
+INSERT INTO User (username, email, password, nama_lengkap, no_telpon, tanggal_lahir, alamat) VALUES
+('user1', 'user1@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Budi Santoso', '081234567890', '1995-05-15', 'Balikpapan'),
+('user2', 'user2@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Siti Nurhaliza', '081298765432', '1998-08-20', 'Samarinda');
+-- Password default: password
+
+-- Insert Transaksi Sample
+INSERT INTO Transaksi (id_user, id_admin, kode_booking, jumlah_tiket, total_harga, metode_pembayaran, status_pembayaran) VALUES
+(1, 1, 'BKG20251124001', 2, 100000, 'transfer', 'berhasil'),
+(2, 1, 'BKG20251124002', 3, 150000, 'e-wallet', 'berhasil');
+
+-- Insert Detail Transaksi Sample (dengan kursi random)
+INSERT INTO Detail_Transaksi (id_transaksi, id_jadwal_tayang, nomor_kursi, harga_tiket, jenis_tiket) VALUES
+(1, 1, 'A5', 50000, 'reguler'),
+(1, 1, 'A6', 50000, 'reguler'),
+(2, 2, 'B12', 50000, 'reguler'),
+(2, 2, 'B13', 50000, 'reguler'),
+(2, 2, 'B14', 50000, 'reguler');
+
+-- Update kapasitas jadwal setelah transaksi
+UPDATE Jadwal_Tayang SET kapasitas_tersedia = kapasitas_tersedia - 2 WHERE id_tayang = 1;
+UPDATE Jadwal_Tayang SET kapasitas_tersedia = kapasitas_tersedia - 3 WHERE id_tayang = 2;
+
+-- ============================================
+-- QUERY TESTING
+-- ============================================
+
+-- Lihat semua transaksi dengan detail user
+SELECT 
+    t.kode_booking,
+    u.nama_lengkap AS user,
+    t.jumlah_tiket,
+    t.total_harga,
+    t.status_pembayaran,
+    t.tanggal_transaksi
+FROM Transaksi t
+JOIN User u ON t.id_user = u.id_user
+ORDER BY t.tanggal_transaksi DESC;
+
+-- Lihat detail tiket per transaksi
+SELECT 
+    t.kode_booking,
+    dt.nomor_kursi,
+    f.judul_film,
+    b.nama_bioskop,
+    jt.tanggal_tayang,
+    jt.jam_mulai
+FROM Detail_Transaksi dt
+JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
+JOIN Jadwal_Tayang jt ON dt.id_jadwal_tayang = jt.id_tayang
+JOIN Film f ON jt.id_film = f.id_film
+JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
+ORDER BY t.kode_booking;
+
+-- Lihat kursi yang sudah terpesan untuk jadwal tertentu
+SELECT 
+    nomor_kursi,
+    jenis_tiket
+FROM Detail_Transaksi
+WHERE id_jadwal_tayang = 1
+ORDER BY nomor_kursi;
+
+-- ============================================
+-- STORED PROCEDURE untuk Generate Kursi Random
+-- ============================================
+
+DELIMITER $$
+
+CREATE PROCEDURE generate_kursi_random(
+    IN p_id_jadwal INT,
+    OUT p_nomor_kursi VARCHAR(10)
+)
+BEGIN
+    DECLARE v_baris CHAR(1);
+    DECLARE v_nomor INT;
+    DECLARE v_kursi VARCHAR(10);
+    DECLARE v_exists INT;
+    
+    -- Array baris: A-J
+    DECLARE v_baris_array VARCHAR(10) DEFAULT 'ABCDEFGHIJ';
+    
+    SET v_exists = 1;
+    
+    WHILE v_exists = 1 DO
+        -- Random baris (A-J)
+        SET v_baris = SUBSTRING(v_baris_array, FLOOR(1 + RAND() * 10), 1);
+        
+        -- Random nomor (1-10)
+        SET v_nomor = FLOOR(1 + RAND() * 10);
+        
+        -- Gabungkan
+        SET v_kursi = CONCAT(v_baris, v_nomor);
+        
+        -- Cek apakah kursi sudah terpakai
+        SELECT COUNT(*) INTO v_exists
+        FROM Detail_Transaksi dt
+        JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
+        WHERE dt.id_jadwal_tayang = p_id_jadwal 
+        AND dt.nomor_kursi = v_kursi
+        AND t.status_pembayaran IN ('berhasil', 'pending');
+    END WHILE;
+    
+    SET p_nomor_kursi = v_kursi;
+END$$
+
+DELIMITER ;
+
+-- ============================================
+-- VIEW untuk kemudahan query
+-- ============================================
+
+-- View Transaksi Lengkap
+CREATE OR REPLACE VIEW v_transaksi_lengkap AS
+SELECT 
+    t.id_transaksi,
+    t.kode_booking,
+    u.username,
+    u.nama_lengkap AS nama_user,
+    u.email,
+    a.nama_lengkap AS nama_admin,
+    t.jumlah_tiket,
+    t.total_harga,
+    t.metode_pembayaran,
+    t.status_pembayaran,
+    t.tanggal_transaksi,
+    t.tanggal_pembayaran
+FROM Transaksi t
+JOIN User u ON t.id_user = u.id_user
+LEFT JOIN Admin a ON t.id_admin = a.id_admin;
+
+-- View Detail Tiket Lengkap
+CREATE OR REPLACE VIEW v_detail_tiket AS
+SELECT 
+    dt.id_detail,
+    t.kode_booking,
+    u.nama_lengkap AS nama_user,
+    f.judul_film,
+    b.nama_bioskop,
+    b.kota,
+    jt.tanggal_tayang,
+    jt.jam_mulai,
+    jt.jam_selesai,
+    dt.nomor_kursi,
+    dt.jenis_tiket,
+    dt.harga_tiket,
+    t.status_pembayaran
+FROM Detail_Transaksi dt
+JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
+JOIN User u ON t.id_user = u.id_user
+JOIN Jadwal_Tayang jt ON dt.id_jadwal_tayang = jt.id_tayang
+JOIN Film f ON jt.id_film = f.id_film
+JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop;
+
+-- ============================================
+-- TRIGGER untuk auto update kapasitas
+-- ============================================
+
+DELIMITER $$
+
+CREATE TRIGGER after_detail_insert
+AFTER INSERT ON Detail_Transaksi
+FOR EACH ROW
+BEGIN
+    UPDATE Jadwal_Tayang 
+    SET kapasitas_tersedia = kapasitas_tersedia - 1
+    WHERE id_tayang = NEW.id_jadwal_tayang;
+END$$
+
+CREATE TRIGGER after_detail_delete
+AFTER DELETE ON Detail_Transaksi
+FOR EACH ROW
+BEGIN
+    UPDATE Jadwal_Tayang 
+    SET kapasitas_tersedia = kapasitas_tersedia + 1
+    WHERE id_tayang = OLD.id_jadwal_tayang;
+END$$
+
+DELIMITER ;
+
+-- ============================================
+-- FINISH
+-- ============================================
+
+SELECT 'Database P!X berhasil diupdate!' AS status;
+
+---------------------------------------------- INI BATAS ----------------------------------------------
 -- Jalankan query ini untuk memperbaiki database
 USE pix_database;
 
@@ -13,6 +291,8 @@ DROP FOREIGN KEY IF EXISTS aktor_ibfk_1;
 
 ALTER TABLE Aktor 
 DROP COLUMN IF EXISTS id_film;
+
+SELECT * FROM film_aktor;
 
 -- 3. Buat tabel junction Film_Aktor untuk relasi many-to-many
 CREATE TABLE IF NOT EXISTS Film_Aktor (
@@ -176,14 +456,4 @@ FROM Film f
 JOIN Aktor a ON f.id_film = a.id_film
 GROUP BY f.id_film, f.judul_film;
 
-ALTER TABLE Aktor 
-ADD COLUMN photo_url VARCHAR(500) DEFAULT 'https://via.placeholder.com/300x300' 
-AFTER negara_asal;
-
--- 2. Update data yang sudah ada (jika ada)
-UPDATE Aktor 
-SET photo_url = 'https://via.placeholder.com/300x300' 
-WHERE photo_url IS NULL OR photo_url = '';
-
--- 3. Verifikasi struktur tabel sudah benar
-DESCRIBE Aktor;
+SHOW TABLES FROM pix_database;
