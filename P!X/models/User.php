@@ -18,11 +18,22 @@ class User {
     public $tanggal_daftar;
     public $status_akun;
 
-    public function __construct($db = null) {
-        if ($db) {
-            $this->conn = $db;
-            $this->qb = new QueryBuilder($db);
+    public function __construct($db) {
+        $this->conn = $db;
+        $this->qb = new QueryBuilder($db);
+    }
+
+    // Verify Login
+    public function verifyLogin($username, $password) {
+        $user = $this->findByUsername($username);
+        
+        if ($user && $user['status_akun'] === 'aktif') {
+            if (password_verify($password, $user['password'])) {
+                return $user;
+            }
         }
+        
+        return false;
     }
 
     // CREATE - Register User Baru
@@ -39,40 +50,6 @@ class User {
         ];
 
         return $this->qb->reset()->table($this->table_name)->insert($data);
-    }
-
-    // READ ALL Users
-    public function readAll() {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name)
-            ->select('*')
-            ->orderBy('tanggal_daftar', 'DESC')
-            ->get();
-        
-        return $stmt;
-    }
-
-    // READ ONE User by ID
-    public function readOne() {
-        $row = $this->qb->reset()
-            ->table($this->table_name)
-            ->select('*')
-            ->where('id_user', '=', $this->id_user)
-            ->first();
-
-        if ($row) {
-            $this->username = $row['username'];
-            $this->email = $row['email'];
-            $this->nama_lengkap = $row['nama_lengkap'];
-            $this->no_telpon = $row['no_telpon'];
-            $this->tanggal_lahir = $row['tanggal_lahir'];
-            $this->alamat = $row['alamat'];
-            $this->tanggal_daftar = $row['tanggal_daftar'];
-            $this->status_akun = $row['status_akun'];
-            return true;
-        }
-        
-        return false;
     }
 
     // Find User by Username
@@ -95,90 +72,6 @@ class User {
             ->first();
         
         return $row;
-    }
-
-    // UPDATE User Profile
-    public function update() {
-        $data = [
-            'username' => htmlspecialchars(strip_tags($this->username)),
-            'email' => htmlspecialchars(strip_tags($this->email)),
-            'nama_lengkap' => htmlspecialchars(strip_tags($this->nama_lengkap)),
-            'no_telpon' => htmlspecialchars(strip_tags($this->no_telpon)),
-            'tanggal_lahir' => htmlspecialchars(strip_tags($this->tanggal_lahir)),
-            'alamat' => htmlspecialchars(strip_tags($this->alamat))
-        ];
-
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_user', '=', htmlspecialchars(strip_tags($this->id_user)))
-            ->update($data);
-    }
-
-    // Update Password
-    public function updatePassword($new_password) {
-        $data = [
-            'password' => password_hash($new_password, PASSWORD_DEFAULT)
-        ];
-
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_user', '=', $this->id_user)
-            ->update($data);
-    }
-
-    // Update Status Akun
-    public function updateStatus($status) {
-        $data = [
-            'status_akun' => $status
-        ];
-
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_user', '=', $this->id_user)
-            ->update($data);
-    }
-
-    // DELETE User
-    public function delete() {
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_user', '=', htmlspecialchars(strip_tags($this->id_user)))
-            ->delete();
-    }
-
-    // COUNT Total Users
-    public function countTotal() {
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->count();
-    }
-
-    // Get User Transaction History
-    public function getTransactionHistory($id_user, $limit = 10) {
-        $stmt = $this->qb->reset()
-            ->table('Transaksi t')
-            ->select('t.*, COUNT(dt.id_detail) as jumlah_tiket_detail')
-            ->leftJoin('Detail_Transaksi dt', 't.id_transaksi', '=', 'dt.id_transaksi')
-            ->where('t.id_user', '=', $id_user)
-            ->groupBy('t.id_transaksi')
-            ->orderBy('t.tanggal_transaksi', 'DESC')
-            ->limit($limit)
-            ->get();
-        
-        return $stmt;
-    }
-
-    // Verify Login
-    public function verifyLogin($username, $password) {
-        $user = $this->findByUsername($username);
-        
-        if ($user && $user['status_akun'] === 'aktif') {
-            if (password_verify($password, $user['password'])) {
-                return $user;
-            }
-        }
-        
-        return false;
     }
 
     // Check if Username exists
@@ -205,6 +98,46 @@ class User {
         }
         
         return $qb->count() > 0;
+    }
+
+    // READ ONE User by ID
+    public function readOne() {
+        $row = $this->qb->reset()
+            ->table($this->table_name)
+            ->select('*')
+            ->where('id_user', '=', $this->id_user)
+            ->first();
+
+        if ($row) {
+            $this->username = $row['username'];
+            $this->email = $row['email'];
+            $this->nama_lengkap = $row['nama_lengkap'];
+            $this->no_telpon = $row['no_telpon'];
+            $this->tanggal_lahir = $row['tanggal_lahir'];
+            $this->alamat = $row['alamat'];
+            $this->tanggal_daftar = $row['tanggal_daftar'];
+            $this->status_akun = $row['status_akun'];
+            return true;
+        }
+        
+        return false;
+    }
+
+    // UPDATE User Profile
+    public function update() {
+        $data = [
+            'username' => htmlspecialchars(strip_tags($this->username)),
+            'email' => htmlspecialchars(strip_tags($this->email)),
+            'nama_lengkap' => htmlspecialchars(strip_tags($this->nama_lengkap)),
+            'no_telpon' => htmlspecialchars(strip_tags($this->no_telpon)),
+            'tanggal_lahir' => htmlspecialchars(strip_tags($this->tanggal_lahir)),
+            'alamat' => htmlspecialchars(strip_tags($this->alamat))
+        ];
+
+        return $this->qb->reset()
+            ->table($this->table_name)
+            ->where('id_user', '=', htmlspecialchars(strip_tags($this->id_user)))
+            ->update($data);
     }
 }
 ?>

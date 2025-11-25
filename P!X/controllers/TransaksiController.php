@@ -1,5 +1,5 @@
 <?php
-// controllers/TransaksiController.php
+// controllers/TransaksiController.php - Updated with Random Seat
 require_once 'config/database.php';
 require_once 'models/Transaksi.php';
 require_once 'models/DetailTransaksi.php';
@@ -94,7 +94,7 @@ class TransaksiController {
         require_once 'views/transaksi/booking.php';
     }
 
-    // Process Booking
+    // Process Booking dengan Random Seat
     public function prosesBooking() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -104,37 +104,43 @@ class TransaksiController {
         }
 
         $id_jadwal = $_POST['id_jadwal'];
-        $kursi_dipilih = isset($_POST['kursi']) ? $_POST['kursi'] : [];
+        $jumlah_tiket = isset($_POST['jumlah_tiket']) ? (int)$_POST['jumlah_tiket'] : 0;
         $metode_pembayaran = $_POST['metode_pembayaran'];
 
-        if(empty($kursi_dipilih)) {
-            $_SESSION['flash'] = 'Pilih minimal 1 kursi!';
+        if($jumlah_tiket < 1 || $jumlah_tiket > 10) {
+            $_SESSION['flash'] = 'Jumlah tiket harus antara 1-10!';
             header("Location: index.php?module=transaksi&action=booking&id_jadwal=" . $id_jadwal);
             exit();
-        }
-
-        // Validasi kursi masih tersedia
-        foreach($kursi_dipilih as $kursi) {
-            if(!$this->detailTransaksi->isKursiAvailable($id_jadwal, $kursi)) {
-                $_SESSION['flash'] = 'Kursi ' . $kursi . ' sudah dipesan!';
-                header("Location: index.php?module=transaksi&action=booking&id_jadwal=" . $id_jadwal);
-                exit();
-            }
         }
 
         // Get Jadwal Info
         $this->jadwal->id_tayang = $id_jadwal;
         $this->jadwal->readOne();
 
+        // Generate Random Kursi
+        $kursiTerpilih = [];
+        for($i = 0; $i < $jumlah_tiket; $i++) {
+            $kursi = $this->detailTransaksi->generateRandomKursi($id_jadwal);
+            
+            if($kursi === null) {
+                $_SESSION['flash'] = 'Maaf, tidak ada kursi tersedia!';
+                header("Location: index.php?module=transaksi&action=booking&id_jadwal=" . $id_jadwal);
+                exit();
+            }
+            
+            $kursiTerpilih[] = $kursi;
+        }
+
         // Create Transaksi
         $this->transaksi->id_user = $_SESSION['user_id'];
-        $this->transaksi->jumlah_tiket = count($kursi_dipilih);
-        $this->transaksi->total_harga = count($kursi_dipilih) * $this->jadwal->harga_tiket;
+        $this->transaksi->id_admin = null; // User booking sendiri
+        $this->transaksi->jumlah_tiket = $jumlah_tiket;
+        $this->transaksi->total_harga = $jumlah_tiket * $this->jadwal->harga_tiket;
         $this->transaksi->metode_pembayaran = $metode_pembayaran;
 
         if($this->transaksi->create()) {
             // Create Detail Transaksi for each ticket
-            foreach($kursi_dipilih as $kursi) {
+            foreach($kursiTerpilih as $kursi) {
                 $this->detailTransaksi->id_transaksi = $this->transaksi->id_transaksi;
                 $this->detailTransaksi->id_jadwal_tayang = $id_jadwal;
                 $this->detailTransaksi->nomor_kursi = $kursi;
@@ -153,7 +159,7 @@ class TransaksiController {
         }
     }
 
-    // Konfirmasi Pembayaran
+    // Konfirmasi Pembayaran (Struk)
     public function konfirmasi() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         

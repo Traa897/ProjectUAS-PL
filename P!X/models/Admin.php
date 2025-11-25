@@ -12,9 +12,22 @@ class Admin {
     public $nama_lengkap;
     public $role;
 
-    public function __construct() {
-        $database = new Database();
-        $this->conn = $database->getConnection();
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    // Verify Login - Method yang hilang
+    public function verifyLogin($username, $password) {
+        $admin = $this->findByUsername($username);
+        
+        if ($admin) {
+            // Verify password
+            if (password_verify($password, $admin['password'])) {
+                return $admin;
+            }
+        }
+        
+        return false;
     }
 
     // Find admin by username
