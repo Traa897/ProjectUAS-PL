@@ -13,29 +13,52 @@
             <div class="nav-actions">
                 <div class="nav-menu">
                     <a href="index.php?module=film">Film</a>
-                    <a href="index.php?module=bioskop">Bioskop</a>
-                    <a href="index.php?module=jadwal">Jadwal</a>
+                    
+                    <?php
+                    if(session_status() == PHP_SESSION_NONE) session_start();
+                    
+                    // Menu untuk Admin
+                    if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true): ?>
+                        <a href="index.php?module=admin&action=dashboard">Dashboard</a>
+                        <a href="index.php?module=admin&action=laporan">Laporan</a>
+                        <a href="index.php?module=bioskop">Bioskop</a>
+                        <a href="index.php?module=jadwal">Jadwal</a>
+                        <a href="index.php?module=transaksi">Transaksi</a>
+                    <?php endif; ?>
+                    
+                    <!-- Menu untuk User -->
+                    <?php if(isset($_SESSION['user_id']) && (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] === false)): ?>
+                        <a href="index.php?module=bioskop">Bioskop</a>
+                        <a href="index.php?module=jadwal">Jadwal</a>
+                        <a href="index.php?module=user&action=dashboard">Dashboard Saya</a>
+                    <?php endif; ?>
                 </div>
                 <div class="nav-right">
                 <?php
-                if(session_status() == PHP_SESSION_NONE) session_start();
-                if(isset($_SESSION['user'])): ?>
-                    <span class="nav-user"><?php echo htmlspecialchars($_SESSION['user']['username']); ?></span>
-                    <span class="nav-user" style="background: #01b4e4; color: white;">
-                        <?php echo strtoupper($_SESSION['user']['role']); ?>
+                // Display user/admin info
+                if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true): ?>
+                    <span class="nav-user">👤 <?php echo htmlspecialchars($_SESSION['admin_name']); ?></span>
+                    <span class="nav-user" style="background: #dc3545; color: white;">
+                        🔧 ADMIN
                     </span>
-                    <a href="index.php?module=auth&action=logout" class="btn btn-link">Logout</a>
+                    <a href="index.php?module=auth&action=logout" class="btn-link">Logout</a>
+                <?php elseif(isset($_SESSION['user_id'])): ?>
+                    <span class="nav-user">👤 <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
+                    <span class="nav-user" style="background: #01b4e4; color: white;">
+                        USER
+                    </span>
+                    <a href="index.php?module=auth&action=logout" class="btn-link">Logout</a>
                 <?php else: ?>
-                    <a href="index.php?module=auth&action=index" class="btn btn-link">Login</a>
+                    <a href="index.php?module=auth&action=index" class="btn-link">Login</a>
+                    <a href="index.php?module=auth&action=register" class="btn-link" style="background: #01b4e4;">Daftar</a>
                 <?php endif; ?>
                 </div>
             </div>
         </div>
     </nav>
+    
     <?php
-    // show flash once
-    if(session_status() == PHP_SESSION_NONE) session_start();
-    // Render toast notification (flash) or error as toast
+    // Render toast notification
     if(isset($_SESSION['flash'])) {
         $msg = htmlspecialchars($_SESSION['flash']);
         echo "<div class=\"toast toast-success\" id=\"toast\">";
@@ -61,7 +84,6 @@
             setTimeout(hideToast, 3500);
             var btn = t.querySelector('.toast-close');
             if(btn) btn.addEventListener('click', hideToast);
-            // show
             setTimeout(function(){ t.classList.add('show'); }, 50);
         })();
     </script>

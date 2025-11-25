@@ -1,5 +1,5 @@
 <?php
-// controllers/AuthController.php - Updated
+// controllers/AuthController.php - FIXED VERSION
 require_once 'config/database.php';
 require_once 'models/User.php';
 require_once 'models/Admin.php';
@@ -42,8 +42,9 @@ class AuthController {
                 $_SESSION['admin_username'] = $admin['username'];
                 $_SESSION['admin_name'] = $admin['nama_lengkap'];
                 $_SESSION['admin_role'] = $admin['role'];
+                $_SESSION['is_admin'] = true;
                 $_SESSION['flash'] = 'Selamat datang, Admin ' . $admin['nama_lengkap'] . '!';
-                header('Location: index.php?module=film');
+                header('Location: index.php?module=admin&action=dashboard');
                 exit();
             } else {
                 $error = 'Username atau password admin salah';
@@ -56,6 +57,7 @@ class AuthController {
                 $_SESSION['user_id'] = $user['id_user'];
                 $_SESSION['user_username'] = $user['username'];
                 $_SESSION['user_name'] = $user['nama_lengkap'];
+                $_SESSION['is_admin'] = false;
                 $_SESSION['flash'] = 'Selamat datang, ' . $user['nama_lengkap'] . '!';
                 header('Location: index.php?module=user&action=dashboard');
                 exit();

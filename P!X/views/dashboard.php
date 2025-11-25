@@ -30,13 +30,6 @@ require_once 'models/QueryBuilder.php';
 
         <div class="stat-card">
             <div class="stat-info">
-                <h3><?php echo $totalAktors; ?></h3>
-                <p>Total Aktor</p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-info">
                 <h3><?php echo $totalBioskops; ?></h3>
                 <p>Total Bioskop</p>
             </div>
