@@ -1,22 +1,19 @@
 <?php
-// controllers/FilmController.php
+// controllers/FilmController.php - Tanpa Aktor
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Genre.php';
-require_once 'models/Aktor.php';
 
 class FilmController {
     private $db;
     private $film;
     private $genre;
-    private $aktor;
 
     public function __construct() {
         $database = new Database();
         $this->db = $database->getConnection();
         $this->film = new Film($this->db);
         $this->genre = new Genre($this->db);
-        $this->aktor = new Aktor($this->db);
     }
 
     // INDEX - List all films (Welcome Page)
@@ -42,23 +39,38 @@ class FilmController {
     public function show() {
         if(isset($_GET['id'])) {
             $this->film->id_film = $_GET['id'];
+            $this->film->readOne();
             
-            // Get film with actors
-            $filmData = $this->film->getFilmWithActors($_GET['id']);
+            // Get film data tanpa aktor
+            $filmData = [
+                'id_film' => $this->film->id_film,
+                'judul_film' => $this->film->judul_film,
+                'tahun_rilis' => $this->film->tahun_rilis,
+                'durasi_menit' => $this->film->durasi_menit,
+                'sipnosis' => $this->film->sipnosis,
+                'rating' => $this->film->rating,
+                'poster_url' => $this->film->poster_url,
+                'id_genre' => $this->film->id_genre
+            ];
             
-            if($filmData) {
-                require_once 'views/film/show.php';
-            } else {
-                header("Location: index.php?module=film&error=Film tidak ditemukan");
-                exit();
-            }
+            // Get genre name
+            $query = "SELECT nama_genre FROM Genre WHERE id_genre = :id_genre";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id_genre', $this->film->id_genre);
+            $stmt->execute();
+            $genre = $stmt->fetch(PDO::FETCH_ASSOC);
+            $filmData['nama_genre'] = $genre ? $genre['nama_genre'] : 'Unknown';
+            
+            require_once 'views/film/show.php';
+        } else {
+            header("Location: index.php?module=film&error=Film tidak ditemukan");
+            exit();
         }
     }
 
     // CREATE - Show form
     public function create() {
         $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
-        $aktors = $this->aktor->readAll()->fetchAll(PDO::FETCH_ASSOC);
         require_once 'views/film/create.php';
     }
 
@@ -74,45 +86,6 @@ class FilmController {
             $this->film->id_genre = $_POST['id_genre'];
 
             if($this->film->create()) {
-                // Get last inserted ID
-                $last_id = $this->db->lastInsertId();
-                
-                // Process actor names (comma separated)
-                if(isset($_POST['aktor_names']) && !empty($_POST['aktor_names'])) {
-                    $aktor_names = explode(',', $_POST['aktor_names']);
-                    
-                    foreach($aktor_names as $nama_aktor) {
-                        $nama_aktor = trim($nama_aktor);
-                        if(!empty($nama_aktor)) {
-                            // Check if actor exists
-                            $query = "SELECT id_aktor FROM Aktor WHERE nama_aktor = :nama_aktor";
-                            $stmt = $this->db->prepare($query);
-                            $stmt->bindParam(':nama_aktor', $nama_aktor);
-                            $stmt->execute();
-                            $existing_aktor = $stmt->fetch(PDO::FETCH_ASSOC);
-                            
-                            if($existing_aktor) {
-                                // Actor exists, use existing ID
-                                $id_aktor = $existing_aktor['id_aktor'];
-                            } else {
-                                // Create new actor
-                                $query = "INSERT INTO Aktor (nama_aktor, negara_asal) VALUES (:nama_aktor, 'Indonesia')";
-                                $stmt = $this->db->prepare($query);
-                                $stmt->bindParam(':nama_aktor', $nama_aktor);
-                                $stmt->execute();
-                                $id_aktor = $this->db->lastInsertId();
-                            }
-                            
-                            // Link film with actor
-                            $query = "INSERT INTO Film_Aktor (id_film, id_aktor) VALUES (:id_film, :id_aktor)";
-                            $stmt = $this->db->prepare($query);
-                            $stmt->bindParam(':id_film', $last_id);
-                            $stmt->bindParam(':id_aktor', $id_aktor);
-                            $stmt->execute();
-                        }
-                    }
-                }
-                
                 header("Location: index.php?module=film&message=Film berhasil ditambahkan!");
                 exit();
             } else {
@@ -128,15 +101,6 @@ class FilmController {
             $this->film->id_film = $_GET['id'];
             if($this->film->readOne()) {
                 $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
-                $aktors = $this->aktor->readAll()->fetchAll(PDO::FETCH_ASSOC);
-                
-                // Get current actors
-                $query = "SELECT id_aktor, peran FROM Film_Aktor WHERE id_film = :id_film";
-                $stmt = $this->db->prepare($query);
-                $stmt->bindParam(':id_film', $this->film->id_film);
-                $stmt->execute();
-                $current_actors = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                
                 require_once 'views/film/edit.php';
             } else {
                 header("Location: index.php?module=film&error=Film tidak ditemukan");
@@ -158,48 +122,6 @@ class FilmController {
             $this->film->id_genre = $_POST['id_genre'];
 
             if($this->film->update()) {
-                // Delete old actor relations
-                $query = "DELETE FROM Film_Aktor WHERE id_film = :id_film";
-                $stmt = $this->db->prepare($query);
-                $stmt->bindParam(':id_film', $this->film->id_film);
-                $stmt->execute();
-                
-                // Process actor names (comma separated)
-                if(isset($_POST['aktor_names']) && !empty($_POST['aktor_names'])) {
-                    $aktor_names = explode(',', $_POST['aktor_names']);
-                    
-                    foreach($aktor_names as $nama_aktor) {
-                        $nama_aktor = trim($nama_aktor);
-                        if(!empty($nama_aktor)) {
-                            // Check if actor exists
-                            $query = "SELECT id_aktor FROM Aktor WHERE nama_aktor = :nama_aktor";
-                            $stmt = $this->db->prepare($query);
-                            $stmt->bindParam(':nama_aktor', $nama_aktor);
-                            $stmt->execute();
-                            $existing_aktor = $stmt->fetch(PDO::FETCH_ASSOC);
-                            
-                            if($existing_aktor) {
-                                // Actor exists, use existing ID
-                                $id_aktor = $existing_aktor['id_aktor'];
-                            } else {
-                                // Create new actor
-                                $query = "INSERT INTO Aktor (nama_aktor, negara_asal) VALUES (:nama_aktor, 'Indonesia')";
-                                $stmt = $this->db->prepare($query);
-                                $stmt->bindParam(':nama_aktor', $nama_aktor);
-                                $stmt->execute();
-                                $id_aktor = $this->db->lastInsertId();
-                            }
-                            
-                            // Link film with actor
-                            $query = "INSERT INTO Film_Aktor (id_film, id_aktor) VALUES (:id_film, :id_aktor)";
-                            $stmt = $this->db->prepare($query);
-                            $stmt->bindParam(':id_film', $this->film->id_film);
-                            $stmt->bindParam(':id_aktor', $id_aktor);
-                            $stmt->execute();
-                        }
-                    }
-                }
-                
                 header("Location: index.php?module=film&message=Film berhasil diupdate!");
                 exit();
             } else {

@@ -2,13 +2,13 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>Edit Film</h1>
-        <a href="index.php?module=film" class="btn btn-secondary">⬅Kembali</a>
+        <h1>✏️ Edit Film</h1>
+        <a href="index.php?module=film" class="btn btn-secondary">⬅️ Kembali</a>
     </div>
 
     <?php if(isset($_GET['error'])): ?>
         <div class="alert alert-error">
-             <?php echo htmlspecialchars($_GET['error']); ?>
+            ❌ <?php echo htmlspecialchars($_GET['error']); ?>
         </div>
     <?php endif; ?>
 
@@ -68,34 +68,9 @@
                 <textarea id="sipnosis" name="sipnosis" rows="5"><?php echo htmlspecialchars($this->film->sipnosis); ?></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="aktor_names">Nama Aktor (Multiple - Pisahkan dengan koma)</label>
-                <?php
-                // Get current actors as comma separated string
-                $current_aktor_names = [];
-                foreach($current_actors as $ca) {
-                    // Get actor name from id
-                    $query = "SELECT nama_aktor FROM Aktor WHERE id_aktor = :id_aktor";
-                    $stmt_aktor = $this->db->prepare($query);
-                    $stmt_aktor->bindParam(':id_aktor', $ca['id_aktor']);
-                    $stmt_aktor->execute();
-                    $aktor_data = $stmt_aktor->fetch(PDO::FETCH_ASSOC);
-                    if($aktor_data) {
-                        $current_aktor_names[] = $aktor_data['nama_aktor'];
-                    }
-                }
-                $aktor_names_string = implode(', ', $current_aktor_names);
-                ?>
-                <textarea id="aktor_names" name="aktor_names" rows="3" 
-                          placeholder="Contoh: Iko Uwais, Reza Rahadian, Tara Basro"><?php echo htmlspecialchars($aktor_names_string); ?></textarea>
-                <small style="color: #666; display: block; margin-top: 5px;">
-                     Masukkan nama aktor yang dibintangi, pisahkan dengan koma (,)
-                </small>
-            </div>
-
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Update</button>
-                <a href="index.php?module=film" class="btn btn-secondary"> Batal</a>
+                <button type="submit" class="btn btn-primary">💾 Update Film</button>
+                <a href="index.php?module=film" class="btn btn-secondary">❌ Batal</a>
             </div>
         </form>
     </div>
