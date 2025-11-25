@@ -457,3 +457,30 @@ JOIN Aktor a ON f.id_film = a.id_film
 GROUP BY f.id_film, f.judul_film;
 
 SHOW TABLES FROM pix_database;
+
+
+
+
+
+
+
+
+-- Cek tabel Admin
+SHOW TABLES LIKE 'Admin';
+
+-- Jika tidak ada, buat tabel Admin
+CREATE TABLE IF NOT EXISTS Admin (
+    id_admin INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nama_lengkap VARCHAR(100),
+    role ENUM('super_admin', 'operator', 'kasir') DEFAULT 'operator',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert admin default (password: password)
+INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
+('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Super Admin', 'super_admin');
+
+-- Cek tabel User
+SELECT * FROM User LIMIT 5;
