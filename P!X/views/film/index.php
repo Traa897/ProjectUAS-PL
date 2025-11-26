@@ -3,7 +3,7 @@
 <div class="hero-section">
     <div class="hero-content">
         <h1>Daftar Film</h1>
-        <p>Koleksi Film Terbaik Indonesia</p>
+        <p>Koleksi Film Terbaik Untuk Anda</p>
         
         <form method="GET" action="index.php" class="hero-search">
             <input type="hidden" name="module" value="film">

@@ -43,7 +43,9 @@ class AuthController {
                 $_SESSION['admin_name'] = $admin['nama_lengkap'];
                 $_SESSION['admin_role'] = $admin['role'];
                 $_SESSION['flash'] = 'Selamat datang, Admin ' . $admin['nama_lengkap'] . '!';
-                header('Location: index.php?module=film');
+                
+                // Redirect ke dashboard admin
+                header('Location: index.php?module=admin&action=dashboard');
                 exit();
             } else {
                 $error = 'Username atau password admin salah';
@@ -57,6 +59,8 @@ class AuthController {
                 $_SESSION['user_username'] = $user['username'];
                 $_SESSION['user_name'] = $user['nama_lengkap'];
                 $_SESSION['flash'] = 'Selamat datang, ' . $user['nama_lengkap'] . '!';
+                
+                // Redirect ke dashboard user
                 header('Location: index.php?module=user&action=dashboard');
                 exit();
             } else {

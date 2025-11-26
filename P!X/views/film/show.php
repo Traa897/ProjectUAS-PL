@@ -54,14 +54,29 @@
             </div>
 
             <div class="detail-actions">
-                <?php if(isset($_SESSION) && isset($_SESSION['user'])): ?>
-                    <?php if($_SESSION['user']['role'] === 'admin'): ?>
-                        <a href="index.php?module=film&action=edit&id=<?php echo $filmData['id_film']; ?>" 
-                            class="btn btn-warning">✏️ Edit Film</a>
-                        <a href="index.php?module=film&action=delete&id=<?php echo $filmData['id_film']; ?>" 
-                            class="btn btn-danger" 
-                            onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')">🗑️ Hapus Film</a>
-                    <?php endif; ?>
+                <?php 
+                if(session_status() == PHP_SESSION_NONE) session_start();
+                
+                // Button untuk User - Booking Tiket
+                if(isset($_SESSION['user_id']) && (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] === false)): ?>
+                    <a href="index.php?module=transaksi&action=pilihJadwal&id_film=<?php echo $filmData['id_film']; ?>" 
+                       class="btn btn-primary" style="font-size: 18px; padding: 15px 30px;">
+                        🎫 Booking Tiket
+                    </a>
+                <?php elseif(!isset($_SESSION['user_id'])): ?>
+                    <a href="index.php?module=auth&action=index" 
+                       class="btn btn-primary" style="font-size: 18px; padding: 15px 30px;">
+                        🎫 Login untuk Booking
+                    </a>
+                <?php endif; ?>
+                
+                <?php // Button untuk Admin - Edit & Delete
+                if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true): ?>
+                    <a href="index.php?module=film&action=edit&id=<?php echo $filmData['id_film']; ?>" 
+                       class="btn btn-warning">✏️ Edit Film</a>
+                    <a href="index.php?module=film&action=delete&id=<?php echo $filmData['id_film']; ?>" 
+                       class="btn btn-danger" 
+                       onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')">🗑️ Hapus Film</a>
                 <?php endif; ?>
             </div>
         </div>

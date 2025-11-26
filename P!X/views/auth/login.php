@@ -35,12 +35,6 @@
         <p style="text-align: center; margin-top: 20px;">
             Belum punya akun? <a href="index.php?module=auth&action=register" style="color: #01b4e4; font-weight: 600;">Daftar Sekarang</a>
         </p>
-
-        <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
-            <strong>Demo Account:</strong><br>
-            👤 User: <code>user1</code> / password: <code>password</code><br>
-            🔧 Admin: <code>admin</code> / password: <code>password</code>
-        </div>
     </div>
 </div>
 

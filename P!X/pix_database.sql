@@ -459,12 +459,6 @@ GROUP BY f.id_film, f.judul_film;
 SHOW TABLES FROM pix_database;
 
 
-
-
-
-
-
-
 -- Cek tabel Admin
 SHOW TABLES LIKE 'Admin';
 
