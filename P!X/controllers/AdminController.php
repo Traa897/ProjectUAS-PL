@@ -1,9 +1,10 @@
 <?php
-// controllers/AdminController.php - UPDATED
+// controllers/AdminController.php - FIXED VERSION
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
 require_once 'models/QueryBuilder.php';
+require_once 'models/Genre.php';
 
 class AdminController {
     private $db;
@@ -50,10 +51,9 @@ class AdminController {
                          SUM(t.jumlah_tiket) as total_tiket,
                          SUM(t.total_harga) as total_pendapatan
                   FROM Film f
-                  JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-                  JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
-                  JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
-                  WHERE t.status_pembayaran = 'berhasil'
+                  LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+                  LEFT JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
+                  LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi AND t.status_pembayaran = 'berhasil'
                   GROUP BY f.id_film, f.judul_film, f.poster_url
                   ORDER BY total_tiket DESC
                   LIMIT 5";
@@ -123,7 +123,6 @@ class AdminController {
     
     // CREATE Film - Show form
     public function createFilm() {
-        require_once 'models/Genre.php';
         $genre = new Genre($this->db);
         $genres = $genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
@@ -160,7 +159,6 @@ class AdminController {
             exit();
         }
         
-        require_once 'models/Genre.php';
         $genre = new Genre($this->db);
         
         $this->film->id_film = $_GET['id'];
