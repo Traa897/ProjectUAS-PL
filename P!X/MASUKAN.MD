@@ -6,3 +6,9 @@ Perubahan yang perlu dilakukan
 - Bikin Role user untuk pembelian film 
 - tujuan apps web bioskop ini yaitu harus ada transaksi karna ada tabel bioskop 
 - probisnya harus jelas mau kemana aranya supaya tidak membingungkan dengan erdnya 
+
+
+---- ========================================== --------------------
+---- DISINI KALAU MAU LIAT AKUN ADMIN : 
+---- USERNAME : admin
+---- PASSWORD : admin123
