@@ -202,7 +202,8 @@ INSERT INTO Jadwal_Tayang (id_film, id_bioskop, nama_tayang, tanggal_tayang, jam
 
 -- Insert Admin (Password: password)
 INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
-('admin', '$2y$10$QslQWAyZOfEqp8EiviRTeu6BI/hnhIj32..j2OeBpmbpxutTMC0QO', 'Admin', 'super_admin'),
+('admin', '$2y$10$QslQWAyZOfEqp8EiviRTeu6BI/hnhIj32..j2OeBpmbpxutTMC0QO', 'Admin', 'super_admin');
+
 
 
 (3, 7, 'D15', 45000, 'reguler');
@@ -387,3 +388,4 @@ ORDER BY total_pendapatan DESC;
 ---- DISINI KALAU MAU LIAT AKUN ADMIN : 
 ---- USERNAME : admin
 ---- PASSWORD : admin123
+

@@ -4,8 +4,8 @@
     <div class="header-section">
         <h1>🎯 Dashboard Admin</h1>
         <div style="display: flex; gap: 10px;">
-            <a href="index.php?module=admin&action=laporan" class="btn btn-info">📊 Laporan Penjualan</a>
-            <a href="index.php?module=film&action=create" class="btn btn-primary">➕ Tambah Film</a>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
+            <a href="index.php?module=jadwal&action=create" class="btn btn-info">📅 Tambah Jadwal</a>
         </div>
     </div>
 
@@ -60,10 +60,59 @@
         </div>
     </div>
 
+    <!-- Kelola Film Section -->
+    <div class="section-header" style="margin-top: 40px;">
+        <h2>🎬 Kelola Film</h2>
+        <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
+    </div>
+
+    <?php if(empty($films)): ?>
+        <div class="empty-state">
+            <p>Belum ada film</p>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film Pertama</a>
+        </div>
+    <?php else: ?>
+        <div class="movie-scroll" style="margin-bottom: 40px;">
+            <?php foreach($films as $film): ?>
+                <div class="movie-card-scroll">
+                    <div class="movie-poster-scroll">
+                        <img src="<?php echo htmlspecialchars($film['poster_url'] ?? 'https://via.placeholder.com/150x225'); ?>" 
+                             alt="<?php echo htmlspecialchars($film['judul_film']); ?>">
+                        <div class="rating-badge">
+                            <span class="rating-circle">
+                                <svg viewBox="0 0 36 36">
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none" stroke="#204529" stroke-width="3"/>
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none" stroke="#21d07a" stroke-width="3"
+                                        stroke-dasharray="<?php echo ($film['rating'] * 10) . ', 100'; ?>"/>
+                                </svg>
+                                <span class="rating-number"><?php echo number_format($film['rating'] * 10, 0); ?></span>
+                            </span>
+                        </div>
+                        <div class="card-actions-overlay">
+                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">👁️ Detail</a>
+                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
+                            <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $film['id_film']; ?>" 
+                               class="btn btn-danger btn-sm" 
+                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
+                        </div>
+                    </div>
+                    <div class="movie-info-scroll">
+                        <h3><?php echo htmlspecialchars($film['judul_film']); ?></h3>
+                        <p class="movie-date"><?php echo $film['tahun_rilis']; ?> • <?php echo $film['durasi_menit']; ?> menit</p>
+                        <p style="font-size: 12px; color: #01b4e4;">
+                            <?php echo htmlspecialchars($film['nama_genre'] ?? 'No Genre'); ?>
+                        </p>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
     <!-- Top Selling Films -->
     <div class="section-header" style="margin-top: 40px;">
         <h2>🏆 Film Terlaris</h2>
-        <a href="index.php?module=admin&action=laporan" class="btn btn-secondary">Lihat Semua</a>
     </div>
 
     <?php if(empty($topFilms)): ?>
@@ -79,7 +128,6 @@
                         <th style="padding: 15px; text-align: left;">Film</th>
                         <th style="padding: 15px; text-align: center;">Tiket Terjual</th>
                         <th style="padding: 15px; text-align: right;">Pendapatan</th>
-                        <th style="padding: 15px; text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,11 +143,9 @@
                                     <img src="<?php echo htmlspecialchars($film['poster_url'] ?? 'https://via.placeholder.com/50x75'); ?>" 
                                          alt="<?php echo htmlspecialchars($film['judul_film']); ?>"
                                          style="width: 50px; height: 75px; object-fit: cover; border-radius: 5px;">
-                                    <div>
-                                        <strong style="color: #032541; font-size: 16px;">
-                                            <?php echo htmlspecialchars($film['judul_film']); ?>
-                                        </strong>
-                                    </div>
+                                    <strong style="color: #032541; font-size: 16px;">
+                                        <?php echo htmlspecialchars($film['judul_film']); ?>
+                                    </strong>
                                 </div>
                             </td>
                             <td style="padding: 15px; text-align: center;">
@@ -112,10 +158,6 @@
                                     Rp <?php echo number_format($film['total_pendapatan'], 0, ',', '.'); ?>
                                 </strong>
                             </td>
-                            <td style="padding: 15px; text-align: center;">
-                                <a href="index.php?module=admin&action=detailPenjualan&id_film=<?php echo $film['id_film'] ?? ''; ?>" 
-                                   class="btn btn-info btn-sm">Detail</a>
-                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -126,7 +168,6 @@
     <!-- Recent Transactions -->
     <div class="section-header" style="margin-top: 40px;">
         <h2>🎫 Transaksi Terbaru</h2>
-        <a href="index.php?module=transaksi" class="btn btn-secondary">Lihat Semua</a>
     </div>
 
     <?php if(empty($recentTransactions)): ?>

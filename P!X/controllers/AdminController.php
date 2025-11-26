@@ -1,5 +1,5 @@
 <?php
-// controllers/AdminController.php
+// controllers/AdminController.php - UPDATED
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
@@ -27,7 +27,7 @@ class AdminController {
         }
     }
 
-    // Dashboard Admin - Simpel
+    // Dashboard Admin - Gabungan dengan Laporan
     public function dashboard() {
         // Get statistics
         $totalFilms = $this->qb->reset()->table('Film')->count();
@@ -44,64 +44,55 @@ class AdminController {
         $stmt = $this->transaksi->readAll();
         $recentTransactions = array_slice($stmt->fetchAll(PDO::FETCH_ASSOC), 0, 10);
         
-        require_once 'views/admin/dashboard.php';
-    }
-
-    // Laporan & Transaksi - Combined View
-    public function laporanTransaksi() {
-        // Filter parameters
-        $dateFrom = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01');
-        $dateTo = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d');
-        $status = isset($_GET['status']) ? $_GET['status'] : '';
-        
-        // Get filtered transactions
-        $query = "SELECT t.*, u.nama_lengkap as nama_user, u.email
-                  FROM Transaksi t
-                  JOIN User u ON t.id_user = u.id_user
-                  WHERE DATE(t.tanggal_transaksi) BETWEEN :date_from AND :date_to";
-        
-        if($status != '') {
-            $query .= " AND t.status_pembayaran = :status";
-        }
-        
-        $query .= " ORDER BY t.tanggal_transaksi DESC";
-        
+        // Get top selling films
+        $query = "SELECT f.id_film, f.judul_film, f.poster_url, 
+                         COUNT(DISTINCT t.id_transaksi) as total_transaksi,
+                         SUM(t.jumlah_tiket) as total_tiket,
+                         SUM(t.total_harga) as total_pendapatan
+                  FROM Film f
+                  JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+                  JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
+                  JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
+                  WHERE t.status_pembayaran = 'berhasil'
+                  GROUP BY f.id_film, f.judul_film, f.poster_url
+                  ORDER BY total_tiket DESC
+                  LIMIT 5";
         $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':date_from', $dateFrom);
-        $stmt->bindParam(':date_to', $dateTo);
-        if($status != '') {
-            $stmt->bindParam(':status', $status);
-        }
         $stmt->execute();
-        $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $topFilms = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Calculate summary
-        $totalTransaksi = count($transactions);
-        $totalPendapatan = array_sum(array_column($transactions, 'total_harga'));
-        $totalTiket = array_sum(array_column($transactions, 'jumlah_tiket'));
+        // Get monthly revenue (6 months)
+        $query = "SELECT 
+                    DATE_FORMAT(tanggal_transaksi, '%Y-%m') as bulan,
+                    COUNT(*) as jumlah_transaksi,
+                    SUM(total_harga) as pendapatan
+                  FROM Transaksi
+                  WHERE status_pembayaran = 'berhasil'
+                    AND tanggal_transaksi >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                  GROUP BY DATE_FORMAT(tanggal_transaksi, '%Y-%m')
+                  ORDER BY bulan DESC";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $monthlyRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        require_once 'views/admin/laporan_transaksi.php';
-    }
-
-    // Kelola Film
-    public function kelolaFilm() {
+        // Get all films for management
         $stmt = $this->film->readAll();
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        require_once 'views/admin/kelola_film.php';
+        require_once 'views/admin/dashboard.php';
     }
 
     // Detail Transaksi
     public function detailTransaksi() {
         if(!isset($_GET['id'])) {
-            header("Location: index.php?module=admin&action=laporanTransaksi");
+            header("Location: index.php?module=admin&action=dashboard");
             exit();
         }
 
         $detailTransaksi = $this->transaksi->getDetailWithTickets($_GET['id']);
         
         if(!$detailTransaksi) {
-            header("Location: index.php?module=admin&action=laporanTransaksi");
+            header("Location: index.php?module=admin&action=dashboard");
             exit();
         }
 
@@ -111,7 +102,7 @@ class AdminController {
     // Update Status Transaksi
     public function updateStatus() {
         if($_SERVER['REQUEST_METHOD'] != 'POST') {
-            header("Location: index.php?module=admin&action=laporanTransaksi");
+            header("Location: index.php?module=admin&action=dashboard");
             exit();
         }
 
@@ -126,7 +117,102 @@ class AdminController {
             $_SESSION['flash'] = 'Gagal update status!';
         }
 
-        header("Location: index.php?module=admin&action=laporanTransaksi");
+        header("Location: index.php?module=admin&action=dashboard");
+        exit();
+    }
+    
+    // CREATE Film - Show form
+    public function createFilm() {
+        require_once 'models/Genre.php';
+        $genre = new Genre($this->db);
+        $genres = $genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
+        
+        require_once 'views/admin/create_film.php';
+    }
+    
+    // STORE Film - Save new film
+    public function storeFilm() {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->film->judul_film = $_POST['judul_film'];
+            $this->film->tahun_rilis = $_POST['tahun_rilis'];
+            $this->film->durasi_menit = $_POST['durasi_menit'];
+            $this->film->sipnosis = $_POST['sipnosis'];
+            $this->film->rating = $_POST['rating'];
+            $this->film->poster_url = $_POST['poster_url'];
+            $this->film->id_genre = $_POST['id_genre'];
+
+            if($this->film->create()) {
+                $_SESSION['flash'] = 'Film berhasil ditambahkan!';
+                header("Location: index.php?module=admin&action=dashboard");
+                exit();
+            } else {
+                $_SESSION['flash'] = 'Gagal menambahkan film!';
+                header("Location: index.php?module=admin&action=createFilm");
+                exit();
+            }
+        }
+    }
+    
+    // EDIT Film - Show edit form
+    public function editFilm() {
+        if(!isset($_GET['id'])) {
+            header("Location: index.php?module=admin&action=dashboard");
+            exit();
+        }
+        
+        require_once 'models/Genre.php';
+        $genre = new Genre($this->db);
+        
+        $this->film->id_film = $_GET['id'];
+        if($this->film->readOne()) {
+            $genres = $genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
+            require_once 'views/admin/edit_film.php';
+        } else {
+            $_SESSION['flash'] = 'Film tidak ditemukan!';
+            header("Location: index.php?module=admin&action=dashboard");
+            exit();
+        }
+    }
+    
+    // UPDATE Film
+    public function updateFilm() {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->film->id_film = $_POST['id_film'];
+            $this->film->judul_film = $_POST['judul_film'];
+            $this->film->tahun_rilis = $_POST['tahun_rilis'];
+            $this->film->durasi_menit = $_POST['durasi_menit'];
+            $this->film->sipnosis = $_POST['sipnosis'];
+            $this->film->rating = $_POST['rating'];
+            $this->film->poster_url = $_POST['poster_url'];
+            $this->film->id_genre = $_POST['id_genre'];
+
+            if($this->film->update()) {
+                $_SESSION['flash'] = 'Film berhasil diupdate!';
+                header("Location: index.php?module=admin&action=dashboard");
+                exit();
+            } else {
+                $_SESSION['flash'] = 'Gagal mengupdate film!';
+                header("Location: index.php?module=admin&action=editFilm&id=" . $this->film->id_film);
+                exit();
+            }
+        }
+    }
+    
+    // DELETE Film
+    public function deleteFilm() {
+        if(!isset($_GET['id'])) {
+            header("Location: index.php?module=admin&action=dashboard");
+            exit();
+        }
+        
+        $this->film->id_film = $_GET['id'];
+        if($this->film->delete()) {
+            $_SESSION['flash'] = 'Film berhasil dihapus!';
+        } else {
+            $_SESSION['flash'] = 'Gagal menghapus film!';
+        }
+        
+        header("Location: index.php?module=admin&action=dashboard");
         exit();
     }
 }
