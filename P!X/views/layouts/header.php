@@ -19,11 +19,11 @@
                 if(isset($_SESSION['admin_id'])):
                     // Menu Admin
                 ?>
-                    <a href="index.php?module=admin&action=dashboard"> Dashboard</a>
                     <a href="index.php?module=admin&action=kelolaFilm"> Film</a>
-                    <a href="index.php?module=admin&action=laporanTransaksi"> Laporan</a>
                     <a href="index.php?module=bioskop"> Bioskop</a>
                     <a href="index.php?module=jadwal"> Jadwal</a>
+                    <a href="index.php?module=admin&action=dashboard"> Dashboard</a>
+                    <a href="index.php?module=admin&action=laporanTransaksi"> Laporan</a>
                 <?php 
                 elseif(isset($_SESSION['user_id'])):
                     // Menu User
