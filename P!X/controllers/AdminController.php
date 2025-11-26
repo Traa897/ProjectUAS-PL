@@ -21,158 +21,113 @@ class AdminController {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
         // Check if user is admin
-        if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-            header('Location: index.php?module=film');
+        if(!isset($_SESSION['admin_id'])) {
+            header("Location: index.php?module=auth&action=index");
             exit();
         }
     }
 
-    // Admin Dashboard
+    // Dashboard Admin - Simpel
     public function dashboard() {
-        // Statistics
+        // Get statistics
         $totalFilms = $this->qb->reset()->table('Film')->count();
         $totalBioskops = $this->qb->reset()->table('Bioskop')->count();
         $totalJadwals = $this->qb->reset()->table('Jadwal_Tayang')->count();
-        $totalUsers = $this->qb->reset()->table('User')->where('status_akun', '=', 'aktif')->count();
+        $totalUsers = $this->qb->reset()->table('User')->count();
+        
+        // Get transactions statistics
         $totalTransaksi = $this->transaksi->countTotal();
+        $transaksiSuccess = $this->transaksi->countByStatus('berhasil');
         $totalRevenue = $this->transaksi->getTotalRevenue();
         
-        // Top Selling Films
-        $query = "SELECT f.judul_film, f.poster_url, COUNT(dt.id_detail) as total_tiket, 
-                  SUM(dt.harga_tiket) as total_pendapatan
-                  FROM Film f
-                  LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-                  LEFT JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
-                  LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
-                  WHERE t.status_pembayaran = 'berhasil'
-                  GROUP BY f.id_film, f.judul_film, f.poster_url
-                  ORDER BY total_tiket DESC
-                  LIMIT 10";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $topFilms = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Recent Transactions
-        $recentTransactions = $this->qb->reset()
-            ->table('Transaksi t')
-            ->select('t.*, u.nama_lengkap, u.email')
-            ->leftJoin('User u', 't.id_user', '=', 'u.id_user')
-            ->orderBy('t.tanggal_transaksi', 'DESC')
-            ->limit(10)
-            ->get()
-            ->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Monthly Revenue
-        $query = "SELECT DATE_FORMAT(tanggal_transaksi, '%Y-%m') as bulan,
-                  SUM(total_harga) as pendapatan,
-                  COUNT(*) as jumlah_transaksi
-                  FROM Transaksi
-                  WHERE status_pembayaran = 'berhasil'
-                  AND tanggal_transaksi >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-                  GROUP BY bulan
-                  ORDER BY bulan DESC";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $monthlyRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Get recent transactions (last 10)
+        $stmt = $this->transaksi->readAll();
+        $recentTransactions = array_slice($stmt->fetchAll(PDO::FETCH_ASSOC), 0, 10);
         
         require_once 'views/admin/dashboard.php';
     }
 
-    // Film yang Terjual
-    public function laporan() {
-        $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
-        $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
-        $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
+    // Laporan & Transaksi - Combined View
+    public function laporanTransaksi() {
+        // Filter parameters
+        $dateFrom = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01');
+        $dateTo = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d');
+        $status = isset($_GET['status']) ? $_GET['status'] : '';
         
-        // Query untuk film terjual
-        $query = "SELECT f.id_film, f.judul_film, f.poster_url, f.tahun_rilis,
-                  COUNT(DISTINCT t.id_transaksi) as total_transaksi,
-                  COUNT(dt.id_detail) as total_tiket,
-                  SUM(dt.harga_tiket) as total_pendapatan,
-                  AVG(dt.harga_tiket) as rata_rata_harga
-                  FROM Film f
-                  LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-                  LEFT JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
-                  LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
-                  WHERE t.status_pembayaran = 'berhasil'";
-        
-        if($filter !== 'all') {
-            $query .= " AND DATE(t.tanggal_transaksi) BETWEEN :start_date AND :end_date";
-        }
-        
-        $query .= " GROUP BY f.id_film, f.judul_film, f.poster_url, f.tahun_rilis
-                    ORDER BY total_tiket DESC";
-        
-        $stmt = $this->db->prepare($query);
-        if($filter !== 'all') {
-            $stmt->bindParam(':start_date', $startDate);
-            $stmt->bindParam(':end_date', $endDate);
-        }
-        $stmt->execute();
-        $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Total Income
-        $queryIncome = "SELECT SUM(total_harga) as total_income,
-                        COUNT(*) as total_transaksi,
-                        SUM(jumlah_tiket) as total_tiket
-                        FROM Transaksi
-                        WHERE status_pembayaran = 'berhasil'";
-        
-        if($filter !== 'all') {
-            $queryIncome .= " AND DATE(tanggal_transaksi) BETWEEN :start_date AND :end_date";
-        }
-        
-        $stmtIncome = $this->db->prepare($queryIncome);
-        if($filter !== 'all') {
-            $stmtIncome->bindParam(':start_date', $startDate);
-            $stmtIncome->bindParam(':end_date', $endDate);
-        }
-        $stmtIncome->execute();
-        $income = $stmtIncome->fetch(PDO::FETCH_ASSOC);
-        
-        require_once 'views/admin/laporan.php';
-    }
-
-    // Detail Penjualan per Film
-    public function detailPenjualan() {
-        if(!isset($_GET['id_film'])) {
-            header('Location: index.php?module=admin&action=laporan');
-            exit();
-        }
-        
-        $id_film = $_GET['id_film'];
-        
-        // Get film info
-        $this->film->id_film = $id_film;
-        $this->film->readOne();
-        
-        // Get sales details
-        $query = "SELECT t.kode_booking, t.tanggal_transaksi, t.jumlah_tiket, t.total_harga,
-                  u.nama_lengkap, u.email, b.nama_bioskop, jt.tanggal_tayang,
-                  GROUP_CONCAT(dt.nomor_kursi ORDER BY dt.nomor_kursi SEPARATOR ', ') as kursi
+        // Get filtered transactions
+        $query = "SELECT t.*, u.nama_lengkap as nama_user, u.email
                   FROM Transaksi t
                   JOIN User u ON t.id_user = u.id_user
-                  JOIN Detail_Transaksi dt ON t.id_transaksi = dt.id_transaksi
-                  JOIN Jadwal_Tayang jt ON dt.id_jadwal_tayang = jt.id_tayang
-                  JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
-                  WHERE jt.id_film = :id_film AND t.status_pembayaran = 'berhasil'
-                  GROUP BY t.id_transaksi
-                  ORDER BY t.tanggal_transaksi DESC";
+                  WHERE DATE(t.tanggal_transaksi) BETWEEN :date_from AND :date_to";
         
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id_film', $id_film);
-        $stmt->execute();
-        $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Statistics
-        $totalTiket = 0;
-        $totalPendapatan = 0;
-        foreach($sales as $sale) {
-            $totalTiket += $sale['jumlah_tiket'];
-            $totalPendapatan += $sale['total_harga'];
+        if($status != '') {
+            $query .= " AND t.status_pembayaran = :status";
         }
         
-        require_once 'views/admin/detail_penjualan.php';
+        $query .= " ORDER BY t.tanggal_transaksi DESC";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':date_from', $dateFrom);
+        $stmt->bindParam(':date_to', $dateTo);
+        if($status != '') {
+            $stmt->bindParam(':status', $status);
+        }
+        $stmt->execute();
+        $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Calculate summary
+        $totalTransaksi = count($transactions);
+        $totalPendapatan = array_sum(array_column($transactions, 'total_harga'));
+        $totalTiket = array_sum(array_column($transactions, 'jumlah_tiket'));
+        
+        require_once 'views/admin/laporan_transaksi.php';
+    }
+
+    // Kelola Film
+    public function kelolaFilm() {
+        $stmt = $this->film->readAll();
+        $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        require_once 'views/admin/kelola_film.php';
+    }
+
+    // Detail Transaksi
+    public function detailTransaksi() {
+        if(!isset($_GET['id'])) {
+            header("Location: index.php?module=admin&action=laporanTransaksi");
+            exit();
+        }
+
+        $detailTransaksi = $this->transaksi->getDetailWithTickets($_GET['id']);
+        
+        if(!$detailTransaksi) {
+            header("Location: index.php?module=admin&action=laporanTransaksi");
+            exit();
+        }
+
+        require_once 'views/admin/detail_transaksi.php';
+    }
+
+    // Update Status Transaksi
+    public function updateStatus() {
+        if($_SERVER['REQUEST_METHOD'] != 'POST') {
+            header("Location: index.php?module=admin&action=laporanTransaksi");
+            exit();
+        }
+
+        $id_transaksi = $_POST['id_transaksi'];
+        $status = $_POST['status'];
+
+        $this->transaksi->id_transaksi = $id_transaksi;
+        
+        if($this->transaksi->updateStatusPembayaran($status)) {
+            $_SESSION['flash'] = 'Status pembayaran berhasil diupdate!';
+        } else {
+            $_SESSION['flash'] = 'Gagal update status!';
+        }
+
+        header("Location: index.php?module=admin&action=laporanTransaksi");
+        exit();
     }
 }
 ?>
