@@ -1,5 +1,5 @@
 <?php
-// controllers/AdminController.php - COMPLETE VERSION
+// controllers/AdminController.php - FIXED VERSION WITH PROPER DATA
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
@@ -50,16 +50,21 @@ class AdminController {
         $stmt = $this->transaksi->readAll();
         $recentTransactions = array_slice($stmt->fetchAll(PDO::FETCH_ASSOC), 0, 10);
         
-        // Get top selling films
-        $query = "SELECT f.id_film, f.judul_film, f.poster_url, 
-                         COUNT(DISTINCT t.id_transaksi) as total_transaksi,
-                         SUM(t.jumlah_tiket) as total_tiket,
-                         SUM(t.total_harga) as total_pendapatan
+        // Get top selling films - FIXED QUERY
+        $query = "SELECT 
+                    f.id_film, 
+                    f.judul_film, 
+                    f.poster_url, 
+                    COUNT(DISTINCT t.id_transaksi) as total_transaksi,
+                    COALESCE(SUM(t.jumlah_tiket), 0) as total_tiket,
+                    COALESCE(SUM(t.total_harga), 0) as total_pendapatan
                   FROM Film f
                   LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
                   LEFT JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
-                  LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi AND t.status_pembayaran = 'berhasil'
+                  LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi 
+                    AND t.status_pembayaran = 'berhasil'
                   GROUP BY f.id_film, f.judul_film, f.poster_url
+                  HAVING total_tiket > 0
                   ORDER BY total_tiket DESC
                   LIMIT 5";
         $stmt = $this->db->prepare($query);
@@ -226,6 +231,118 @@ class AdminController {
         }
         
         header("Location: index.php?module=admin&action=dashboard");
+        exit();
+    }
+    
+    // ============= USER MANAGEMENT =============
+    
+    // Kelola User
+    public function kelolaUser() {
+        $search = isset($_GET['search']) ? $_GET['search'] : '';
+        
+        // Get all users with transaction statistics
+        $query = "SELECT 
+                    u.*,
+                    COUNT(DISTINCT t.id_transaksi) as total_transaksi,
+                    COALESCE(SUM(CASE WHEN t.status_pembayaran = 'berhasil' THEN t.total_harga ELSE 0 END), 0) as total_belanja
+                  FROM User u
+                  LEFT JOIN Transaksi t ON u.id_user = t.id_user
+                  WHERE 1=1";
+        
+        if($search != '') {
+            $query .= " AND (u.nama_lengkap LIKE :search OR u.email LIKE :search OR u.username LIKE :search)";
+        }
+        
+        $query .= " GROUP BY u.id_user
+                    ORDER BY total_belanja DESC, u.tanggal_daftar DESC";
+        
+        $stmt = $this->db->prepare($query);
+        
+        if($search != '') {
+            $searchParam = "%$search%";
+            $stmt->bindParam(':search', $searchParam);
+        }
+        
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Calculate statistics
+        $activeUsers = 0;
+        $totalBookings = 0;
+        $totalRevenue = 0;
+        
+        foreach($users as $user) {
+            if($user['status_akun'] === 'aktif') $activeUsers++;
+            $totalBookings += $user['total_transaksi'];
+            $totalRevenue += $user['total_belanja'];
+        }
+        
+        require_once 'views/admin/kelola_user.php';
+    }
+    
+    // Detail User
+    public function detailUser() {
+        if(!isset($_GET['id'])) {
+            header("Location: index.php?module=admin&action=kelolaUser");
+            exit();
+        }
+        
+        $id_user = $_GET['id'];
+        
+        // Get user data
+        $query = "SELECT * FROM User WHERE id_user = :id_user";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id_user', $id_user);
+        $stmt->execute();
+        $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if(!$userData) {
+            $_SESSION['flash'] = 'User tidak ditemukan!';
+            header("Location: index.php?module=admin&action=kelolaUser");
+            exit();
+        }
+        
+        // Get user transactions
+        $stmt = $this->transaksi->readByUser($id_user);
+        $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get statistics
+        $totalTransaksi = count($transactions);
+        $transaksiSuccess = 0;
+        $totalBelanja = 0;
+        
+        foreach($transactions as $trans) {
+            if($trans['status_pembayaran'] === 'berhasil') {
+                $transaksiSuccess++;
+                $totalBelanja += $trans['total_harga'];
+            }
+        }
+        
+        require_once 'views/admin/detail_user.php';
+    }
+    
+    // Toggle User Status
+    public function toggleUserStatus() {
+        if(!isset($_GET['id']) || !isset($_GET['status'])) {
+            header("Location: index.php?module=admin&action=kelolaUser");
+            exit();
+        }
+        
+        $id_user = $_GET['id'];
+        $status = $_GET['status'];
+        
+        $query = "UPDATE User SET status_akun = :status WHERE id_user = :id_user";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id_user', $id_user);
+        
+        if($stmt->execute()) {
+            $_SESSION['flash'] = 'Status user berhasil diubah!';
+        } else {
+            $_SESSION['flash'] = 'Gagal mengubah status user!';
+        }
+        
+        header("Location: index.php?module=admin&action=kelolaUser");
         exit();
     }
 }
