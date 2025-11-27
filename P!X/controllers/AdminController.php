@@ -1,5 +1,5 @@
 <?php
-// controllers/AdminController.php - FIXED VERSION WITH PROPER DATA
+// controllers/AdminController.php - FIXED VERSION
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
@@ -23,6 +23,7 @@ class AdminController {
         
         // Check if user is admin
         if(!isset($_SESSION['admin_id'])) {
+            $_SESSION['flash'] = 'Anda harus login sebagai admin!';
             header("Location: index.php?module=auth&action=index");
             exit();
         }
@@ -33,7 +34,7 @@ class AdminController {
         $this->dashboard();
     }
 
-    // Dashboard Admin - Gabungan dengan Laporan
+    // Dashboard Admin
     public function dashboard() {
         // Get statistics
         $totalFilms = $this->qb->reset()->table('Film')->count();
@@ -50,7 +51,7 @@ class AdminController {
         $stmt = $this->transaksi->readAll();
         $recentTransactions = array_slice($stmt->fetchAll(PDO::FETCH_ASSOC), 0, 10);
         
-        // Get top selling films - FIXED QUERY
+        // Get top selling films
         $query = "SELECT 
                     f.id_film, 
                     f.judul_film, 
@@ -92,55 +93,6 @@ class AdminController {
         require_once 'views/admin/dashboard.php';
     }
 
-    // Kelola Film - Alias untuk dashboard (compatibility)
-    public function kelolaFilm() {
-        $this->dashboard();
-    }
-
-    // Laporan Transaksi - Alias untuk dashboard (compatibility)
-    public function laporanTransaksi() {
-        $this->dashboard();
-    }
-
-    // Detail Transaksi
-    public function detailTransaksi() {
-        if(!isset($_GET['id'])) {
-            header("Location: index.php?module=admin&action=dashboard");
-            exit();
-        }
-
-        $detailTransaksi = $this->transaksi->getDetailWithTickets($_GET['id']);
-        
-        if(!$detailTransaksi) {
-            header("Location: index.php?module=admin&action=dashboard");
-            exit();
-        }
-
-        require_once 'views/admin/detail_transaksi.php';
-    }
-
-    // Update Status Transaksi
-    public function updateStatus() {
-        if($_SERVER['REQUEST_METHOD'] != 'POST') {
-            header("Location: index.php?module=admin&action=dashboard");
-            exit();
-        }
-
-        $id_transaksi = $_POST['id_transaksi'];
-        $status = $_POST['status'];
-
-        $this->transaksi->id_transaksi = $id_transaksi;
-        
-        if($this->transaksi->updateStatusPembayaran($status)) {
-            $_SESSION['flash'] = 'Status pembayaran berhasil diupdate!';
-        } else {
-            $_SESSION['flash'] = 'Gagal update status!';
-        }
-
-        header("Location: index.php?module=admin&action=dashboard");
-        exit();
-    }
-    
     // CREATE Film - Show form
     public function createFilm() {
         $genre = new Genre($this->db);
@@ -233,14 +185,50 @@ class AdminController {
         header("Location: index.php?module=admin&action=dashboard");
         exit();
     }
+
+    // Detail Transaksi
+    public function detailTransaksi() {
+        if(!isset($_GET['id'])) {
+            header("Location: index.php?module=admin&action=dashboard");
+            exit();
+        }
+
+        $detailTransaksi = $this->transaksi->getDetailWithTickets($_GET['id']);
+        
+        if(!$detailTransaksi) {
+            header("Location: index.php?module=admin&action=dashboard");
+            exit();
+        }
+
+        require_once 'views/admin/detail_transaksi.php';
+    }
+
+    // Update Status Transaksi
+    public function updateStatus() {
+        if($_SERVER['REQUEST_METHOD'] != 'POST') {
+            header("Location: index.php?module=admin&action=dashboard");
+            exit();
+        }
+
+        $id_transaksi = $_POST['id_transaksi'];
+        $status = $_POST['status'];
+
+        $this->transaksi->id_transaksi = $id_transaksi;
+        
+        if($this->transaksi->updateStatusPembayaran($status)) {
+            $_SESSION['flash'] = 'Status pembayaran berhasil diupdate!';
+        } else {
+            $_SESSION['flash'] = 'Gagal update status!';
+        }
+
+        header("Location: index.php?module=admin&action=dashboard");
+        exit();
+    }
     
-    // ============= USER MANAGEMENT =============
-    
-    // Kelola User
+    // USER MANAGEMENT
     public function kelolaUser() {
         $search = isset($_GET['search']) ? $_GET['search'] : '';
         
-        // Get all users with transaction statistics
         $query = "SELECT 
                     u.*,
                     COUNT(DISTINCT t.id_transaksi) as total_transaksi,
@@ -266,7 +254,6 @@ class AdminController {
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Calculate statistics
         $activeUsers = 0;
         $totalBookings = 0;
         $totalRevenue = 0;
@@ -289,7 +276,6 @@ class AdminController {
         
         $id_user = $_GET['id'];
         
-        // Get user data
         $query = "SELECT * FROM User WHERE id_user = :id_user";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':id_user', $id_user);
@@ -302,11 +288,9 @@ class AdminController {
             exit();
         }
         
-        // Get user transactions
         $stmt = $this->transaksi->readByUser($id_user);
         $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Get statistics
         $totalTransaksi = count($transactions);
         $transaksiSuccess = 0;
         $totalBelanja = 0;

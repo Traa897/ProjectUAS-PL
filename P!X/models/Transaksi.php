@@ -24,29 +24,28 @@ class Transaksi {
     }
 
     // CREATE Transaksi
-    public function create() {
-        // Generate kode booking
-        $this->kode_booking = 'BKG' . date('YmdHis') . rand(100, 999);
-        
-        $data = [
-            'id_user' => htmlspecialchars(strip_tags($this->id_user)),
-            'id_admin' => $this->id_admin ? htmlspecialchars(strip_tags($this->id_admin)) : null,
-            'kode_booking' => $this->kode_booking,
-            'jumlah_tiket' => htmlspecialchars(strip_tags($this->jumlah_tiket)),
-            'total_harga' => htmlspecialchars(strip_tags($this->total_harga)),
-            'metode_pembayaran' => htmlspecialchars(strip_tags($this->metode_pembayaran)),
-            'status_pembayaran' => 'berhasil', // Langsung berhasil untuk demo
-            'tanggal_pembayaran' => date('Y-m-d H:i:s')
-        ];
+   // Di method create()
+public function create() {
+    $this->kode_booking = 'BKG' . date('YmdHis') . rand(100, 999);
+    
+    $data = [
+        'id_user' => htmlspecialchars(strip_tags($this->id_user)),
+        'id_admin' => $this->id_admin ? htmlspecialchars(strip_tags($this->id_admin)) : null,
+        'kode_booking' => $this->kode_booking,
+        'jumlah_tiket' => htmlspecialchars(strip_tags($this->jumlah_tiket)),
+        'total_harga' => htmlspecialchars(strip_tags($this->total_harga)),
+        'metode_pembayaran' => htmlspecialchars(strip_tags($this->metode_pembayaran)),
+        'status_pembayaran' => 'berhasil', // PERBAIKAN: Langsung berhasil
+        'tanggal_pembayaran' => date('Y-m-d H:i:s')
+    ];
 
-        if($this->qb->reset()->table($this->table_name)->insert($data)) {
-            // Get last insert ID
-            $this->id_transaksi = $this->conn->lastInsertId();
-            return true;
-        }
-        
-        return false;
+    if($this->qb->reset()->table($this->table_name)->insert($data)) {
+        $this->id_transaksi = $this->conn->lastInsertId();
+        return true;
     }
+    
+    return false;
+}
 
     // READ ALL Transaksi
     public function readAll() {

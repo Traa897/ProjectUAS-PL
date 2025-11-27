@@ -133,10 +133,13 @@ class TransaksiController {
 
         // Create Transaksi
         $this->transaksi->id_user = $_SESSION['user_id'];
-        $this->transaksi->id_admin = null; // User booking sendiri
+        $this->transaksi->id_admin = null;
         $this->transaksi->jumlah_tiket = $jumlah_tiket;
         $this->transaksi->total_harga = $jumlah_tiket * $this->jadwal->harga_tiket;
         $this->transaksi->metode_pembayaran = $metode_pembayaran;
+        // STATUS LANGSUNG BERHASIL untuk demo
+        $this->transaksi->status_pembayaran = 'berhasil';
+        $this->transaksi->tanggal_pembayaran = date('Y-m-d H:i:s');
 
         if($this->transaksi->create()) {
             // Create Detail Transaksi for each ticket

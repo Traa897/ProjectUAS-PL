@@ -1,5 +1,5 @@
 <?php
-// controllers/JadwalController.php
+// controllers/JadwalController.php - FIXED
 require_once 'config/database.php';
 require_once 'models/Jadwal.php';
 require_once 'models/Film.php';
@@ -19,17 +19,29 @@ class JadwalController {
         $this->bioskop = new Bioskop($this->db);
     }
 
-    // INDEX - List all schedules
+    // PERBAIKAN: Index dengan filter yang benar
     public function index() {
         $date_filter = isset($_GET['date']) ? $_GET['date'] : '';
         $film_filter = isset($_GET['film']) ? $_GET['film'] : '';
         $bioskop_filter = isset($_GET['bioskop']) ? $_GET['bioskop'] : '';
 
-        if($date_filter != '') {
+        // PERBAIKAN: Jika tidak ada filter, tampilkan jadwal hari ini dan seterusnya
+        if($date_filter == '' && $film_filter == '' && $bioskop_filter == '') {
+            $today = date('Y-m-d');
+            $query = "SELECT jt.*, f.judul_film, b.nama_bioskop, b.kota
+                      FROM Jadwal_Tayang jt
+                      LEFT JOIN Film f ON jt.id_film = f.id_film
+                      LEFT JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
+                      WHERE jt.tanggal_tayang >= :today
+                      ORDER BY jt.tanggal_tayang ASC, jt.jam_mulai ASC";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':today', $today);
+            $stmt->execute();
+        } elseif($date_filter != '') {
             $stmt = $this->jadwal->readByDate($date_filter);
-        } else if($film_filter != '') {
+        } elseif($film_filter != '') {
             $stmt = $this->jadwal->readByFilm($film_filter);
-        } else if($bioskop_filter != '') {
+        } elseif($bioskop_filter != '') {
             $stmt = $this->jadwal->readByBioskop($bioskop_filter);
         } else {
             $stmt = $this->jadwal->readAll();
@@ -42,27 +54,12 @@ class JadwalController {
         require_once 'views/jadwal/index.php';
     }
 
-    // SHOW - Detail schedule
-    public function show() {
-        if(isset($_GET['id'])) {
-            $this->jadwal->id_tayang = $_GET['id'];
-            if($this->jadwal->readOne()) {
-                require_once 'views/jadwal/show.php';
-            } else {
-                header("Location: index.php?module=jadwal&error=Jadwal tidak ditemukan");
-                exit();
-            }
-        }
-    }
-
-    // CREATE - Show form
     public function create() {
         $films = $this->film->readAll()->fetchAll(PDO::FETCH_ASSOC);
         $bioskops = $this->bioskop->readAll()->fetchAll(PDO::FETCH_ASSOC);
         require_once 'views/jadwal/create.php';
     }
 
-    // STORE - Save new schedule
     public function store() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->jadwal->id_film = $_POST['id_film'];
@@ -74,7 +71,9 @@ class JadwalController {
             $this->jadwal->harga_tiket = $_POST['harga_tiket'];
 
             if($this->jadwal->create()) {
-                header("Location: index.php?module=jadwal&message=Jadwal berhasil ditambahkan!");
+                if(session_status() == PHP_SESSION_NONE) session_start();
+                $_SESSION['flash'] = 'Jadwal berhasil ditambahkan!';
+                header("Location: index.php?module=jadwal");
                 exit();
             } else {
                 header("Location: index.php?module=jadwal&action=create&error=Gagal menambahkan jadwal");
@@ -82,6 +81,7 @@ class JadwalController {
             }
         }
     }
+
 
     // EDIT - Show edit form
     public function edit() {
