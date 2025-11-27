@@ -1,5 +1,5 @@
 <?php
-// controllers/AdminController.php - FIXED VERSION
+// controllers/AdminController.php - COMPLETE VERSION
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
@@ -26,6 +26,11 @@ class AdminController {
             header("Location: index.php?module=auth&action=index");
             exit();
         }
+    }
+
+    // DEFAULT INDEX - Redirect to Dashboard
+    public function index() {
+        $this->dashboard();
     }
 
     // Dashboard Admin - Gabungan dengan Laporan
@@ -80,6 +85,16 @@ class AdminController {
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         require_once 'views/admin/dashboard.php';
+    }
+
+    // Kelola Film - Alias untuk dashboard (compatibility)
+    public function kelolaFilm() {
+        $this->dashboard();
+    }
+
+    // Laporan Transaksi - Alias untuk dashboard (compatibility)
+    public function laporanTransaksi() {
+        $this->dashboard();
     }
 
     // Detail Transaksi

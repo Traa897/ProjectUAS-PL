@@ -12,3 +12,7 @@ Perubahan yang perlu dilakukan
 ---- DISINI KALAU MAU LIAT AKUN ADMIN : 
 ---- USERNAME : admin
 ---- PASSWORD : admin123
+
+
+Perbaikan pada dashboard penjualan tiket admin 
+dan juga buat keterikatan admin dengan user 

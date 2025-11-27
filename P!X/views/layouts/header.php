@@ -17,29 +17,28 @@
                 if(session_status() == PHP_SESSION_NONE) session_start();
                 
                 if(isset($_SESSION['admin_id'])):
-                    // Menu Admin
+                    // Menu Admin - FIXED
                 ?>
-                    <a href="index.php?module=admin&action=kelolaFilm"> Film</a>
-                    <a href="index.php?module=bioskop"> Bioskop</a>
-                    <a href="index.php?module=jadwal"> Jadwal</a>
-                    <a href="index.php?module=admin&action=dashboard"> Dashboard</a>
-                    <a href="index.php?module=admin&action=laporanTransaksi"> Laporan</a>
+                    <a href="index.php?module=film">🎬 Film</a>
+                    <a href="index.php?module=bioskop">🏢 Bioskop</a>
+                    <a href="index.php?module=jadwal">📅 Jadwal</a>
+                    <a href="index.php?module=admin&action=dashboard">📊 Dashboard</a>
                 <?php 
                 elseif(isset($_SESSION['user_id'])):
                     // Menu User
                 ?>
-                    <a href="index.php?module=film"> Film</a>
-                    <a href="index.php?module=bioskop"> Bioskop</a>
-                    <a href="index.php?module=jadwal"> Jadwal</a>
-                    <a href="index.php?module=user&action=dashboard"> Menu</a>
+                    <a href="index.php?module=film">🎬 Film</a>
+                    <a href="index.php?module=bioskop">🏢 Bioskop</a>
+                    <a href="index.php?module=jadwal">📅 Jadwal</a>
+                    <a href="index.php?module=user&action=dashboard">👤 Menu</a>
                  
                 <?php 
                 else:
                     // Menu Public
                 ?>
-                    <a href="index.php?module=film"> Film</a>
-                    <a href="index.php?module=bioskop"> Bioskop</a>
-                    <a href="index.php?module=jadwal"> Jadwal</a>
+                    <a href="index.php?module=film">🎬 Film</a>
+                    <a href="index.php?module=bioskop">🏢 Bioskop</a>
+                    <a href="index.php?module=jadwal">📅 Jadwal</a>
                 <?php endif; ?>
             </div>
             
@@ -47,15 +46,13 @@
             <?php
             if(isset($_SESSION['admin_id'])): ?>
                 <span class="nav-user">👤 <?php echo htmlspecialchars($_SESSION['admin_username']); ?></span>
-                <!-- Role Admin (Dihapus) -->
-                <a href="index.php?module=auth&action=logout" class="btn-link"> Logout</a>
+                <a href="index.php?module=auth&action=logout" class="btn-link">🚪 Logout</a>
             <?php elseif(isset($_SESSION['user_id'])): ?>
                 <span class="nav-user">👤 <?php echo htmlspecialchars($_SESSION['user_username']); ?></span>
-                <!-- Role User (Dihapus) -->
-                <a href="index.php?module=auth&action=logout" class="btn-link"> Logout</a>
+                <a href="index.php?module=auth&action=logout" class="btn-link">🚪 Logout</a>
             <?php else: ?>
-                <a href="index.php?module=auth&action=index" class="btn-link"> Login</a>
-                <a href="index.php?module=auth&action=register" class="btn-link"> Daftar</a>
+                <a href="index.php?module=auth&action=index" class="btn-link">🔐 Login</a>
+                <a href="index.php?module=auth&action=register" class="btn-link">📝 Daftar</a>
             <?php endif; ?>
             </div>
         </div>
