@@ -59,6 +59,45 @@
             </div>
         </div>
     </div>
+    <!-- ✅ TAMBAHAN: Status Film Statistics -->
+    <div class="section-header" style="margin-top: 40px;">
+        <h2>📊 Statistik Status Film</h2>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <?php
+        require_once 'models/Film.php';
+        $filmModel = new Film($this->db);
+        
+        $countSedangTayang = $filmModel->countByStatus('sedang_tayang');
+        $countAkanTayang = $filmModel->countByStatus('akan_tayang');
+        $countTelahTayang = $filmModel->countByStatus('telah_tayang');
+        ?>
+        
+        <div class="stat-card" style="border-left: 5px solid #f5576c;">
+            <div class="stat-icon">▶️</div>
+            <div class="stat-info">
+                <h3><?php echo $countSedangTayang; ?></h3>
+                <p>Sedang Tayang</p>
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-left: 5px solid #764ba2;">
+            <div class="stat-icon">🔜</div>
+            <div class="stat-info">
+                <h3><?php echo $countAkanTayang; ?></h3>
+                <p>Akan Tayang</p>
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-left: 5px solid #00f2fe;">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+                <h3><?php echo $countTelahTayang; ?></h3>
+                <p>Telah Tayang</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Kelola Film Section -->
     <div class="section-header" style="margin-top: 40px;">

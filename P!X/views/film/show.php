@@ -26,6 +26,25 @@
         <div class="detail-info">
             <h2><?php echo htmlspecialchars($filmData['judul_film']); ?></h2>
 
+            <!-- ✅ TAMBAHAN: STATUS BADGE -->
+            <?php
+            require_once 'models/Film.php';
+            $filmModel = new Film($this->db ?? (new Database())->getConnection());
+            $filmStatus = $filmModel->getFilmStatus($filmData['id_film']);
+
+            $statusConfig = [
+                'sedang_tayang' => ['text' => '▶️ SEDANG TAYANG', 'color' => 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'],
+                'akan_tayang' => ['text' => '🔜 AKAN TAYANG', 'color' => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'],
+                'telah_tayang' => ['text' => '✅ TELAH TAYANG', 'color' => 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'],
+                'tidak_ada_jadwal' => ['text' => '⚠️ BELUM ADA JADWAL', 'color' => '#6c757d']
+            ];
+
+            $currentStatus = $statusConfig[$filmStatus] ?? $statusConfig['tidak_ada_jadwal'];
+            ?>
+
+            <div style="display: inline-block; padding: 12px 24px; background: <?php echo $currentStatus['color']; ?>; color: white; border-radius: 25px; font-size: 14px; font-weight: 700; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                <?php echo $currentStatus['text']; ?>
+            </div>
             <div class="info-grid">
                 <div class="info-item">
                     <strong>🎭 Genre:</strong>

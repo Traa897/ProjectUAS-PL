@@ -19,6 +19,7 @@ class Film {
     public function __construct($db) {
         $this->conn = $db;
         $this->qb = new QueryBuilder($db);
+    
     }
 
     // CREATE
@@ -164,5 +165,110 @@ class Film {
         
         return $stmt;
     }
+    // READ FILMS BY STATUS (Tambahkan di akhir class Film, sebelum closing bracket)
+
+// Get films that are "Akan Tayang" (Coming Soon)
+public function readAkanTayang() {
+    $query = "SELECT DISTINCT f.*, g.nama_genre
+              FROM " . $this->table_name . " f
+              LEFT JOIN Genre g ON f.id_genre = g.id_genre
+              LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+              WHERE jt.tanggal_tayang > CURDATE()
+                AND NOT EXISTS (
+                    SELECT 1 FROM Jadwal_Tayang jt2 
+                    WHERE jt2.id_film = f.id_film 
+                    AND jt2.tanggal_tayang <= CURDATE()
+                )
+              GROUP BY f.id_film
+              ORDER BY f.tahun_rilis DESC";
+    
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+    return $stmt;
+}
+
+// Get films that are "Sedang Tayang" (Now Showing)
+public function readSedangTayang() {
+    $query = "SELECT DISTINCT f.*, g.nama_genre
+              FROM " . $this->table_name . " f
+              LEFT JOIN Genre g ON f.id_genre = g.id_genre
+              INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+              WHERE CONCAT(jt.tanggal_tayang, ' ', jt.jam_selesai) >= NOW()
+                AND jt.tanggal_tayang <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+              GROUP BY f.id_film
+              ORDER BY f.tahun_rilis DESC";
+    
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+    return $stmt;
+}
+
+// Get films that are "Telah Tayang" (Already Shown)
+public function readTelahTayang() {
+    $query = "SELECT DISTINCT f.*, g.nama_genre
+              FROM " . $this->table_name . " f
+              LEFT JOIN Genre g ON f.id_genre = g.id_genre
+              LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+              WHERE NOT EXISTS (
+                    SELECT 1 FROM Jadwal_Tayang jt2 
+                    WHERE jt2.id_film = f.id_film 
+                    AND CONCAT(jt2.tanggal_tayang, ' ', jt2.jam_selesai) >= NOW()
+                )
+              GROUP BY f.id_film
+              ORDER BY f.tahun_rilis DESC";
+    
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+    return $stmt;
+}
+
+// Count films by status
+public function countByStatus($status) {
+    switch($status) {
+        case 'akan_tayang':
+            $stmt = $this->readAkanTayang();
+            break;
+        case 'sedang_tayang':
+            $stmt = $this->readSedangTayang();
+            break;
+        case 'telah_tayang':
+            $stmt = $this->readTelahTayang();
+            break;
+        default:
+            return 0;
+    }
+    return $stmt->rowCount();
+}
+
+// Get film status badge
+public function getFilmStatus($id_film) {
+    // Cek apakah ada jadwal yang akan datang
+    $query = "SELECT 
+                CASE 
+                    WHEN EXISTS (
+                        SELECT 1 FROM Jadwal_Tayang jt 
+                        WHERE jt.id_film = :id_film 
+                        AND CONCAT(jt.tanggal_tayang, ' ', jt.jam_selesai) >= NOW()
+                        AND jt.tanggal_tayang <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                    ) THEN 'sedang_tayang'
+                    WHEN EXISTS (
+                        SELECT 1 FROM Jadwal_Tayang jt 
+                        WHERE jt.id_film = :id_film 
+                        AND jt.tanggal_tayang > CURDATE()
+                    ) THEN 'akan_tayang'
+                    WHEN EXISTS (
+                        SELECT 1 FROM Jadwal_Tayang jt 
+                        WHERE jt.id_film = :id_film
+                    ) THEN 'telah_tayang'
+                    ELSE 'tidak_ada_jadwal'
+                END as status";
+    
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':id_film', $id_film);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    return $row['status'] ?? 'tidak_ada_jadwal';
+}
 }
 ?>

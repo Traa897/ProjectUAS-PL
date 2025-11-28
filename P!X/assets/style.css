@@ -844,3 +844,33 @@ html, body {
         justify-content: center;
     }
 }
+
+/* Status Badge Styles */
+.status-badge-small {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 5;
+}
+
+.status-sedang-tayang {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.status-akan-tayang {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.status-telah-tayang {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.status-tidak-ada-jadwal {
+    background: #6c757d;
+}

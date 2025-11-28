@@ -27,8 +27,6 @@
                         <option value="">Pilih Kota</option>
                         <option value="Balikpapan">Balikpapan</option>
                         <option value="Samarinda">Samarinda</option>
-                        <option value="Bontang">Bontang</option>
-                        <option value="Kutai Kartanegara">Kutai Kartanegara</option>
                     </select>
                 </div>
 
