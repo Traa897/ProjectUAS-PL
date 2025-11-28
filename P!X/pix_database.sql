@@ -1,9 +1,10 @@
 -- ============================================
 -- DATABASE P!X BIOSKOP SYSTEM 
--- Versi: 2.0 (Clean & Structured)
--- Tanggal: 26 November 2024
+-- Versi: 3.0 (FIXED - Admin & User Linked)
+-- Tanggal: 27 November 2024
 -- ============================================
 
+DROP DATABASE  pix_database;
 CREATE DATABASE pix_database CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE pix_database;
 
@@ -27,7 +28,7 @@ CREATE TABLE Film (
     durasi_menit INT NOT NULL,
     sipnosis TEXT,
     rating DECIMAL(3,1) CHECK (rating >= 0 AND rating <= 10),
-    poster_url VARCHAR(500) DEFAULT 'https://via.placeholder.com/300x450',
+    poster_url VARCHAR(500) DEFAULT 'Masukin Link Poster Disini',
     id_genre INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -172,220 +173,51 @@ INSERT INTO Bioskop (nama_bioskop, kota, alamat_bioskop, jumlah_studio) VALUES
 ('CGV Balikpapan Plaza', 'Balikpapan', 'Balikpapan Plaza Lt.3, Jl. Jend. Sudirman No.1', 6),
 ('XXI E-Walk Balikpapan', 'Balikpapan', 'E-Walk Supermall Lt.2, Jl. MT. Haryono', 5),
 ('Cinepolis Balikpapan Pentacity', 'Balikpapan', 'Balikpapan Pentacity Lt.3, Jl. Soekarno Hatta', 4),
-('CGV Grand Mall Samarinda', 'Samarinda', 'Grand Mall Samarinda Lt.3, Jl. Panglima Batur', 5),
-('XXI Lembuswana Samarinda', 'Samarinda', 'Lembuswana Mall Lt.2, Jl. Basuki Rahmat', 4),
-('Cinepolis Big Mall Samarinda', 'Samarinda', 'Big Mall Samarinda Lt.2, Jl. Pramuka', 5);
+('Go Mall CGV', 'Samarinda', 'GO Mall Samarinda Lt.3, Jl. Panglima Batur', 5),
+('XXI Central Plaza', 'Samarinda', 'Lembuswana Mall Lt.2, Jl. Basuki Rahmat', 4),
+('XXI Bigmall', 'Samarinda', 'Big Mall Samarinda Lt.2, Jl. Pramuka', 5);
+DELETE FROM bioskop;
 
--- Insert Jadwal Tayang
+-- ============================================
+-- INSERT USER & ADMIN (LINKED)
+-- ============================================
+
+-- Insert Admin (Password: admin123)
+INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
+('admin', '$2y$10$fXclg4GaMqopFdCVaPNp6OzQ.FaMcUsNwQbS96gFTjpiaqIi9nZ', 'Administrator P!X', 'super_admin'),
+('admin1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Operator Bioskop', 'operator');
+
+
+-- ============================================
+-- INSERT JADWAL TAYANG (LINKED KE FILM & BIOSKOP)
+-- ============================================
+
 INSERT INTO Jadwal_Tayang (id_film, id_bioskop, nama_tayang, tanggal_tayang, jam_mulai, jam_selesai, harga_tiket) VALUES
--- Pengabdi Setan 2
+-- Pengabdi Setan 2 (id_film = 1)
 (1, 1, 'Premiere Night', '2024-12-01', '19:00:00', '21:00:00', 50000),
 (1, 2, 'Weekend Special', '2024-12-02', '20:30:00', '22:30:00', 45000),
-(1, 4, 'Horror Night', '2024-12-01', '21:00:00', '23:00:00', 50000),
--- Dilan 1990
-(2, 1, 'Regular Show', '2024-12-01', '14:30:00', '16:30:00', 35000),
-(2, 3, 'Matinee Show', '2024-12-02', '13:00:00', '15:00:00', 30000),
-(2, 5, 'Romance Night', '2024-12-01', '19:30:00', '21:30:00', 40000),
--- The Raid
-(3, 2, 'Action Night', '2024-12-03', '21:00:00', '23:00:00', 45000),
-(3, 4, 'Midnight Show', '2024-12-02', '23:30:00', '01:30:00', 40000),
--- Keluarga Cemara
-(4, 3, 'Family Time', '2024-12-02', '10:00:00', '12:00:00', 30000),
-(4, 5, 'Weekend Family', '2024-12-03', '11:00:00', '13:00:00', 35000),
--- Gundala
-(5, 1, 'Superhero Special', '2024-12-03', '16:00:00', '18:30:00', 55000),
-(5, 6, 'Weekend Show', '2024-12-02', '17:00:00', '19:30:00', 50000);
-
--- ============================================
--- INSERT USER & ADMIN
--- ============================================
-
--- Insert Admin (Password: password)
-INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
-('admin', '$2y$10$QslQWAyZOfEqp8EiviRTeu6BI/hnhIj32..j2OeBpmbpxutTMC0QO', 'Admin', 'super_admin');
+(1, 4, 'Horror Night', '2024-12-01', '21:00:00', '23:00:00', 50000)
 
 
 
-(3, 7, 'D15', 45000, 'reguler');
-
--- Update kapasitas jadwal
+-- Update kapasitas
 UPDATE Jadwal_Tayang SET kapasitas_tersedia = kapasitas_tersedia - 2 WHERE id_tayang = 1;
 UPDATE Jadwal_Tayang SET kapasitas_tersedia = kapasitas_tersedia - 3 WHERE id_tayang = 6;
-UPDATE Jadwal_Tayang SET kapasitas_tersedia = kapasitas_tersedia - 1 WHERE id_tayang = 7;
 
--- ============================================
--- CREATE VIEWS
--- ============================================
+-- PERBAIKAN PASSWORD ADMIN
+-- Jalankan query ini di database pix_database
 
--- View: Transaksi Lengkap
-CREATE OR REPLACE VIEW v_transaksi_lengkap AS
-SELECT 
-    t.id_transaksi,
-    t.kode_booking,
-    u.username,
-    u.nama_lengkap AS nama_user,
-    u.email,
-    a.nama_lengkap AS nama_admin,
-    t.jumlah_tiket,
-    t.total_harga,
-    t.metode_pembayaran,
-    t.status_pembayaran,
-    t.tanggal_transaksi,
-    t.tanggal_pembayaran
-FROM Transaksi t
-JOIN User u ON t.id_user = u.id_user
-LEFT JOIN Admin a ON t.id_admin = a.id_admin;
+-- Hapus admin yang ada
+DELETE FROM Admin WHERE username = 'admin';
 
--- View: Detail Tiket
-CREATE OR REPLACE VIEW v_detail_tiket AS
-SELECT 
-    dt.id_detail,
-    t.kode_booking,
-    u.nama_lengkap AS nama_user,
-    f.judul_film,
-    b.nama_bioskop,
-    b.kota,
-    jt.tanggal_tayang,
-    jt.jam_mulai,
-    jt.jam_selesai,
-    dt.nomor_kursi,
-    dt.jenis_tiket,
-    dt.harga_tiket,
-    t.status_pembayaran
-FROM Detail_Transaksi dt
-JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
-JOIN User u ON t.id_user = u.id_user
-JOIN Jadwal_Tayang jt ON dt.id_jadwal_tayang = jt.id_tayang
-JOIN Film f ON jt.id_film = f.id_film
-JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop;
+-- Insert admin baru dengan password plain text untuk testing
+-- Username: admin
+-- Password: admin123
+INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
+('admin', 'admin123', 'Admin P!X', 'super_admin');
 
--- View: Jadwal Lengkap
-CREATE OR REPLACE VIEW v_jadwal_lengkap AS
-SELECT 
-    jt.id_tayang,
-    f.judul_film,
-    f.poster_url,
-    b.nama_bioskop,
-    b.kota,
-    jt.nama_tayang,
-    jt.tanggal_tayang,
-    jt.jam_mulai,
-    jt.jam_selesai,
-    jt.harga_tiket,
-    jt.kapasitas_total,
-    jt.kapasitas_tersedia
-FROM Jadwal_Tayang jt
-JOIN Film f ON jt.id_film = f.id_film
-JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop;
-
--- ============================================
--- STORED PROCEDURES
--- ============================================
-
--- Procedure: Generate Random Kursi
-DELIMITER $$
-
-CREATE PROCEDURE sp_generate_kursi_random(
-    IN p_id_jadwal INT,
-    OUT p_nomor_kursi VARCHAR(10)
-)
-BEGIN
-    DECLARE v_baris CHAR(1);
-    DECLARE v_nomor INT;
-    DECLARE v_kursi VARCHAR(10);
-    DECLARE v_exists INT;
-    DECLARE v_baris_array VARCHAR(10) DEFAULT 'ABCDEFGHIJ';
-    DECLARE v_max_attempts INT DEFAULT 100;
-    DECLARE v_attempts INT DEFAULT 0;
-    
-    SET v_exists = 1;
-    
-    WHILE v_exists = 1 AND v_attempts < v_max_attempts DO
-        -- Random baris (A-J)
-        SET v_baris = SUBSTRING(v_baris_array, FLOOR(1 + RAND() * 10), 1);
-        
-        -- Random nomor (1-10)
-        SET v_nomor = FLOOR(1 + RAND() * 10);
-        
-        -- Gabungkan
-        SET v_kursi = CONCAT(v_baris, v_nomor);
-        
-        -- Cek apakah kursi sudah terpakai
-        SELECT COUNT(*) INTO v_exists
-        FROM Detail_Transaksi dt
-        JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi
-        WHERE dt.id_jadwal_tayang = p_id_jadwal 
-        AND dt.nomor_kursi = v_kursi
-        AND t.status_pembayaran IN ('berhasil', 'pending');
-        
-        SET v_attempts = v_attempts + 1;
-    END WHILE;
-    
-    IF v_attempts >= v_max_attempts THEN
-        SET p_nomor_kursi = NULL;
-    ELSE
-        SET p_nomor_kursi = v_kursi;
-    END IF;
-END$$
-
-DELIMITER ;
-
--- ============================================
--- TRIGGERS
--- ============================================
-
--- Trigger: Auto update kapasitas setelah booking
-DELIMITER $$
-
-CREATE TRIGGER trg_after_detail_insert
-AFTER INSERT ON Detail_Transaksi
-FOR EACH ROW
-BEGIN
-    UPDATE Jadwal_Tayang 
-    SET kapasitas_tersedia = kapasitas_tersedia - 1
-    WHERE id_tayang = NEW.id_jadwal_tayang;
-END$$
-
-CREATE TRIGGER trg_after_detail_delete
-AFTER DELETE ON Detail_Transaksi
-FOR EACH ROW
-BEGIN
-    UPDATE Jadwal_Tayang 
-    SET kapasitas_tersedia = kapasitas_tersedia + 1
-    WHERE id_tayang = OLD.id_jadwal_tayang;
-END$$
-
-DELIMITER ;
-
--- ============================================
--- QUERY TESTING
--- ============================================
-
--- Test Query 1: Lihat semua transaksi
-SELECT * FROM v_transaksi_lengkap ORDER BY tanggal_transaksi DESC;
-
--- Test Query 2: Lihat detail tiket
-SELECT * FROM v_detail_tiket ORDER BY kode_booking;
-
--- Test Query 3: Lihat jadwal lengkap
-SELECT * FROM v_jadwal_lengkap WHERE tanggal_tayang >= CURDATE() ORDER BY tanggal_tayang, jam_mulai;
-
--- Test Query 4: Statistik penjualan per film
-SELECT 
-    f.judul_film,
-    COUNT(DISTINCT t.id_transaksi) AS total_transaksi,
-    SUM(t.jumlah_tiket) AS total_tiket,
-    SUM(t.total_harga) AS total_pendapatan
-FROM Film f
-LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-LEFT JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
-LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi AND t.status_pembayaran = 'berhasil'
-GROUP BY f.id_film
-ORDER BY total_pendapatan DESC;
-
-
----- ========================================== --------------------
----- DISINI KALAU MAU LIAT AKUN ADMIN : 
----- USERNAME : admin
----- PASSWORD : admin123
-
+-- ATAU jika ingin pakai password yang di-hash:
+-- DELETE FROM Admin WHERE username = 'admin';
+-- INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
+-- ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin P!X', 'super_admin');
+-- Password yang di-hash ini adalah: password
