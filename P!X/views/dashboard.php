@@ -1,3 +1,5 @@
+/*
+
 <?php 
 require_once 'views/layouts/header.php'; 
 require_once 'models/QueryBuilder.php';
@@ -123,3 +125,5 @@ require_once 'models/QueryBuilder.php';
 </div>
 
 <?php require_once 'views/layouts/footer.php'; ?>
+
+*/

@@ -16,3 +16,5 @@ Perubahan yang perlu dilakukan
 
 Perbaikan pada dashboard penjualan tiket admin 
 dan juga buat keterikatan admin dengan user 
+
+tambah jadwal tayang oleh admin tidak bisa  

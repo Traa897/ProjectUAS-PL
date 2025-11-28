@@ -1,6 +1,5 @@
 <?php 
-// File: views/jadwal/index.php
-// View untuk menampilkan daftar jadwal tayang
+// File: views/jadwal/index.php - FIXED
 require_once 'views/layouts/header.php'; 
 ?>
 
@@ -27,7 +26,9 @@ require_once 'views/layouts/header.php';
     <div class="header-section">
         <h2>Semua Jadwal (<?php echo count($jadwals); ?>)</h2>
         <div>
-            <a href="index.php?module=jadwal&action=create" class="btn btn-primary">➕ Tambah Jadwal</a>
+            <?php if(isset($_SESSION['admin_id'])): ?>
+                <a href="index.php?module=jadwal&action=create" class="btn btn-primary">➕ Tambah Jadwal</a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -38,7 +39,7 @@ require_once 'views/layouts/header.php';
             
             <div class="form-group" style="margin: 0;">
                 <label>Tanggal:</label>
-                <input type="date" name="date" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;" 
+                <input type="datetime-local" name="date" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;" 
                        value="<?php echo isset($_GET['date']) ? htmlspecialchars($_GET['date']) : ''; ?>">
             </div>
 
@@ -77,7 +78,11 @@ require_once 'views/layouts/header.php';
     <?php if(empty($jadwals)): ?>
         <div class="empty-state">
             <p>📅 Tidak ada jadwal tayang yang ditemukan</p>
-            <a href="index.php?module=jadwal&action=create" class="btn btn-primary">Tambah Jadwal Pertama</a>
+            <?php if(isset($_SESSION['admin_id'])): ?>
+                <a href="index.php?module=jadwal&action=create" class="btn btn-primary">Tambah Jadwal Pertama</a>
+            <?php else: ?>
+                <a href="index.php?module=film" class="btn btn-primary">Lihat Daftar Film</a>
+            <?php endif; ?>
         </div>
     <?php else: ?>
         <div style="display: grid; gap: 20px;">
@@ -116,11 +121,18 @@ require_once 'views/layouts/header.php';
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 5px;">
-                        <a href="index.php?module=jadwal&action=edit&id=<?php echo $jadwal['id_tayang']; ?>" 
-                           class="btn btn-warning btn-sm">✏️ Edit</a>
-                        <a href="index.php?module=jadwal&action=delete&id=<?php echo $jadwal['id_tayang']; ?>" 
-                           class="btn btn-danger btn-sm" 
-                           onclick="return confirm('Hapus jadwal ini?')">🗑️ Hapus</a>
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="index.php?module=transaksi&action=booking&id_jadwal=<?php echo $jadwal['id_tayang']; ?>" 
+                               class="btn btn-primary btn-sm">🎫 Booking</a>
+                        <?php endif; ?>
+                        
+                        <?php if(isset($_SESSION['admin_id'])): ?>
+                            <a href="index.php?module=jadwal&action=edit&id=<?php echo $jadwal['id_tayang']; ?>" 
+                               class="btn btn-warning btn-sm">✏️ Edit</a>
+                            <a href="index.php?module=jadwal&action=delete&id=<?php echo $jadwal['id_tayang']; ?>" 
+                               class="btn btn-danger btn-sm" 
+                               onclick="return confirm('Hapus jadwal ini?')">🗑️ Hapus</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>

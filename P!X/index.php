@@ -1,4 +1,3 @@
-
 <?php
 // index.php - FIXED VERSION
 error_reporting(E_ALL);
@@ -18,76 +17,62 @@ $module = isset($_GET['module']) ? $_GET['module'] : 'film';
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 try {
-    // PERBAIKAN: Batasi akses berdasarkan role
-    $user_only_modules = ['film', 'transaksi', 'auth', 'user'];
-    $admin_only_modules = ['admin', 'bioskop', 'jadwal'];
-
-    // Jika user login dan bukan admin, batasi akses
-    if (isset($_SESSION['user_id']) && !isset($_SESSION['admin_id'])) {
-        if (!in_array($module, $user_only_modules)) {
-            $_SESSION['flash'] = 'Anda tidak memiliki akses ke halaman ini!';
-            header('Location: index.php?module=film');
+    // PERBAIKAN: Batasi akses berdasarkan role dengan lebih flexible
+    
+    // Modul yang butuh login admin
+    $admin_only_actions = [
+        'admin' => ['dashboard', 'createFilm', 'storeFilm', 'editFilm', 'updateFilm', 'deleteFilm', 'kelolaUser', 'detailUser', 'toggleUserStatus', 'detailTransaksi', 'updateStatus']
+    ];
+    
+    // Modul yang butuh login user
+    $user_only_actions = [
+        'user' => ['dashboard', 'profile', 'updateProfile', 'riwayat', 'detailTiket'],
+        'transaksi' => ['pilihJadwal', 'booking', 'prosesBooking', 'konfirmasi']
+    ];
+    
+    // Cek akses admin
+    if(isset($admin_only_actions[$module]) && in_array($action, $admin_only_actions[$module])) {
+        if(!isset($_SESSION['admin_id'])) {
+            $_SESSION['flash'] = 'Anda harus login sebagai admin!';
+            header('Location: index.php?module=auth&action=index');
             exit();
         }
     }
-
-    // Jika admin login, izinkan akses ke semua modul
-    if (isset($_SESSION['admin_id'])) {
-        switch ($module) {
-            case 'film':
-                $controller = new FilmController();
-                break;
-            case 'bioskop':
-                $controller = new BioskopController();
-                break;
-            case 'jadwal':
-                $controller = new JadwalController();
-                break;
-            case 'auth':
-                $controller = new AuthController();
-                break;
-            case 'user':
-                $controller = new UserController();
-                break;
-            case 'transaksi':
-                $controller = new TransaksiController();
-                break;
-            case 'admin':
-                $controller = new AdminController();
-                break;
-            default:
-                $controller = new FilmController();
-        }
-    } else {
-        // Jika bukan admin, hanya izinkan akses modul tertentu
-        switch ($module) {
-            case 'film':
-                $controller = new FilmController();
-                break;
-            case 'transaksi':
-                $controller = new TransaksiController();
-                break;
-            case 'auth':
-                $controller = new AuthController();
-                break;
-            case 'user':
-                $controller = new UserController();
-                break;
-            default:
-                $_SESSION['flash'] = 'Anda tidak memiliki akses ke halaman ini!';
-                header('Location: index.php?module=film');
-                exit();
+    
+    // Cek akses user
+    if(isset($user_only_actions[$module]) && in_array($action, $user_only_actions[$module])) {
+        if(!isset($_SESSION['user_id'])) {
+            $_SESSION['flash'] = 'Anda harus login sebagai user!';
+            header('Location: index.php?module=auth&action=index');
+            exit();
         }
     }
-
-    // PERBAIKAN: Cek akses admin untuk action tertentu
-    $admin_only_actions = ['createFilm', 'storeFilm', 'editFilm', 'updateFilm', 'deleteFilm', 
-                           'dashboard', 'kelolaUser', 'detailUser', 'toggleUserStatus'];
-
-    if ($module === 'admin' && !isset($_SESSION['admin_id'])) {
-        $_SESSION['flash'] = 'Anda harus login sebagai admin!';
-        header('Location: index.php?module=auth&action=index');
-        exit();
+    
+    // Inisialisasi controller
+    switch ($module) {
+        case 'film':
+            $controller = new FilmController();
+            break;
+        case 'bioskop':
+            $controller = new BioskopController();
+            break;
+        case 'jadwal':
+            $controller = new JadwalController();
+            break;
+        case 'auth':
+            $controller = new AuthController();
+            break;
+        case 'user':
+            $controller = new UserController();
+            break;
+        case 'transaksi':
+            $controller = new TransaksiController();
+            break;
+        case 'admin':
+            $controller = new AdminController();
+            break;
+        default:
+            $controller = new FilmController();
     }
 
     // Execute action

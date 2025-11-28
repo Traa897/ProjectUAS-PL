@@ -19,31 +19,21 @@ class JadwalController {
         $this->bioskop = new Bioskop($this->db);
     }
 
-    // PERBAIKAN: Index dengan filter yang benar
+    // INDEX - PERBAIKAN: Tampilkan SEMUA jadwal jika tidak ada filter
     public function index() {
         $date_filter = isset($_GET['date']) ? $_GET['date'] : '';
         $film_filter = isset($_GET['film']) ? $_GET['film'] : '';
         $bioskop_filter = isset($_GET['bioskop']) ? $_GET['bioskop'] : '';
 
-        // PERBAIKAN: Jika tidak ada filter, tampilkan jadwal hari ini dan seterusnya
-        if($date_filter == '' && $film_filter == '' && $bioskop_filter == '') {
-            $today = date('Y-m-d');
-            $query = "SELECT jt.*, f.judul_film, b.nama_bioskop, b.kota
-                      FROM Jadwal_Tayang jt
-                      LEFT JOIN Film f ON jt.id_film = f.id_film
-                      LEFT JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
-                      WHERE jt.tanggal_tayang >= :today
-                      ORDER BY jt.tanggal_tayang ASC, jt.jam_mulai ASC";
-            $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':today', $today);
-            $stmt->execute();
-        } elseif($date_filter != '') {
+        // Jika ada filter
+        if($date_filter != '') {
             $stmt = $this->jadwal->readByDate($date_filter);
         } elseif($film_filter != '') {
             $stmt = $this->jadwal->readByFilm($film_filter);
         } elseif($bioskop_filter != '') {
             $stmt = $this->jadwal->readByBioskop($bioskop_filter);
         } else {
+            // PERBAIKAN: Tampilkan SEMUA jadwal (tidak dibatasi tanggal)
             $stmt = $this->jadwal->readAll();
         }
 
@@ -82,8 +72,6 @@ class JadwalController {
         }
     }
 
-
-    // EDIT - Show edit form
     public function edit() {
         if(isset($_GET['id'])) {
             $this->jadwal->id_tayang = $_GET['id'];
@@ -98,7 +86,6 @@ class JadwalController {
         }
     }
 
-    // UPDATE - Update schedule
     public function update() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->jadwal->id_tayang = $_POST['id_tayang'];
@@ -120,7 +107,6 @@ class JadwalController {
         }
     }
 
-    // DELETE - Delete schedule
     public function delete() {
         if(isset($_GET['id'])) {
             $this->jadwal->id_tayang = $_GET['id'];

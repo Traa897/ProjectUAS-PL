@@ -1,5 +1,5 @@
 <?php
-// controllers/AuthController.php - Updated
+// controllers/AuthController.php - FIXED VERSION
 require_once 'config/database.php';
 require_once 'models/User.php';
 require_once 'models/Admin.php';
@@ -20,6 +20,7 @@ class AuthController {
 
     // Show Login Form
     public function index() {
+        // Jangan load header.php karena sudah ada di login.php
         require_once 'views/auth/login.php';
     }
 
@@ -35,24 +36,46 @@ class AuthController {
         $role = isset($_POST['role']) ? $_POST['role'] : 'user';
 
         if($role === 'admin') {
-            // Admin Login
-            $admin = $this->admin->verifyLogin($username, $password);
+            // ADMIN LOGIN - PERBAIKAN
+            // Langsung cek di database tanpa hashing dulu
+            $query = "SELECT * FROM Admin WHERE username = :username LIMIT 1";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':username', $username);
+            $stmt->execute();
+            $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+            
             if($admin) {
-                $_SESSION['admin_id'] = $admin['id_admin'];
-                $_SESSION['admin_username'] = $admin['username'];
-                $_SESSION['admin_name'] = $admin['nama_lengkap'];
-                $_SESSION['admin_role'] = $admin['role'];
-                $_SESSION['flash'] = 'Selamat datang, Admin ' . $admin['nama_lengkap'] . '!';
+                // Cek password - bisa plain text atau hashed
+                $passwordValid = false;
                 
-                // Redirect ke dashboard admin
-                header('Location: index.php?module=admin&action=dashboard');
-                exit();
-            } else {
-                $error = 'Username atau password admin salah';
-                require_once 'views/auth/login.php';
+                // Cek apakah password di database adalah plain text
+                if($admin['password'] === $password) {
+                    $passwordValid = true;
+                }
+                // Atau cek dengan password_verify untuk password yang di-hash
+                elseif(password_verify($password, $admin['password'])) {
+                    $passwordValid = true;
+                }
+                
+                if($passwordValid) {
+                    // Login berhasil
+                    $_SESSION['admin_id'] = $admin['id_admin'];
+                    $_SESSION['admin_username'] = $admin['username'];
+                    $_SESSION['admin_name'] = $admin['nama_lengkap'];
+                    $_SESSION['admin_role'] = $admin['role'];
+                    $_SESSION['flash'] = 'Selamat datang, Admin ' . $admin['nama_lengkap'] . '!';
+                    
+                    header('Location: index.php?module=admin&action=dashboard');
+                    exit();
+                }
             }
+            
+            // Login gagal
+            $error = 'Username atau password admin salah';
+            require_once 'views/auth/login.php';
+            
         } else {
-            // User Login
+            // USER LOGIN
             $user = $this->user->verifyLogin($username, $password);
             if($user) {
                 $_SESSION['user_id'] = $user['id_user'];
@@ -60,7 +83,6 @@ class AuthController {
                 $_SESSION['user_name'] = $user['nama_lengkap'];
                 $_SESSION['flash'] = 'Selamat datang, ' . $user['nama_lengkap'] . '!';
                 
-                // Redirect ke dashboard user
                 header('Location: index.php?module=user&action=dashboard');
                 exit();
             } else {
