@@ -32,14 +32,14 @@ require_once 'views/layouts/header.php';
         </div>
     </div>
 
-    <!-- Filter -->
+    <!-- Filter - FIXED: Ubah datetime-local menjadi date -->
     <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <form method="GET" action="index.php" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
             <input type="hidden" name="module" value="jadwal">
             
             <div class="form-group" style="margin: 0;">
                 <label>Tanggal:</label>
-                <input type="datetime-local" name="date" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;" 
+                <input type="date" name="date" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;" 
                        value="<?php echo isset($_GET['date']) ? htmlspecialchars($_GET['date']) : ''; ?>">
             </div>
 

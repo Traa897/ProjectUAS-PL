@@ -1,5 +1,5 @@
 <?php
-// controllers/JadwalController.php - FIXED
+// controllers/JadwalController.php - FIXED VERSION
 require_once 'config/database.php';
 require_once 'models/Jadwal.php';
 require_once 'models/Film.php';
@@ -19,13 +19,13 @@ class JadwalController {
         $this->bioskop = new Bioskop($this->db);
     }
 
-    // INDEX - PERBAIKAN: Tampilkan SEMUA jadwal jika tidak ada filter
+    // INDEX - FIXED: Tampilkan SEMUA jadwal secara default
     public function index() {
         $date_filter = isset($_GET['date']) ? $_GET['date'] : '';
         $film_filter = isset($_GET['film']) ? $_GET['film'] : '';
         $bioskop_filter = isset($_GET['bioskop']) ? $_GET['bioskop'] : '';
 
-        // Jika ada filter
+        // Jika ada filter, gunakan filter
         if($date_filter != '') {
             $stmt = $this->jadwal->readByDate($date_filter);
         } elseif($film_filter != '') {
@@ -33,11 +33,13 @@ class JadwalController {
         } elseif($bioskop_filter != '') {
             $stmt = $this->jadwal->readByBioskop($bioskop_filter);
         } else {
-            // PERBAIKAN: Tampilkan SEMUA jadwal (tidak dibatasi tanggal)
+            // PERBAIKAN: Tampilkan SEMUA jadwal tanpa filter
             $stmt = $this->jadwal->readAll();
         }
 
         $jadwals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get list film dan bioskop untuk filter
         $films = $this->film->readAll()->fetchAll(PDO::FETCH_ASSOC);
         $bioskops = $this->bioskop->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
@@ -45,12 +47,28 @@ class JadwalController {
     }
 
     public function create() {
+        if(session_status() == PHP_SESSION_NONE) session_start();
+        
+        // Cek apakah admin
+        if(!isset($_SESSION['admin_id'])) {
+            $_SESSION['flash'] = 'Anda harus login sebagai admin!';
+            header("Location: index.php?module=auth&action=index");
+            exit();
+        }
+        
         $films = $this->film->readAll()->fetchAll(PDO::FETCH_ASSOC);
         $bioskops = $this->bioskop->readAll()->fetchAll(PDO::FETCH_ASSOC);
         require_once 'views/jadwal/create.php';
     }
 
     public function store() {
+        if(session_status() == PHP_SESSION_NONE) session_start();
+        
+        if(!isset($_SESSION['admin_id'])) {
+            header("Location: index.php?module=auth&action=index");
+            exit();
+        }
+        
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->jadwal->id_film = $_POST['id_film'];
             $this->jadwal->id_bioskop = $_POST['id_bioskop'];
@@ -61,7 +79,6 @@ class JadwalController {
             $this->jadwal->harga_tiket = $_POST['harga_tiket'];
 
             if($this->jadwal->create()) {
-                if(session_status() == PHP_SESSION_NONE) session_start();
                 $_SESSION['flash'] = 'Jadwal berhasil ditambahkan!';
                 header("Location: index.php?module=jadwal");
                 exit();
@@ -73,6 +90,13 @@ class JadwalController {
     }
 
     public function edit() {
+        if(session_status() == PHP_SESSION_NONE) session_start();
+        
+        if(!isset($_SESSION['admin_id'])) {
+            header("Location: index.php?module=auth&action=index");
+            exit();
+        }
+        
         if(isset($_GET['id'])) {
             $this->jadwal->id_tayang = $_GET['id'];
             if($this->jadwal->readOne()) {
@@ -87,6 +111,13 @@ class JadwalController {
     }
 
     public function update() {
+        if(session_status() == PHP_SESSION_NONE) session_start();
+        
+        if(!isset($_SESSION['admin_id'])) {
+            header("Location: index.php?module=auth&action=index");
+            exit();
+        }
+        
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->jadwal->id_tayang = $_POST['id_tayang'];
             $this->jadwal->id_film = $_POST['id_film'];
@@ -98,7 +129,8 @@ class JadwalController {
             $this->jadwal->harga_tiket = $_POST['harga_tiket'];
 
             if($this->jadwal->update()) {
-                header("Location: index.php?module=jadwal&message=Jadwal berhasil diupdate!");
+                $_SESSION['flash'] = 'Jadwal berhasil diupdate!';
+                header("Location: index.php?module=jadwal");
                 exit();
             } else {
                 header("Location: index.php?module=jadwal&action=edit&id=" . $this->jadwal->id_tayang . "&error=Gagal mengupdate jadwal");
@@ -108,10 +140,18 @@ class JadwalController {
     }
 
     public function delete() {
+        if(session_status() == PHP_SESSION_NONE) session_start();
+        
+        if(!isset($_SESSION['admin_id'])) {
+            header("Location: index.php?module=auth&action=index");
+            exit();
+        }
+        
         if(isset($_GET['id'])) {
             $this->jadwal->id_tayang = $_GET['id'];
             if($this->jadwal->delete()) {
-                header("Location: index.php?module=jadwal&message=Jadwal berhasil dihapus!");
+                $_SESSION['flash'] = 'Jadwal berhasil dihapus!';
+                header("Location: index.php?module=jadwal");
                 exit();
             } else {
                 header("Location: index.php?module=jadwal&error=Gagal menghapus jadwal");
