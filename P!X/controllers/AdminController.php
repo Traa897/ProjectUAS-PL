@@ -34,7 +34,7 @@ class AdminController {
         $this->dashboard();
     }
 
-    // Dashboard Admin
+    // Dashboard Admin - FIXED
     public function dashboard() {
         // Get statistics
         $totalFilms = $this->qb->reset()->table('Film')->count();
@@ -47,9 +47,18 @@ class AdminController {
         $transaksiSuccess = $this->transaksi->countByStatus('berhasil');
         $totalRevenue = $this->transaksi->getTotalRevenue();
         
-        // Get recent transactions (last 10)
-        $stmt = $this->transaksi->readAll();
-        $recentTransactions = array_slice($stmt->fetchAll(PDO::FETCH_ASSOC), 0, 10);
+        // Get recent transactions (last 10) - FIXED with LEFT JOIN
+        $query = "SELECT t.*, 
+                         u.nama_lengkap as nama_user,
+                         u.email,
+                         u.no_telpon
+                  FROM Transaksi t
+                  LEFT JOIN User u ON t.id_user = u.id_user
+                  ORDER BY t.tanggal_transaksi DESC
+                  LIMIT 10";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $recentTransactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Get top selling films
         $query = "SELECT 

@@ -2,17 +2,17 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>🎯 Dashboard Admin</h1>
+        <h1>Dashboard Admin</h1>
         <div style="display: flex; gap: 10px;">
-            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
-            <a href="index.php?module=jadwal&action=create" class="btn btn-info">📅 Tambah Jadwal</a>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film</a>
+            <a href="index.php?module=jadwal&action=create" class="btn btn-info">Tambah Jadwal</a>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">🎬</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $totalFilms; ?></h3>
                 <p>Total Film</p>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">🏢</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $totalBioskops; ?></h3>
                 <p>Total Bioskop</p>
@@ -28,7 +28,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">📅</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $totalJadwals; ?></h3>
                 <p>Jadwal Tayang</p>
@@ -36,7 +36,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $totalUsers; ?></h3>
                 <p>User Aktif</p>
@@ -44,7 +44,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">🎫</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $totalTransaksi; ?></h3>
                 <p>Total Transaksi</p>
@@ -52,16 +52,17 @@
         </div>
 
         <div class="stat-card" style="grid-column: span 2;">
-            <div class="stat-icon">💰</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3>Rp <?php echo number_format($totalRevenue, 0, ',', '.'); ?></h3>
                 <p>Total Pendapatan</p>
             </div>
         </div>
     </div>
-    <!-- ✅ TAMBAHAN: Status Film Statistics -->
+
+    <!-- Status Film Statistics -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>📊 Statistik Status Film</h2>
+        <h2> Statistik Status Film</h2>
     </div>
 
     <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
@@ -75,7 +76,7 @@
         ?>
         
         <div class="stat-card" style="border-left: 5px solid #f5576c;">
-            <div class="stat-icon">▶️</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $countSedangTayang; ?></h3>
                 <p>Sedang Tayang</p>
@@ -83,7 +84,7 @@
         </div>
 
         <div class="stat-card" style="border-left: 5px solid #764ba2;">
-            <div class="stat-icon">🔜</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $countAkanTayang; ?></h3>
                 <p>Akan Tayang</p>
@@ -91,7 +92,7 @@
         </div>
 
         <div class="stat-card" style="border-left: 5px solid #00f2fe;">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?php echo $countTelahTayang; ?></h3>
                 <p>Telah Tayang</p>
@@ -101,8 +102,8 @@
 
     <!-- Kelola Film Section -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>🎬 Kelola Film</h2>
-        <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
+        <h2>Kelola Film</h2>
+        <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film</a>
     </div>
 
     <?php if(empty($films)): ?>
@@ -130,11 +131,11 @@
                             </span>
                         </div>
                         <div class="card-actions-overlay">
-                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">👁️ Detail</a>
-                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
+                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm"> Detail</a>
+                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm"> Edit</a>
                             <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $film['id_film']; ?>" 
                                class="btn btn-danger btn-sm" 
-                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
+                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')"> Hapus</a>
                         </div>
                     </div>
                     <div class="movie-info-scroll">
@@ -151,7 +152,7 @@
 
     <!-- Top Selling Films -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>🏆 Film Terlaris</h2>
+        <h2>Film Terlaris</h2>
     </div>
 
     <?php if(empty($topFilms)): ?>
@@ -204,9 +205,9 @@
         </div>
     <?php endif; ?>
 
-    <!-- Recent Transactions -->
+    <!-- Recent Transactions - FIXED -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>🎫 Transaksi Terbaru</h2>
+        <h2>Transaksi Terbaru</h2>
     </div>
 
     <?php if(empty($recentTransactions)): ?>
@@ -225,7 +226,7 @@
                             <?php echo htmlspecialchars($trans['kode_booking']); ?>
                         </h4>
                         <p style="margin: 3px 0; color: #666; font-size: 14px;">
-                            👤 <?php echo htmlspecialchars($trans['nama_lengkap']); ?> • 
+                            👤 <?php echo htmlspecialchars($trans['nama_user'] ?? $trans['email'] ?? 'User'); ?> • 
                             <?php echo htmlspecialchars($trans['email']); ?>
                         </p>
                         <p style="margin: 3px 0; color: #666; font-size: 14px;">

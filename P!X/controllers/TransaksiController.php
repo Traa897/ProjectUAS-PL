@@ -1,9 +1,10 @@
 <?php
-// controllers/TransaksiController.php - Updated with Random Seat
+// controllers/TransaksiController.php - FIXED VERSION with Pre-Sale Info
 require_once 'config/database.php';
 require_once 'models/Transaksi.php';
 require_once 'models/DetailTransaksi.php';
 require_once 'models/Jadwal.php';
+require_once 'models/Film.php';
 
 class TransaksiController {
     private $db;
@@ -19,22 +20,7 @@ class TransaksiController {
         $this->jadwal = new Jadwal($this->db);
     }
 
-    // INDEX - Daftar Transaksi (Admin Only)
-    public function index() {
-        if(session_status() == PHP_SESSION_NONE) session_start();
-        
-        if(!isset($_SESSION['admin_id'])) {
-            header("Location: index.php?module=film");
-            exit();
-        }
-
-        $stmt = $this->transaksi->readAll();
-        $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        require_once 'views/transaksi/index.php';
-    }
-
-    // Halaman Pilih Jadwal
+    // Halaman Pilih Jadwal - FIXED
     public function pilihJadwal() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -51,14 +37,22 @@ class TransaksiController {
 
         $id_film = $_GET['id_film'];
         
-        // Get Film Info
-        require_once 'models/Film.php';
+        // Get Film Info - FIXED
         $film = new Film($this->db);
         $film->id_film = $id_film;
         $filmData = $film->readOne() ? $film : null;
 
-        // Get Available Schedules
-        $stmt = $this->jadwal->readByFilm($id_film);
+        // Get Available Schedules with complete data
+        $query = "SELECT jt.*, f.judul_film, b.nama_bioskop, b.kota 
+                  FROM Jadwal_Tayang jt
+                  LEFT JOIN Film f ON jt.id_film = f.id_film
+                  LEFT JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
+                  WHERE jt.id_film = :id_film
+                  ORDER BY jt.tanggal_tayang ASC, jt.jam_mulai ASC";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id_film', $id_film);
+        $stmt->execute();
         $jadwals = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Filter only future schedules
@@ -70,7 +64,7 @@ class TransaksiController {
         require_once 'views/transaksi/pilih_jadwal.php';
     }
 
-    // Halaman Booking Tiket
+    // Halaman Booking Tiket - FIXED
     public function booking() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -81,12 +75,26 @@ class TransaksiController {
 
         $id_jadwal = $_GET['id_jadwal'];
         
-        // Get Jadwal Info
-        $this->jadwal->id_tayang = $id_jadwal;
-        if(!$this->jadwal->readOne()) {
+        // Get Complete Jadwal Info with JOIN - FIXED
+        $query = "SELECT jt.*, f.judul_film, f.poster_url, b.nama_bioskop, b.kota, b.alamat_bioskop
+                  FROM Jadwal_Tayang jt
+                  LEFT JOIN Film f ON jt.id_film = f.id_film
+                  LEFT JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
+                  WHERE jt.id_tayang = :id_jadwal";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id_jadwal', $id_jadwal);
+        $stmt->execute();
+        $jadwalData = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if(!$jadwalData) {
+            $_SESSION['flash'] = 'Jadwal tidak ditemukan!';
             header("Location: index.php?module=film");
             exit();
         }
+
+        // Pass as object for compatibility with view
+        $this->jadwal = (object) $jadwalData;
 
         // Get Kursi Terpesan
         $kursiTerpesan = $this->detailTransaksi->getKursiTerpesanByJadwal($id_jadwal);
@@ -137,7 +145,6 @@ class TransaksiController {
         $this->transaksi->jumlah_tiket = $jumlah_tiket;
         $this->transaksi->total_harga = $jumlah_tiket * $this->jadwal->harga_tiket;
         $this->transaksi->metode_pembayaran = $metode_pembayaran;
-        // STATUS LANGSUNG BERHASIL untuk demo
         $this->transaksi->status_pembayaran = 'berhasil';
         $this->transaksi->tanggal_pembayaran = date('Y-m-d H:i:s');
 

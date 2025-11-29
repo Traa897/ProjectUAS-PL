@@ -2,8 +2,8 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>✏️ Edit Film</h1>
-        <a href="index.php?module=admin&action=dashboard" class="btn btn-secondary">⬅️ Kembali</a>
+        <h1>Edit Film</h1>
+        <a href="index.php?module=admin&action=dashboard" class="btn btn-secondary"> Kembali</a>
     </div>
 
     <?php if(isset($_GET['error'])): ?>
@@ -69,11 +69,11 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">💾 Update Film</button>
-                <a href="index.php?module=admin&action=dashboard" class="btn btn-secondary">❌ Batal</a>
+                <button type="submit" class="btn btn-primary"> Update</button>
+                <a href="index.php?module=admin&action=dashboard" class="btn btn-secondary"> Batal</a>
                 <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $this->film->id_film; ?>" 
                    class="btn btn-danger" 
-                   onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')">🗑️ Hapus Film</a>
+                   onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')"> Hapus</a>
             </div>
         </form>
     </div>
