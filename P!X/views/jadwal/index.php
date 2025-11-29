@@ -5,7 +5,7 @@ require_once 'views/layouts/header.php';
 
 <div class="hero-section">
     <div class="hero-content">
-        <h1>📅 Jadwal Tayang Film</h1>
+        <h1>Jadwal Tayang Film</h1>
         <p>Lihat jadwal penayangan film di seluruh bioskop</p>
     </div>
 </div>
@@ -18,15 +18,15 @@ require_once 'views/layouts/header.php';
     <?php endif; ?>
 
     <div class="header-section">
-        <h2>📋 Semua Jadwal (<?php echo count($jadwals); ?>)</h2>
+        <h2> Semua Jadwal (<?php echo count($jadwals); ?>)</h2>
         <?php if(isset($_SESSION['admin_id'])): ?>
-            <a href="index.php?module=jadwal&action=create" class="btn btn-primary">➕ Tambah Jadwal</a>
+            <a href="index.php?module=jadwal&action=create" class="btn btn-primary">Tambah Jadwal</a>
         <?php endif; ?>
     </div>
 
     <!-- Filter Section -->
     <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <h3 style="margin: 0 0 15px 0; color: #032541;">🔍 Filter Jadwal</h3>
+        <h3 style="margin: 0 0 15px 0; color: #032541;">Filter Jadwal</h3>
         <form method="GET" action="index.php">
             <input type="hidden" name="module" value="jadwal">
             
@@ -65,8 +65,8 @@ require_once 'views/layouts/header.php';
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <button type="submit" class="btn btn-primary">🔍 Filter</button>
-                <a href="index.php?module=jadwal" class="btn btn-secondary">🔄 Reset</a>
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="index.php?module=jadwal" class="btn btn-secondary">Reset</a>
             </div>
         </form>
     </div>
@@ -117,21 +117,21 @@ require_once 'views/layouts/header.php';
                 </p>
                 
                 <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <a href="index.php?module=jadwal" class="btn btn-primary">📋 Lihat Semua Jadwal</a>
+                    <a href="index.php?module=jadwal" class="btn btn-primary"> Lihat Semua Jadwal</a>
                     <?php if(isset($_SESSION['admin_id'])): ?>
-                        <a href="index.php?module=jadwal&action=create" class="btn btn-info">➕ Tambah Jadwal</a>
+                        <a href="index.php?module=jadwal&action=create" class="btn btn-info"> Tambah Jadwal</a>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
-                <h2 style="margin: 0 0 15px 0; color: #032541;">📭 Belum Ada Jadwal Tayang</h2>
+                <h2 style="margin: 0 0 15px 0; color: #032541;"> Belum Ada Jadwal Tayang</h2>
                 <p style="margin: 0 0 30px 0; color: #666;">
                     Saat ini belum ada jadwal tayang yang tersedia di sistem.
                 </p>
                 
                 <?php if(isset($_SESSION['admin_id'])): ?>
-                    <a href="index.php?module=jadwal&action=create" class="btn btn-primary">➕ Tambah Jadwal Pertama</a>
+                    <a href="index.php?module=jadwal&action=create" class="btn btn-primary">Tambah</a>
                 <?php else: ?>
-                    <a href="index.php?module=film" class="btn btn-primary">🎬 Lihat Daftar Film</a>
+                    <a href="index.php?module=film" class="btn btn-primary"> Lihat Daftar Film</a>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
@@ -190,12 +190,12 @@ require_once 'views/layouts/header.php';
                         <?php if(isset($_SESSION['admin_id'])): ?>
                             <a href="index.php?module=jadwal&action=edit&id=<?php echo $jadwal['id_tayang']; ?>" 
                                class="btn btn-warning" style="text-align: center; padding: 8px 15px;">
-                                ✏️ Edit
+                                 Edit
                             </a>
                             <a href="index.php?module=jadwal&action=delete&id=<?php echo $jadwal['id_tayang']; ?>" 
                                class="btn btn-danger" style="text-align: center; padding: 8px 15px;"
                                onclick="return confirm('Hapus jadwal ini?')">
-                                🗑️ Hapus
+                                 Hapus
                             </a>
                         <?php endif; ?>
                     </div>
