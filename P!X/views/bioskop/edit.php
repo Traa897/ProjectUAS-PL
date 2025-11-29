@@ -28,8 +28,6 @@
                     <select id="kota" name="kota" required>
                         <option value="Balikpapan" <?php echo ($this->bioskop->kota == 'Balikpapan') ? 'selected' : ''; ?>>Balikpapan</option>
                         <option value="Samarinda" <?php echo ($this->bioskop->kota == 'Samarinda') ? 'selected' : ''; ?>>Samarinda</option>
-                        <option value="Bontang" <?php echo ($this->bioskop->kota == 'Bontang') ? 'selected' : ''; ?>>Bontang</option>
-                        <option value="Kutai Kartanegara" <?php echo ($this->bioskop->kota == 'Kutai Kartanegara') ? 'selected' : ''; ?>>Kutai Kartanegara</option>
                     </select>
                 </div>
 

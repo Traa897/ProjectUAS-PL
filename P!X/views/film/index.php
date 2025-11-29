@@ -34,13 +34,13 @@
             
             if(isset($_SESSION['admin_id'])): 
             ?>
-                <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
+                <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah</a>
             <?php endif; ?>
         </div>
     </div>
     
     <div class="status-filter-section">
-        <h2>🎭 Filter by Genre</h2>
+        <h2> Filter by Genre</h2>
         <div class="status-buttons">
             <a href="index.php?module=film<?php echo isset($_GET['status']) ? '&status='.$_GET['status'] : ''; ?>" 
                class="btn <?php echo (!isset($_GET['genre'])) ? 'btn-primary' : 'btn-secondary'; ?>">
@@ -57,11 +57,11 @@
 
     <?php if(empty($films)): ?>
         <div class="empty-state">
-            <p>🎬 Tidak ada film yang ditemukan</p>
+            <p> Tidak ada film yang ditemukan</p>
             <?php if(isset($_SESSION['admin_id'])): ?>
-                <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film Pertama</a>
+                <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film</a>
             <?php else: ?>
-                <a href="index.php?module=film" class="btn btn-secondary">🔙 Lihat Semua Film</a>
+                <a href="index.php?module=film" class="btn btn-secondary">Lihat Semua Film</a>
             <?php endif; ?>
         </div>
     <?php else: ?>
@@ -112,13 +112,13 @@
                         
                         <!-- ACTIONS OVERLAY -->
                         <div class="card-actions-overlay">
-                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">👁️ Detail</a>
+                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm"> Detail</a>
                             
                             <?php if(isset($_SESSION['admin_id'])): ?>
-                                <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
+                                <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm"> Edit</a>
                                 <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $film['id_film']; ?>" 
                                    class="btn btn-danger btn-sm" 
-                                   onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
+                                   onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')"> Hapus</a>
                             <?php endif; ?>
                         </div>
                     </div>

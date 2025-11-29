@@ -2,8 +2,8 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>🏢 Detail Bioskop</h1>
-        <a href="index.php?module=bioskop" class="btn btn-secondary">⬅️ Kembali</a>
+        <h1>Detail</h1>
+        <a href="index.php?module=bioskop" class="btn btn-secondary">Kembali</a>
     </div>
 
     <div class="detail-container" style="grid-template-columns: 1fr;">
@@ -22,24 +22,24 @@
 
             <div class="info-grid">
                 <div class="info-item">
-                    <strong>📮 Alamat:</strong>
+                    <strong>Alamat:</strong>
                     <p><?php echo htmlspecialchars($bioskopData['alamat_bioskop']); ?></p>
                 </div>
 
                 <div class="info-item">
-                    <strong>🎭 Jumlah Studio:</strong>
+                    <strong>Jumlah Studio:</strong>
                     <p><?php echo $bioskopData['jumlah_studio']; ?> Studio</p>
                 </div>
 
                 <div class="info-item">
-                    <strong>📊 Total Jadwal Tayang:</strong>
+                    <strong>Total Jadwal Tayang:</strong>
                     <p><?php echo $bioskopData['total_jadwal']; ?> Jadwal</p>
                 </div>
             </div>
 
             <?php if(!empty($schedules)): ?>
                 <div style="margin-top: 40px;">
-                    <h3 style="color: #032541; margin-bottom: 20px;">📅 Jadwal Tayang</h3>
+                    <h3 style="color: #032541; margin-bottom: 20px;">Jadwal Tayang</h3>
                     
                     <div style="display: grid; gap: 15px;">
                         <?php foreach($schedules as $schedule): ?>
@@ -55,10 +55,10 @@
 
                                 <div>
                                     <h4 style="margin: 0 0 8px 0; color: #032541;">
-                                        🎬 <?php echo htmlspecialchars($schedule['judul_film']); ?>
+                                         <?php echo htmlspecialchars($schedule['judul_film']); ?>
                                     </h4>
                                     <p style="margin: 3px 0; color: #666; font-size: 14px;">
-                                        🕐 <?php echo date('H:i', strtotime($schedule['jam_mulai'])); ?> - 
+                                         <?php echo date('H:i', strtotime($schedule['jam_mulai'])); ?> - 
                                         <?php echo date('H:i', strtotime($schedule['jam_selesai'])); ?>
                                     </p>
                                     <?php if($schedule['nama_tayang']): ?>
@@ -79,18 +79,18 @@
                 </div>
             <?php else: ?>
                 <div style="margin-top: 40px; padding: 40px; background: #f8f9fa; border-radius: 8px; text-align: center;">
-                    <p style="color: #666; font-size: 16px;">📅 Belum ada jadwal tayang di bioskop ini</p>
+                    <p style="color: #666; font-size: 16px;"> Belum ada jadwal tayang di bioskop ini</p>
                 </div>
             <?php endif; ?>
 
             <div class="detail-actions" style="margin-top: 30px;">
                 <a href="index.php?module=bioskop&action=edit&id=<?php echo $bioskopData['id_bioskop']; ?>" 
-                   class="btn btn-warning">✏️ Edit Bioskop</a>
+                   class="btn btn-warning">Edit </a>
                 <a href="index.php?module=jadwal&action=create" 
-                   class="btn btn-primary">➕ Tambah Jadwal Tayang</a>
+                   class="btn btn-primary">Tambah</a>
                 <a href="index.php?module=bioskop&action=delete&id=<?php echo $bioskopData['id_bioskop']; ?>" 
                    class="btn btn-danger" 
-                   onclick="return confirm('Apakah Anda yakin ingin menghapus bioskop ini?')">🗑️ Hapus Bioskop</a>
+                   onclick="return confirm('Apakah Anda yakin ingin menghapus bioskop ini?')">Hapus</a>
             </div>
         </div>
     </div>

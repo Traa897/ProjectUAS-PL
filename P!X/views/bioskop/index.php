@@ -87,12 +87,12 @@
                     
                     <div style="display: flex; gap: 5px;">
                         <a href="index.php?module=bioskop&action=show&id=<?php echo $bioskop['id_bioskop']; ?>" 
-                           class="btn btn-info btn-sm" style="flex: 1;">👁️ Detail</a>
+                           class="btn btn-info btn-sm" style="flex: 1;"> Detail</a>
                         <a href="index.php?module=bioskop&action=edit&id=<?php echo $bioskop['id_bioskop']; ?>" 
-                           class="btn btn-warning btn-sm">✏️</a>
+                           class="btn btn-warning btn-sm">Edit</a>
                         <a href="index.php?module=bioskop&action=delete&id=<?php echo $bioskop['id_bioskop']; ?>" 
                            class="btn btn-danger btn-sm" 
-                           onclick="return confirm('Hapus bioskop <?php echo htmlspecialchars($bioskop['nama_bioskop']); ?>?')">🗑️</a>
+                           onclick="return confirm('Hapus bioskop <?php echo htmlspecialchars($bioskop['nama_bioskop']); ?>?')">Hapus</a>
                     </div>
                 </div>
             <?php endforeach; ?>

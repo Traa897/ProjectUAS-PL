@@ -2,8 +2,8 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>➕ Tambah Jadwal Tayang</h1>
-        <a href="index.php?module=jadwal" class="btn btn-secondary">⬅️ Kembali</a>
+        <h1>Tambah Jadwal Tayang</h1>
+        <a href="index.php?module=jadwal" class="btn btn-secondary">Kembali</a>
     </div>
 
     <?php if(isset($_GET['error'])): ?>
@@ -70,8 +70,8 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">💾 Simpan Jadwal</button>
-                <a href="index.php?module=jadwal" class="btn btn-secondary">❌ Batal</a>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                <a href="index.php?module=jadwal" class="btn btn-secondary">Batal</a>
             </div>
         </form>
     </div>

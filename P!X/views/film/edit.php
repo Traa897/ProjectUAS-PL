@@ -2,8 +2,8 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>✏️ Edit Film</h1>
-        <a href="index.php?module=film" class="btn btn-secondary">⬅️ Kembali</a>
+        <h1>Edit Film</h1>
+        <a href="index.php?module=film" class="btn btn-secondary">Kembali</a>
     </div>
 
     <?php if(isset($_GET['error'])): ?>
@@ -69,8 +69,8 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">💾 Update Film</button>
-                <a href="index.php?module=film" class="btn btn-secondary">❌ Batal</a>
+                <button type="submit" class="btn btn-primary">Update</button>
+                <a href="index.php?module=film" class="btn btn-secondary"> Batal</a>
             </div>
         </form>
     </div>

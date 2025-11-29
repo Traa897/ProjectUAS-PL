@@ -2,7 +2,7 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>Tambah</h1>
+        <h1>Tambah Bioskop</h1>
         <a href="index.php?module=bioskop" class="btn btn-secondary">Kembali</a>
     </div>
 

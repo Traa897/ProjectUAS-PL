@@ -20,3 +20,8 @@ dan juga buat keterikatan admin dengan user
 tambah jadwal tayang oleh admin tidak bisa  
 
 perbaikan untuk user tidak dapat mendapatkan jadwal tayang film 
+
+perbaikan pada status pembayaran pada user ada yang eror 
+
+ketika ada film yang telah tayang dan akan tayang tidak tertampilkan 
+

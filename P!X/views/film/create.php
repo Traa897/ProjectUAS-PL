@@ -2,13 +2,13 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>➕ Tambah Film</h1>
-        <a href="index.php?module=film" class="btn btn-secondary">⬅️ Kembali</a>
+        <h1>Tambah Film</h1>
+        <a href="index.php?module=film" class="btn btn-secondary">Kembali</a>
     </div>
 
     <?php if(isset($_GET['error'])): ?>
         <div class="alert alert-error">
-            ❌ <?php echo htmlspecialchars($_GET['error']); ?>
+             <?php echo htmlspecialchars($_GET['error']); ?>
         </div>
     <?php endif; ?>
 
@@ -68,8 +68,8 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">💾 Simpan Film</button>
-                <a href="index.php?module=film" class="btn btn-secondary">❌ Batal</a>
+                <button type="submit" class="btn btn-primary"> Simpan</button>
+                <a href="index.php?module=film" class="btn btn-secondary">Batal</a>
             </div>
         </form>
     </div>

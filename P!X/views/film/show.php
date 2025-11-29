@@ -2,8 +2,8 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>🎬 Detail Film</h1>
-        <a href="index.php?module=film" class="btn btn-secondary">⬅️ Kembali</a>
+        <h1>Detail</h1>
+        <a href="index.php?module=film" class="btn btn-secondary">Kembali</a>
     </div>
 
     <div class="detail-container">
@@ -68,7 +68,7 @@
             </div>
 
             <div class="synopsis-section">
-                <strong>📖 Sinopsis:</strong>
+                <strong>Sinopsis:</strong>
                 <p><?php echo nl2br(htmlspecialchars($filmData['sipnosis'] ?? 'Tidak ada sinopsis')); ?></p>
             </div>
 
@@ -92,10 +92,10 @@
                 <?php // Button untuk Admin - Edit & Delete
                 if(isset($_SESSION['admin_id'])): ?>
                     <a href="index.php?module=admin&action=editFilm&id=<?php echo $filmData['id_film']; ?>" 
-                       class="btn btn-warning">✏️ Edit Film</a>
+                       class="btn btn-warning"> Edit</a>
                     <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $filmData['id_film']; ?>" 
                        class="btn btn-danger" 
-                       onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')">🗑️ Hapus Film</a>
+                       onclick="return confirm('Apakah Anda yakin ingin menghapus film ini?')">Hapus</a>
                 <?php endif; ?>
             </div>
         </div>
