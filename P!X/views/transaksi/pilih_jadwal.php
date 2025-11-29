@@ -2,7 +2,7 @@
 
 <div class="hero-section">
     <div class="hero-content">
-        <h1> Pilih Jadwal Tayang</h1>
+        <h1>Pilih Jadwal Tayang</h1>
         <p>Pilih waktu yang sesuai untuk menonton</p>
     </div>
 </div>
@@ -10,7 +10,7 @@
 <div class="container">
     <div class="header-section">
         <h1> <?php echo htmlspecialchars($filmData->judul_film ?? 'Film'); ?></h1>
-        <a href="index.php?module=film&action=show&id=<?php echo $id_film; ?>" class="btn btn-secondary">Kembali</a>
+        <a href="index.php?module=film&action=show&id=<?php echo $id_film; ?>" class="btn btn-secondary">⬅️ Kembali</a>
     </div>
 
     <?php if($filmData): ?>
@@ -38,8 +38,8 @@
 
     <?php if(empty($jadwals)): ?>
         <div class="empty-state">
-            <p>Tidak ada jadwal tayang tersedia untuk film ini</p>
-            <a href="index.php?module=film" class="btn btn-primary">Kembali ke Daftar Film</a>
+            <p>❌ Tidak ada jadwal tayang tersedia untuk film ini</p>
+            <a href="index.php?module=film" class="btn btn-primary">Kembali</a>
         </div>
     <?php else: ?>
         <?php
@@ -55,21 +55,22 @@
         
         // Get today's date for comparison
         $today = date('Y-m-d');
-        $tomorrow = date('Y-m-d', strtotime('+1 day'));
-        $nextWeek = date('Y-m-d', strtotime('+7 days'));
         ?>
 
         <?php foreach($jadwalByDate as $date => $jadwalsOnDate): ?>
             <?php
-            // Tentukan apakah ini Pre-Sale
-            $isPresale = ($date > $tomorrow && $date <= $nextWeek);
-            $isToday = ($date == $today);
-            $isTomorrow = ($date == $tomorrow);
+            // PERBAIKAN: Hitung selisih hari dengan benar
+            $selisihHari = floor((strtotime($date) - strtotime($today)) / 86400);
+            
+            // Tentukan status tiket
+            $isPresale = ($selisihHari > 1); // Lebih dari 1 hari = Pre-Sale
+            $isToday = ($selisihHari == 0);
+            $isTomorrow = ($selisihHari == 1);
             ?>
 
             <div style="margin-bottom: 40px;">
-                <!-- Date Header with Pre-Sale Badge -->
-                <div style="background: <?php echo $isPresale ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' : ($isToday ? 'linear-gradient(135deg, #21d07a, #05a85b)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'); ?>; padding: 20px 30px; border-radius: 10px; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <!-- Date Header with Status Badge -->
+                    <div style="background: linear-gradient(135deg, #3296ddff 0%, #59bff6ff 100%); padding: 20px 30px; border-radius: 10px; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                     <div>
                         <h3 style="margin: 0 0 5px 0; font-size: 24px;">
                             <?php 
@@ -78,51 +79,41 @@
                             ?>, <?php echo date('d F Y', strtotime($date)); ?>
                         </h3>
                         <?php if($isToday): ?>
-                            <p style="margin: 0; opacity: 0.9; font-size: 14px;">🎬 Tayang Hari Ini</p>
+                            <p style="margin: 0; opacity: 0.9; font-size: 14px;">🔥 Tayang Hari Ini</p>
                         <?php elseif($isTomorrow): ?>
                             <p style="margin: 0; opacity: 0.9; font-size: 14px;">⏭️ Besok</p>
                         <?php elseif($isPresale): ?>
                             <p style="margin: 0; opacity: 0.9; font-size: 14px;">
-                                🎟️ Pre-Sale • <?php echo abs(floor((strtotime($date) - strtotime($today)) / 86400)); ?> hari lagi
-                            </p>
-                        <?php else: ?>
-                            <p style="margin: 0; opacity: 0.9; font-size: 14px;">
-                                📅 <?php echo abs(floor((strtotime($date) - strtotime($today)) / 86400)); ?> hari lagi
+                                ⚡ Pre-Sale • <?php echo $selisihHari; ?> hari lagi
                             </p>
                         <?php endif; ?>
                     </div>
                     
                     <?php if($isPresale): ?>
-                        <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3);">
-                            <span style="font-size: 18px; font-weight: 700;">⚡ PRE-SALE</span>
+                        <div style="background: rgba(255,255,255,0.25); padding: 12px 25px; border-radius: 30px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.4);">
+                            <div style="font-size: 24px; font-weight: 700; text-align: center;"><?php echo $selisihHari; ?></div>
+                            <div style="font-size: 11px; opacity: 0.9; text-align: center;">HARI LAGI</div>
                         </div>
                     <?php elseif($isToday): ?>
-                        <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3);">
-                            <span style="font-size: 18px; font-weight: 700;">🔥 TAYANG HARI INI</span>
+                        <div style="background: rgba(255,255,255,0.25); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.4);">
+                            <span style="font-size: 16px; font-weight: 700;">🔥 TAYANG HARI INI</span>
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- Pre-Sale Info Banner (hanya tampil jika Pre-Sale) -->
+                <!-- Pre-Sale Info Banner -->
                 <?php if($isPresale): ?>
-                <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffe6a7 100%); border: 2px solid #ffc107; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);">
+                <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffe6a7 100%); border: 3px solid #ffc107; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);">
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="font-size: 48px;">🎟️</div>
+                        <div style="font-size: 48px;">⚡</div>
                         <div style="flex: 1;">
                             <h4 style="margin: 0 0 8px 0; color: #856404; font-size: 20px;">
-                                ⚡ Tiket Pre-Sale Tersedia!
+                                🎟️ Tiket Pre-Sale Tersedia!
                             </h4>
-                            <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.5;">
-                                Dapatkan tiket lebih awal untuk penayangan <?php echo date('d F Y', strtotime($date)); ?>! 
-                                Pesan sekarang sebelum tiket habis. 
-                                <strong>Pre-sale berakhir H-1 sebelum tanggal tayang.</strong>
+                            <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.6;">
+                                Dapatkan tiket lebih awal untuk penayangan <strong><?php echo date('d F Y', strtotime($date)); ?></strong>! 
+                                Pesan sekarang sebelum tiket habis. Tiket dapat digunakan pada tanggal tersebut.
                             </p>
-                        </div>
-                        <div style="background: #ffc107; color: #856404; padding: 10px 20px; border-radius: 25px; font-weight: 700; text-align: center; min-width: 120px;">
-                            <div style="font-size: 24px; margin-bottom: 5px;">
-                                <?php echo abs(floor((strtotime($date) - strtotime($today)) / 86400)); ?>
-                            </div>
-                            <div style="font-size: 12px;">HARI LAGI</div>
                         </div>
                     </div>
                 </div>
@@ -133,22 +124,22 @@
                     <?php foreach($jadwalsOnDate as $jadwal): ?>
                         <div style="background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: grid; grid-template-columns: auto 1fr auto; gap: 25px; align-items: center; position: relative; overflow: hidden;">
                             
-                            <!-- Pre-Sale Corner Badge (hanya tampil jika Pre-Sale) -->
+                            <!-- Status Corner Badge -->
                             <?php if($isPresale): ?>
-                            <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(240, 147, 251, 0.4);">
+                            <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #be9e34ff 0%, #d5a514ff 100%); color: white; padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(240, 147, 251, 0.4);">
                                 ⚡ PRE-SALE
                             </div>
                             <?php elseif($isToday): ?>
-                            <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #21d07a, #05a85b); color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(33, 208, 122, 0.4);">
+                            <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #21d07a, #05a85b); color: white; padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(33, 208, 122, 0.4);">
                                 🔥 HARI INI
                             </div>
                             <?php endif; ?>
 
                             <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; min-width: 80px;">
-                                <div style="font-size: 32px; font-weight: 700; color: #032541;">
+                                <div style="font-size: 28px; font-weight: 700; color: #032541;">
                                     <?php echo date('H:i', strtotime($jadwal['jam_mulai'])); ?>
                                 </div>
-                                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">
                                     s/d <?php echo date('H:i', strtotime($jadwal['jam_selesai'])); ?>
                                 </div>
                             </div>
@@ -157,7 +148,7 @@
                                 <h3 style="margin: 0 0 10px 0; font-size: 20px; color: #032541;">
                                     🏢 <?php echo htmlspecialchars($jadwal['nama_bioskop']); ?>
                                 </h3>
-                                <p style="margin: 5px 0; color: #666;">
+                                <p style="margin: 5px 0; color: #666; font-size: 15px;">
                                     📍 <?php echo htmlspecialchars($jadwal['kota']); ?>
                                 </p>
                                 <?php if(!empty($jadwal['nama_tayang'])): ?>
@@ -166,8 +157,8 @@
                                     </p>
                                 <?php endif; ?>
                                 <?php if($isPresale): ?>
-                                    <p style="margin: 5px 0; color: #f5576c; font-weight: 600; font-size: 13px;">
-                                        ⏰ Booking bisa dilakukan mulai sekarang
+                                    <p style="margin: 8px 0 0 0; padding: 6px 12px; background: #fff3cd; color: #856404; font-weight: 600; font-size: 12px; border-radius: 5px; display: inline-block;">
+                                        ⚡ Booking tersedia mulai sekarang • <?php echo $selisihHari; ?> hari lagi
                                     </p>
                                 <?php endif; ?>
                             </div>
@@ -178,12 +169,12 @@
                                 </div>
                                 <?php if($isPresale): ?>
                                     <a href="index.php?module=transaksi&action=booking&id_jadwal=<?php echo $jadwal['id_tayang']; ?>" 
-                                       class="btn btn-primary" style="padding: 12px 30px; font-size: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none;">
+                                       class="btn btn-primary" style="padding: 12px 25px; font-size: 15px; background: linear-gradient(135deg,  #eae9e7ff 0%rgba(172, 136, 21, 1)cd 100%); border: none;">
                                         ⚡ Pre-Sale Booking
                                     </a>
                                 <?php else: ?>
                                     <a href="index.php?module=transaksi&action=booking&id_jadwal=<?php echo $jadwal['id_tayang']; ?>" 
-                                       class="btn btn-primary" style="padding: 12px 30px; font-size: 16px;">
+                                       class="btn btn-primary" style="padding: 12px 25px; font-size: 15px;">
                                         🎫 Booking Sekarang
                                     </a>
                                 <?php endif; ?>

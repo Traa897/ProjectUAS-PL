@@ -1,211 +1,162 @@
 <?php require_once 'views/layouts/header.php'; ?>
 
-<div class="container" style="max-width: 800px;">
-    <div class="header-section">
-        <h1>✅ Booking Berhasil!</h1>
-    </div>
-
+<div class="container" style="max-width: 600px;">
     <?php 
     $data = $detailTransaksi;
     $trans = $data['transaksi'];
     $tickets = $data['tickets'];
     $firstTicket = $tickets[0] ?? null;
+    
+    // Cek apakah pre-sale
+    $today = date('Y-m-d');
+    $tanggalTayang = $firstTicket['tanggal_tayang'] ?? '';
+    $selisihHari = floor((strtotime($tanggalTayang) - strtotime($today)) / 86400);
+    $isPresale = ($selisihHari > 1);
     ?>
 
-    <!-- Struk Pembayaran -->
-    <div id="struk" style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); margin-bottom: 30px;">
-        <!-- Header Struk -->
-        <div style="text-align: center; border-bottom: 3px dashed #032541; padding-bottom: 25px; margin-bottom: 25px;">
-            <h1 style="margin: 0; color: #01b4e4; font-size: 36px; letter-spacing: 3px;">P!X</h1>
-            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Sistem Bioskop Digital</p>
+    <!-- Struk Pembayaran - Simple Style -->
+    <div id="struk" style="background: white; padding: 20px 30px; margin: 30px auto; max-width: 400px; font-family: 'Courier New', monospace; border: 2px dashed #666;">
+        
+        <!-- Header -->
+        <div style="text-align: center; border-bottom: 1px dashed #666; padding-bottom: 15px; margin-bottom: 15px;">
+            <h1 style="margin: 0; font-size: 28px; letter-spacing: 3px;">P!X</h1>
+            <p style="margin: 5px 0 0 0; font-size: 11px;">SISTEM BIOSKOP DIGITAL</p>
+            <p style="margin: 3px 0 0 0; font-size: 10px;">www.pix-bioskop.com</p>
         </div>
 
-        <!-- Status Badge -->
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #21d07a, #05a85b); color: white; border-radius: 50px; font-size: 18px; font-weight: 700; box-shadow: 0 4px 12px rgba(33,208,122,0.3);">
+        <!-- Status -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <div style="background: #000; color: #fff; padding: 8px; font-size: 13px; font-weight: bold;">
                 ✓ PEMBAYARAN BERHASIL
             </div>
+            <?php if($isPresale): ?>
+            <div style="background: #23acdaff; color: #fff; padding: 6px; font-size: 11px; font-weight: bold; margin-top: 5px;">
+                ⚡ PRE-SALE TICKET
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Kode Booking -->
-        <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">Kode Booking</p>
-            <h2 style="margin: 0; color: #032541; font-size: 32px; letter-spacing: 2px; font-family: monospace;">
+        <div style="text-align: center; margin-bottom: 15px; padding: 10px 0; border-top: 1px dashed #666; border-bottom: 1px dashed #666;">
+            <p style="margin: 0; font-size: 9px;">KODE BOOKING</p>
+            <h2 style="margin: 5px 0; font-size: 18px; letter-spacing: 2px;">
                 <?php echo htmlspecialchars($trans['kode_booking']); ?>
             </h2>
-            <p style="margin: 10px 0 0 0; color: #01b4e4; font-size: 12px;">Simpan kode ini untuk verifikasi di bioskop</p>
         </div>
 
         <!-- Detail Pelanggan -->
-        <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-            <h3 style="margin: 0 0 15px 0; color: #032541; font-size: 18px;">👤 Detail Pelanggan</h3>
-            <table style="width: 100%; font-size: 14px;">
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Nama</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo htmlspecialchars($trans['nama_user']); ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Email</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo htmlspecialchars($trans['email']); ?>
-                    </td>
-                </tr>
-                <?php if(!empty($trans['no_telpon'])): ?>
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">No. Telepon</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo htmlspecialchars($trans['no_telpon']); ?>
-                    </td>
-                </tr>
-                <?php endif; ?>
-            </table>
+        <div style="margin-bottom: 15px; font-size: 11px;">
+            <p style="margin: 0; font-weight: bold; margin-bottom: 5px;">PELANGGAN:</p>
+            <p style="margin: 2px 0;"><?php echo htmlspecialchars($trans['nama_user']); ?></p>
+            <p style="margin: 2px 0;"><?php echo htmlspecialchars($trans['email']); ?></p>
+            <?php if(!empty($trans['no_telpon'])): ?>
+            <p style="margin: 2px 0;"><?php echo htmlspecialchars($trans['no_telpon']); ?></p>
+            <?php endif; ?>
         </div>
+
+        <div style="border-top: 1px dashed #666; margin: 15px 0;"></div>
 
         <?php if($firstTicket): ?>
         <!-- Detail Film -->
-        <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-            <h3 style="margin: 0 0 15px 0; color: #032541; font-size: 18px;">🎬 Detail Film</h3>
-            <table style="width: 100%; font-size: 14px;">
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Judul Film</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo htmlspecialchars($firstTicket['judul_film']); ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Durasi</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo $firstTicket['durasi_menit']; ?> menit
-                    </td>
-                </tr>
-            </table>
+        <div style="margin-bottom: 15px; font-size: 11px;">
+            <p style="margin: 0; font-weight: bold;">FILM:</p>
+            <p style="margin: 2px 0;"><?php echo htmlspecialchars($firstTicket['judul_film']); ?></p>
+            <p style="margin: 2px 0;">Durasi: <?php echo $firstTicket['durasi_menit']; ?> menit</p>
         </div>
 
         <!-- Detail Bioskop -->
-        <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-            <h3 style="margin: 0 0 15px 0; color: #032541; font-size: 18px;">🏢 Detail Bioskop</h3>
-            <table style="width: 100%; font-size: 14px;">
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Bioskop</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo htmlspecialchars($firstTicket['nama_bioskop']); ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Lokasi</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo htmlspecialchars($firstTicket['kota']); ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Alamat</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo htmlspecialchars($firstTicket['alamat_bioskop']); ?>
-                    </td>
-                </tr>
-            </table>
+        <div style="margin-bottom: 15px; font-size: 11px;">
+            <p style="margin: 0; font-weight: bold;">BIOSKOP:</p>
+            <p style="margin: 2px 0;"><?php echo htmlspecialchars($firstTicket['nama_bioskop']); ?></p>
+            <p style="margin: 2px 0;"><?php echo htmlspecialchars($firstTicket['kota']); ?></p>
+            <p style="margin: 2px 0; font-size: 10px;"><?php echo htmlspecialchars($firstTicket['alamat_bioskop']); ?></p>
         </div>
 
-        <!-- Jadwal Tayang -->
-        <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-            <h3 style="margin: 0 0 15px 0; color: #032541; font-size: 18px;">📅 Jadwal Tayang</h3>
-            <table style="width: 100%; font-size: 14px;">
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Tanggal</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo date('l, d F Y', strtotime($firstTicket['tanggal_tayang'])); ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px 0; color: #666;">Waktu</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: 600;">
-                        <?php echo date('H:i', strtotime($firstTicket['jam_mulai'])); ?> - 
-                        <?php echo date('H:i', strtotime($firstTicket['jam_selesai'])); ?> WIB
-                    </td>
-                </tr>
-            </table>
+        <!-- Jadwal -->
+        <div style="margin-bottom: 15px; font-size: 11px;">
+            <p style="margin: 0; font-weight: bold;">JADWAL:</p>
+            <p style="margin: 2px 0;"><?php echo date('l, d F Y', strtotime($firstTicket['tanggal_tayang'])); ?></p>
+            <p style="margin: 2px 0;">
+                Pukul: <?php echo date('H:i', strtotime($firstTicket['jam_mulai'])); ?> - 
+                <?php echo date('H:i', strtotime($firstTicket['jam_selesai'])); ?> WIB
+            </p>
+            
+            <?php if($isPresale): ?>
+            <p style="margin: 5px 0 0 0; padding: 5px; background: #fff3cd; font-size: 10px; border: 1px solid #ffc107;">
+                <strong>PRE-SALE:</strong> Tiket berlaku untuk penayangan <?php echo $selisihHari; ?> hari lagi
+            </p>
+            <?php endif; ?>
         </div>
+
+        <div style="border-top: 1px dashed #666; margin: 15px 0;"></div>
         <?php endif; ?>
 
         <!-- Detail Tiket -->
-        <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-            <h3 style="margin: 0 0 15px 0; color: #032541; font-size: 18px;">🎫 Detail Tiket</h3>
-            <div style="display: grid; gap: 10px;">
-                <?php foreach($tickets as $index => $ticket): ?>
-                <div style="padding: 15px; background: white; border-radius: 8px; border: 2px solid #01b4e4; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span style="font-weight: 700; color: #032541;">Tiket #<?php echo ($index + 1); ?></span>
-                        <span style="margin-left: 15px; padding: 5px 15px; background: #01b4e4; color: white; border-radius: 20px; font-weight: 600; font-size: 16px;">
-                            Kursi <?php echo htmlspecialchars($ticket['nomor_kursi']); ?>
-                        </span>
-                    </div>
-                    <span style="font-weight: 600; color: #666;">
-                        <?php echo ucfirst($ticket['jenis_tiket']); ?>
-                    </span>
-                </div>
-                <?php endforeach; ?>
+        <div style="margin-bottom: 15px; font-size: 11px;">
+            <p style="margin: 0; font-weight: bold; margin-bottom: 5px;">TIKET:</p>
+            <?php foreach($tickets as $index => $ticket): ?>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0; padding: 5px; background: #f5f5f5;">
+                <span>Tiket #<?php echo ($index + 1); ?> - Kursi <?php echo htmlspecialchars($ticket['nomor_kursi']); ?></span>
+                <span>Rp <?php echo number_format($ticket['harga_tiket'], 0, ',', '.'); ?></span>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div style="border-top: 1px dashed #666; margin: 15px 0;"></div>
+
+        <!-- Ringkasan -->
+        <div style="font-size: 11px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                <span>Jumlah Tiket:</span>
+                <span><?php echo $trans['jumlah_tiket']; ?> tiket</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                <span>Metode Bayar:</span>
+                <span><?php 
+                $metode = [
+                    'transfer' => 'Transfer',
+                    'e-wallet' => 'E-Wallet',
+                    'kartu_kredit' => 'Kartu Kredit',
+                    'tunai' => 'Tunai'
+                ];
+                echo $metode[$trans['metode_pembayaran']] ?? $trans['metode_pembayaran'];
+                ?></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                <span>Tanggal:</span>
+                <span><?php echo date('d/m/Y H:i', strtotime($trans['tanggal_transaksi'])); ?></span>
             </div>
         </div>
 
-        <!-- Ringkasan Pembayaran -->
-        <div style="border-top: 3px dashed #032541; padding-top: 25px; margin-top: 25px;">
-            <h3 style="margin: 0 0 15px 0; color: #032541; font-size: 18px;">💰 Ringkasan Pembayaran</h3>
-            <table style="width: 100%; font-size: 14px; margin-bottom: 15px;">
-                <tr>
-                    <td style="padding: 8px 0; color: #666;">Jumlah Tiket</td>
-                    <td style="padding: 8px 0; text-align: right; font-weight: 600;">
-                        <?php echo $trans['jumlah_tiket']; ?> tiket × Rp <?php echo number_format($trans['total_harga'] / $trans['jumlah_tiket'], 0, ',', '.'); ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px 0; color: #666;">Metode Pembayaran</td>
-                    <td style="padding: 8px 0; text-align: right; font-weight: 600;">
-                        <?php 
-                        $metodePembayaran = [
-                            'transfer' => 'Transfer Bank',
-                            'e-wallet' => 'E-Wallet',
-                            'kartu_kredit' => 'Kartu Kredit',
-                            'tunai' => 'Tunai'
-                        ];
-                        echo $metodePembayaran[$trans['metode_pembayaran']] ?? $trans['metode_pembayaran'];
-                        ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px 0; color: #666;">Tanggal Transaksi</td>
-                    <td style="padding: 8px 0; text-align: right; font-weight: 600;">
-                        <?php echo date('d/m/Y H:i', strtotime($trans['tanggal_transaksi'])); ?>
-                    </td>
-                </tr>
-            </table>
-            
-            <div style="padding: 20px; background: #032541; color: white; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 18px; font-weight: 600;">Total Bayar</span>
-                <span style="font-size: 28px; font-weight: 700;">
-                    Rp <?php echo number_format($trans['total_harga'], 0, ',', '.'); ?>
-                </span>
-            </div>
+        <div style="border-top: 2px solid #000; margin: 15px 0;"></div>
+
+        <!-- Total -->
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-bottom: 15px;">
+            <span>TOTAL BAYAR:</span>
+            <span>Rp <?php echo number_format($trans['total_harga'], 0, ',', '.'); ?></span>
         </div>
 
-        <!-- Footer Struk -->
-        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e0e0e0;">
-            <p style="margin: 0; color: #666; font-size: 12px;">Terima kasih telah menggunakan P!X</p>
-            <p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">Tunjukkan struk ini dan kode booking untuk verifikasi di bioskop</p>
+        <div style="border-top: 1px dashed #666; margin: 15px 0;"></div>
+
+        <!-- Footer -->
+        <div style="text-align: center; font-size: 9px;">
+            <p style="margin: 3px 0;">TERIMA KASIH</p>
+            <p style="margin: 3px 0;">Tunjukkan struk ini di kasir</p>
+            <p style="margin: 3px 0;">Simpan sebagai bukti pembayaran</p>
+            <p style="margin: 10px 0 0 0; font-size: 8px;">
+                <?php echo date('d/m/Y H:i:s'); ?>
+            </p>
         </div>
+
     </div>
 
     <!-- Action Buttons -->
-    <div style="display: flex; gap: 15px; margin-bottom: 50px;">
+    <div style="display: flex; gap: 10px; margin: 30px auto; max-width: 400px;">
         <button onclick="window.print()" class="btn btn-primary" style="flex: 1;">
-            🖨️ Cetak Struk
+             Cetak
         </button>
-        <a href="index.php?module=user&action=dashboard" class="btn btn-secondary" style="flex: 1; text-align: center;">
-            📋 Lihat Riwayat
-        </a>
         <a href="index.php?module=film" class="btn btn-info" style="flex: 1; text-align: center;">
-            🎬 Kembali ke Beranda
+             Home
         </a>
     </div>
 </div>
@@ -220,11 +171,13 @@
     }
     #struk {
         position: absolute;
-        left: 0;
+        left: 50%;
         top: 0;
-        width: 100%;
+        transform: translateX(-50%);
+        width: 400px;
+        border: none;
     }
-    .navbar, .footer, .btn {
+    .navbar, .footer, .btn, .container > div:last-child {
         display: none !important;
     }
 }

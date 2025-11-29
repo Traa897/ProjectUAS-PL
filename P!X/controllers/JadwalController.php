@@ -19,22 +19,61 @@ class JadwalController {
         $this->bioskop = new Bioskop($this->db);
     }
 
-    // INDEX - FIXED: Tampilkan SEMUA jadwal secara default
+    // INDEX - FIXED: Gunakan INNER JOIN untuk memastikan data film dan bioskop ada
     public function index() {
         $date_filter = isset($_GET['date']) ? $_GET['date'] : '';
         $film_filter = isset($_GET['film']) ? $_GET['film'] : '';
         $bioskop_filter = isset($_GET['bioskop']) ? $_GET['bioskop'] : '';
 
-        // Jika ada filter, gunakan filter
-        if($date_filter != '') {
-            $stmt = $this->jadwal->readByDate($date_filter);
-        } elseif($film_filter != '') {
-            $stmt = $this->jadwal->readByFilm($film_filter);
-        } elseif($bioskop_filter != '') {
-            $stmt = $this->jadwal->readByBioskop($bioskop_filter);
+        // PERBAIKAN: Gunakan query manual dengan INNER JOIN
+        if($date_filter != '' || $film_filter != '' || $bioskop_filter != '') {
+            // Build custom query with filters
+            $query = "SELECT jt.*, 
+                             f.judul_film, 
+                             b.nama_bioskop, 
+                             b.kota
+                      FROM Jadwal_Tayang jt
+                      INNER JOIN Film f ON jt.id_film = f.id_film
+                      INNER JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
+                      WHERE 1=1";
+            
+            $params = [];
+            
+            if($date_filter != '') {
+                $query .= " AND jt.tanggal_tayang = :date";
+                $params[':date'] = $date_filter;
+            }
+            
+            if($film_filter != '') {
+                $query .= " AND jt.id_film = :film";
+                $params[':film'] = $film_filter;
+            }
+            
+            if($bioskop_filter != '') {
+                $query .= " AND jt.id_bioskop = :bioskop";
+                $params[':bioskop'] = $bioskop_filter;
+            }
+            
+            $query .= " ORDER BY jt.tanggal_tayang ASC, jt.jam_mulai ASC";
+            
+            $stmt = $this->db->prepare($query);
+            foreach($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->execute();
         } else {
-            // PERBAIKAN: Tampilkan SEMUA jadwal tanpa filter
-            $stmt = $this->jadwal->readAll();
+            // Tampilkan semua jadwal dengan INNER JOIN
+            $query = "SELECT jt.*, 
+                             f.judul_film, 
+                             b.nama_bioskop, 
+                             b.kota
+                      FROM Jadwal_Tayang jt
+                      INNER JOIN Film f ON jt.id_film = f.id_film
+                      INNER JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
+                      ORDER BY jt.tanggal_tayang ASC, jt.jam_mulai ASC";
+            
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
         }
 
         $jadwals = $stmt->fetchAll(PDO::FETCH_ASSOC);

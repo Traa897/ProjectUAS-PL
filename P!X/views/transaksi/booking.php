@@ -7,14 +7,15 @@
     </div>
 
     <?php
-    // Check if it's Pre-Sale
+    // PERBAIKAN: Hitung selisih hari dengan benar
     $today = date('Y-m-d');
-    $tomorrow = date('Y-m-d', strtotime('+1 day'));
-    $nextWeek = date('Y-m-d', strtotime('+7 days'));
     $tanggalTayang = $this->jadwal->tanggal_tayang;
+    $selisihHari = floor((strtotime($tanggalTayang) - strtotime($today)) / 86400);
     
-    $isPresale = ($tanggalTayang > $tomorrow && $tanggalTayang <= $nextWeek);
-    $isToday = ($tanggalTayang == $today);
+    // Tentukan status
+    $isPresale = ($selisihHari > 1); // Lebih dari 1 hari = Pre-Sale
+    $isToday = ($selisihHari == 0);
+    $isTomorrow = ($selisihHari == 1);
     ?>
 
     <!-- Pre-Sale Banner -->
@@ -23,15 +24,15 @@
         <div style="display: flex; align-items: center; gap: 20px;">
             <div style="font-size: 48px;">⚡</div>
             <div style="flex: 1;">
-                <h3 style="margin: 0 0 8px 0; font-size: 22px;">Pre-Sale Booking</h3>
+                <h3 style="margin: 0 0 8px 0; font-size: 22px;">🎟️ Pre-Sale Booking</h3>
                 <p style="margin: 0; opacity: 0.95; font-size: 15px;">
-                    Anda sedang melakukan pre-sale booking untuk penayangan <?php echo date('d F Y', strtotime($tanggalTayang)); ?>. 
+                    Anda sedang melakukan pre-sale booking untuk penayangan <strong><?php echo date('l, d F Y', strtotime($tanggalTayang)); ?></strong>. 
                     Tiket dapat digunakan pada tanggal tersebut.
                 </p>
             </div>
-            <div style="background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 20px; text-align: center; min-width: 100px;">
-                <div style="font-size: 28px; font-weight: 700;">
-                    <?php echo abs(floor((strtotime($tanggalTayang) - strtotime($today)) / 86400)); ?>
+            <div style="background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 20px; text-align: center; min-width: 100px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3);">
+                <div style="font-size: 32px; font-weight: 700;">
+                    <?php echo $selisihHari; ?>
                 </div>
                 <div style="font-size: 12px; opacity: 0.9;">HARI LAGI</div>
             </div>
@@ -46,6 +47,18 @@
                 <p style="margin: 0; opacity: 0.95; font-size: 15px;">
                     Film ini tayang hari ini pada jam <?php echo date('H:i', strtotime($this->jadwal->jam_mulai)); ?> WIB. 
                     Segera booking sebelum tiket habis!
+                </p>
+            </div>
+        </div>
+    </div>
+    <?php elseif($isTomorrow): ?>
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 10px; margin-bottom: 25px; color: white; box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="font-size: 48px;">⏭️</div>
+            <div style="flex: 1;">
+                <h3 style="margin: 0 0 8px 0; font-size: 22px;">Tayang Besok!</h3>
+                <p style="margin: 0; opacity: 0.95; font-size: 15px;">
+                    Film ini akan tayang besok pada jam <?php echo date('H:i', strtotime($this->jadwal->jam_mulai)); ?> WIB.
                 </p>
             </div>
         </div>
@@ -140,6 +153,10 @@
                 <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600; font-size: 13px;">
                     ⚡ PRE-SALE BOOKING
                 </div>
+                <?php elseif($isToday): ?>
+                <div style="background: linear-gradient(135deg, #21d07a, #05a85b); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600; font-size: 13px;">
+                    🔥 TAYANG HARI INI
+                </div>
                 <?php endif; ?>
                 
                 <div style="border-bottom: 2px dashed #e0e0e0; padding-bottom: 15px; margin-bottom: 15px;">
@@ -168,7 +185,7 @@
                 <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; font-size: 13px; color: #856404;">
                     <strong>📅 Tanggal Tayang:</strong><br>
                     <?php echo date('d F Y', strtotime($tanggalTayang)); ?><br>
-                    <strong style="margin-top: 5px; display: inline-block;">⏰ <?php echo abs(floor((strtotime($tanggalTayang) - strtotime($today)) / 86400)); ?> hari lagi</strong>
+                    <strong style="margin-top: 5px; display: inline-block;">⏰ <?php echo $selisihHari; ?> hari lagi</strong>
                 </div>
                 <?php endif; ?>
             </div>

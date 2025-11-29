@@ -25,3 +25,5 @@ perbaikan pada status pembayaran pada user ada yang eror
 
 ketika ada film yang telah tayang dan akan tayang tidak tertampilkan 
 
+
+PERBAIKAN SUDAH BENAR SEMUA 
