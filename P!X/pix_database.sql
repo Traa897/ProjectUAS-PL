@@ -1,6 +1,6 @@
 -- ============================================
 -- DATABASE P!X BIOSKOP SYSTEM 
--- Versi: 3.0 (FIXED - Admin & User Linked)
+-- Versi: 3.0 
 -- Tanggal: 27 November 2024
 -- ============================================
 
@@ -28,7 +28,7 @@ CREATE TABLE Film (
     durasi_menit INT NOT NULL,
     sipnosis TEXT,
     rating DECIMAL(3,1) CHECK (rating >= 0 AND rating <= 10),
-    poster_url VARCHAR(500) DEFAULT 'Masukin Link Poster Disini',
+    poster_url VARCHAR(500) DEFAULT 'https://via.placeholder.com/300x450',
     id_genre INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
