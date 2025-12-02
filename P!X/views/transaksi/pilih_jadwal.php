@@ -70,7 +70,11 @@
 
             <div style="margin-bottom: 40px;">
                 <!-- Date Header with Status Badge -->
-                    <div style="background: linear-gradient(135deg, #3296ddff 0%, #59bff6ff 100%); padding: 20px 30px; border-radius: 10px; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                <div style="background: <?php 
+                    echo $isPresale ? 'linear-gradient(135deg, #cca31aff 0%, #d4bc74ff 100%)' : 
+                        ($isToday ? 'linear-gradient(135deg, #21d07a, #05a85b)' : 
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'); 
+                ?>; padding: 20px 30px; border-radius: 10px; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                     <div>
                         <h3 style="margin: 0 0 5px 0; font-size: 24px;">
                             <?php 

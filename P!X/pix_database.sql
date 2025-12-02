@@ -1,10 +1,8 @@
 -- ============================================
 -- DATABASE P!X BIOSKOP SYSTEM 
--- Versi: 3.0 
--- Tanggal: 27 November 2024
 -- ============================================
 
-DROP DATABASE  pix_database;
+DROP DATABASE IF EXISTS pix_database;
 CREATE DATABASE pix_database CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE pix_database;
 
@@ -18,7 +16,7 @@ CREATE TABLE Genre (
     nama_genre VARCHAR(50) NOT NULL,
     deskripsi TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+);
 
 -- 2. Tabel Film
 CREATE TABLE Film (
@@ -27,16 +25,13 @@ CREATE TABLE Film (
     tahun_rilis YEAR NOT NULL,
     durasi_menit INT NOT NULL,
     sipnosis TEXT,
-    rating DECIMAL(3,1) CHECK (rating >= 0 AND rating <= 10),
+    rating DECIMAL(3,1),
     poster_url VARCHAR(500) DEFAULT 'https://via.placeholder.com/300x450',
     id_genre INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_genre) REFERENCES Genre(id_genre) ON DELETE SET NULL,
-    INDEX idx_film_genre (id_genre),
-    INDEX idx_film_judul (judul_film),
-    INDEX idx_film_rating (rating)
-) ENGINE=InnoDB;
+    FOREIGN KEY (id_genre) REFERENCES Genre(id_genre) ON DELETE SET NULL
+);
 
 -- 3. Tabel Bioskop
 CREATE TABLE Bioskop (
@@ -46,9 +41,8 @@ CREATE TABLE Bioskop (
     alamat_bioskop TEXT NOT NULL,
     jumlah_studio INT NOT NULL DEFAULT 4,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_bioskop_kota (kota)
-) ENGINE=InnoDB;
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
 -- 4. Tabel Jadwal Tayang
 CREATE TABLE Jadwal_Tayang (
@@ -65,15 +59,8 @@ CREATE TABLE Jadwal_Tayang (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (id_film) REFERENCES Film(id_film) ON DELETE CASCADE,
-    FOREIGN KEY (id_bioskop) REFERENCES Bioskop(id_bioskop) ON DELETE CASCADE,
-    INDEX idx_jadwal_film (id_film),
-    INDEX idx_jadwal_bioskop (id_bioskop),
-    INDEX idx_jadwal_tanggal (tanggal_tayang)
-) ENGINE=InnoDB;
-
--- ============================================
--- TABEL USER & ADMIN
--- ============================================
+    FOREIGN KEY (id_bioskop) REFERENCES Bioskop(id_bioskop) ON DELETE CASCADE
+);
 
 -- 5. Tabel User
 CREATE TABLE User (
@@ -86,10 +73,8 @@ CREATE TABLE User (
     tanggal_lahir DATE,
     alamat TEXT,
     tanggal_daftar TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status_akun ENUM('aktif', 'nonaktif') DEFAULT 'aktif',
-    INDEX idx_user_email (email),
-    INDEX idx_user_username (username)
-) ENGINE=InnoDB;
+    status_akun ENUM('aktif', 'nonaktif') DEFAULT 'aktif'
+);
 
 -- 6. Tabel Admin
 CREATE TABLE Admin (
@@ -97,14 +82,9 @@ CREATE TABLE Admin (
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     nama_lengkap VARCHAR(100),
-    role ENUM('super_admin', 'operator', 'kasir') DEFAULT 'operator',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_admin_username (username)
-) ENGINE=InnoDB;
-
--- ============================================
--- TABEL TRANSAKSI
--- ============================================
+    role ENUM('admin'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 7. Tabel Transaksi
 CREATE TABLE Transaksi (
@@ -119,12 +99,8 @@ CREATE TABLE Transaksi (
     status_pembayaran ENUM('pending', 'berhasil', 'gagal', 'expired') DEFAULT 'pending',
     tanggal_pembayaran DATETIME,
     FOREIGN KEY (id_user) REFERENCES User(id_user) ON DELETE CASCADE,
-    FOREIGN KEY (id_admin) REFERENCES Admin(id_admin) ON DELETE SET NULL,
-    INDEX idx_transaksi_user (id_user),
-    INDEX idx_transaksi_kode (kode_booking),
-    INDEX idx_transaksi_status (status_pembayaran),
-    INDEX idx_transaksi_tanggal (tanggal_transaksi)
-) ENGINE=InnoDB;
+    FOREIGN KEY (id_admin) REFERENCES Admin(id_admin) ON DELETE SET NULL
+);
 
 -- 8. Tabel Detail Transaksi
 CREATE TABLE Detail_Transaksi (
@@ -136,11 +112,8 @@ CREATE TABLE Detail_Transaksi (
     jenis_tiket ENUM('reguler', 'vip') DEFAULT 'reguler',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_transaksi) REFERENCES Transaksi(id_transaksi) ON DELETE CASCADE,
-    FOREIGN KEY (id_jadwal_tayang) REFERENCES Jadwal_Tayang(id_tayang) ON DELETE CASCADE,
-    INDEX idx_detail_transaksi (id_transaksi),
-    INDEX idx_detail_jadwal (id_jadwal_tayang),
-    UNIQUE KEY unique_kursi_jadwal (id_jadwal_tayang, nomor_kursi)
-) ENGINE=InnoDB;
+    FOREIGN KEY (id_jadwal_tayang) REFERENCES Jadwal_Tayang(id_tayang) ON DELETE CASCADE
+);
 
 -- ============================================
 -- INSERT DATA MASTER
@@ -176,48 +149,28 @@ INSERT INTO Bioskop (nama_bioskop, kota, alamat_bioskop, jumlah_studio) VALUES
 ('Go Mall CGV', 'Samarinda', 'GO Mall Samarinda Lt.3, Jl. Panglima Batur', 5),
 ('XXI Central Plaza', 'Samarinda', 'Lembuswana Mall Lt.2, Jl. Basuki Rahmat', 4),
 ('XXI Bigmall', 'Samarinda', 'Big Mall Samarinda Lt.2, Jl. Pramuka', 5);
-DELETE FROM bioskop;
 
--- ============================================
--- INSERT USER & ADMIN (LINKED)
--- ============================================
-
--- Insert Admin (Password: admin123)
-INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
-('admin', '$2y$10$fXclg4GaMqopFdCVaPNp6OzQ.FaMcUsNwQbS96gFTjpiaqIi9nZ', 'Administrator P!X', 'super_admin'),
-('admin1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Operator Bioskop', 'operator');
-
-
--- ============================================
--- INSERT JADWAL TAYANG (LINKED KE FILM & BIOSKOP)
--- ============================================
-
+-- Insert Jadwal Tayang
 INSERT INTO Jadwal_Tayang (id_film, id_bioskop, nama_tayang, tanggal_tayang, jam_mulai, jam_selesai, harga_tiket) VALUES
--- Pengabdi Setan 2 (id_film = 1)
-(1, 1, 'Premiere Night', '2024-12-01', '19:00:00', '21:00:00', 50000),
-(1, 2, 'Weekend Special', '2024-12-02', '20:30:00', '22:30:00', 45000),
-(1, 4, 'Horror Night', '2024-12-01', '21:00:00', '23:00:00', 50000)
+(1, 1, 'Premiere Night', '2025-12-05', '19:00:00', '21:00:00', 50000),
+(1, 2, 'Weekend Special', '2025-12-06', '20:30:00', '22:30:00', 45000),
+(2, 1, 'Regular Show', '2025-12-05', '14:00:00', '16:00:00', 40000),
+(3, 3, 'Action Night', '2025-12-07', '21:00:00', '23:00:00', 50000),
+(4, 4, 'Family Time', '2025-12-06', '15:00:00', '17:00:00', 35000),
+(5, 5, 'Superhero Show', '2025-12-08', '18:00:00', '20:30:00', 45000);
 
+-- ============================================
+-- INSERT ADMIN & USER
+-- Password untuk semua: password
+-- ============================================
 
-
--- Update kapasitas
-UPDATE Jadwal_Tayang SET kapasitas_tersedia = kapasitas_tersedia - 2 WHERE id_tayang = 1;
-UPDATE Jadwal_Tayang SET kapasitas_tersedia = kapasitas_tersedia - 3 WHERE id_tayang = 6;
-
--- PERBAIKAN PASSWORD ADMIN
--- Jalankan query ini di database pix_database
-
--- Hapus admin yang ada
-DELETE FROM Admin WHERE username = 'admin';
-
--- Insert admin baru dengan password plain text untuk testing
--- Username: admin
--- Password: admin123
+-- Insert Admin 
 INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
-('admin', 'admin123', 'Admin P!X', 'super_admin');
+('admin', '$2y$10$N9qo8uLOickgx2ZMRZoMy.MqrqhJe3KQz0RYnHhQKZ9yKj5r8v6Qq', 'Administrator P!X', 'admin'),
+('admin1', '$2y$10$N9qo8uLOickgx2ZMRZoMy.MqrqhJe3KQz0RYnHhQKZ9yKj5r8v6Qq', 'Operator Bioskop', 'admin');
 
--- ATAU jika ingin pakai password yang di-hash:
--- DELETE FROM Admin WHERE username = 'admin';
--- INSERT INTO Admin (username, password, nama_lengkap, role) VALUES
--- ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin P!X', 'super_admin');
--- Password yang di-hash ini adalah: password
+
+-- ============================================
+-- CATATAN LOGIN:
+-- Admin: username = admin / admin1, password = password
+-- ============================================

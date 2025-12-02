@@ -18,21 +18,12 @@
     <!-- Alert Error -->
     <?php if(isset($error)): ?>
         <div style="background: #ffe6e9; color: #7a1720; padding: 15px; margin: 20px; border-radius: 8px; border: 2px solid #f5c6cb;">
-            <strong>❌ Username atau password admin salah</strong>
+            <strong>❌ <?= htmlspecialchars($error) ?></strong>
         </div>
     <?php endif; ?>
 
     <!-- Form Login -->
     <form method="POST" action="index.php?module=auth&action=login" style="padding: 30px;">
-        
-        <!-- Role Selection -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #032541;">Role</label>
-            <select name="role" required style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 14px;">
-                <option value="user">User (Pengguna)</option>
-                <option value="admin">Admin</option>
-            </select>
-        </div>
 
         <!-- Username -->
         <div style="margin-bottom: 20px;">
