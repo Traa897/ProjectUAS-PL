@@ -33,7 +33,14 @@ class AuthController {
 
         $username = isset($_POST['username']) ? trim($_POST['username']) : '';
         $password = isset($_POST['password']) ? $_POST['password'] : '';
-        $role = isset($_POST['role']) ? $_POST['role'] : 'user';
+        $query = "SELECT * FROM Admin WHERE username = :username LIMIT 1";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+        $adminCheck = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Jika username ditemukan di tabel Admin, maka role = admin
+        $role = $adminCheck ?  'admin': 'user';
 
         if($role === 'admin') {
             // ADMIN LOGIN - PERBAIKAN
