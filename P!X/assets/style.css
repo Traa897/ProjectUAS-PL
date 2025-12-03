@@ -1031,7 +1031,7 @@ html, body {
     transform: scale(1.05);
 }
 
-/* Status Badge for Film Cards */
+/* Status Badge for Film Cards - Distinct from .status-badge-small used elsewhere */
 .status-badge {
     position: absolute;
     top: 12px;
@@ -1046,7 +1046,7 @@ html, body {
     z-index: 5;
 }
 
-/* Reuse existing status classes with updated gradients for better visibility */
+/* Status colors for film card badges - enhanced gradients for better visibility */
 .status-badge.status-sedang-tayang {
     background: linear-gradient(135deg, #10B981 0%, #059669 100%);
 }

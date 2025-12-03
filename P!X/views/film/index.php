@@ -50,6 +50,9 @@
                 'tidak_ada_jadwal' => 'BELUM ADA JADWAL'
             ];
             
+            // Circle circumference constant for rating display (2πr where r=22)
+            $circleCircumference = 138;
+            
             foreach($films as $film): 
                 $status = $film['status'] ?? 'tidak_ada_jadwal';
             ?>
@@ -68,7 +71,7 @@
                             <svg width="50" height="50">
                                 <circle cx="25" cy="25" r="22" fill="none" stroke="#2D3748" stroke-width="3"/>
                                 <circle cx="25" cy="25" r="22" fill="none" stroke="#14B8A6" stroke-width="3"
-                                        stroke-dasharray="<?php echo (($film['rating'] * 10) * 138 / 100); ?> 138"
+                                        stroke-dasharray="<?php echo (($film['rating'] * 10) * $circleCircumference / 100); ?> <?php echo $circleCircumference; ?>"
                                         stroke-linecap="round" transform="rotate(-90 25 25)"/>
                             </svg>
                             <span class="rating-text"><?php echo number_format($film['rating'] * 10, 0); ?></span>
