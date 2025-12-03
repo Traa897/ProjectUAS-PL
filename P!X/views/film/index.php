@@ -50,14 +50,6 @@
                 'tidak_ada_jadwal' => 'BELUM ADA JADWAL'
             ];
             
-            // Map status to CSS class
-            $statusClass = [
-                'sedang_tayang' => 'status-now-showing',
-                'akan_tayang' => 'status-no-schedule',
-                'telah_tayang' => 'status-already-shown',
-                'tidak_ada_jadwal' => 'status-no-schedule'
-            ];
-            
             foreach($films as $film): 
                 $status = $film['status'] ?? 'tidak_ada_jadwal';
             ?>
@@ -67,7 +59,7 @@
                              alt="<?php echo htmlspecialchars($film['judul_film']); ?>">
                         
                         <!-- Status Badge -->
-                        <span class="status-badge <?php echo $statusClass[$status] ?? 'status-no-schedule'; ?>">
+                        <span class="status-badge status-<?php echo str_replace('_', '-', $status); ?>">
                             <?php echo $statusText[$status] ?? 'BELUM ADA JADWAL'; ?>
                         </span>
                         
