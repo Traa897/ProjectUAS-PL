@@ -874,3 +874,395 @@ html, body {
 .status-tidak-ada-jadwal {
     background: #6c757d;
 }
+
+/* ============================================
+   ELEGANT FILM LISTING PAGE STYLES
+   ============================================ */
+
+/* Hero Section for Films */
+.hero-section-films {
+    background: linear-gradient(135deg, #0F4C75 0%, #1B2838 100%);
+    padding: 80px 40px;
+    color: white;
+}
+
+.hero-content-films {
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.hero-content-films h1 {
+    font-size: 56px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: -1px;
+}
+
+.hero-content-films p {
+    font-size: 24px;
+    font-weight: 300;
+    margin-bottom: 40px;
+    opacity: 0.95;
+}
+
+.hero-search-films {
+    display: flex;
+    max-width: 700px;
+    margin: 0 auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.hero-search-films input {
+    flex: 1;
+    padding: 18px 30px;
+    border: none;
+    border-radius: 50px 0 0 50px;
+    font-size: 16px;
+    outline: none;
+    background: white;
+    color: #2D3748;
+}
+
+.hero-search-films input::placeholder {
+    color: #A0AEC0;
+}
+
+.btn-search-films {
+    padding: 18px 40px;
+    background: #14B8A6;
+    color: white;
+    border: none;
+    border-radius: 0 50px 50px 0;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-search-films:hover {
+    background: #0D9488;
+}
+
+/* Filter by Genre Section */
+.filter-genre-section {
+    margin: 60px 0 50px;
+}
+
+.filter-genre-section h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #2D3748;
+    margin-bottom: 25px;
+    letter-spacing: -0.5px;
+}
+
+.genre-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.genre-btn {
+    padding: 12px 28px;
+    background: #FFFFFF;
+    color: #6B7280;
+    border: 2px solid #E5E7EB;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.genre-btn:hover {
+    background: #F9FAFB;
+    border-color: #14B8A6;
+    color: #14B8A6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.genre-btn.active {
+    background: #14B8A6;
+    color: white;
+    border-color: #14B8A6;
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+}
+
+/* Films Grid */
+.films-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.film-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.film-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.film-poster {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    overflow: hidden;
+}
+
+.film-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.film-card:hover .film-poster img {
+    transform: scale(1.05);
+}
+
+/* Status Badge for Film Cards - Distinct from .status-badge-small used elsewhere */
+.status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+}
+
+/* Status colors for film card badges - enhanced gradients for better visibility */
+.status-badge.status-sedang-tayang {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.status-badge.status-telah-tayang {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+.status-badge.status-tidak-ada-jadwal,
+.status-badge.status-akan-tayang {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+}
+
+/* Rating Circle Badge */
+.rating-circle-badge {
+    position: absolute;
+    bottom: -25px;
+    left: 15px;
+    width: 50px;
+    height: 50px;
+    background: #1F2937;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 6;
+}
+
+.rating-circle-badge svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.rating-text {
+    position: relative;
+    z-index: 7;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+}
+
+.rating-text::after {
+    content: '%';
+    font-size: 8px;
+    vertical-align: super;
+}
+
+/* Film Info */
+.film-info {
+    padding: 35px 20px 20px;
+}
+
+.film-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2D3748;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    min-height: 48px;
+}
+
+.film-meta {
+    font-size: 14px;
+    color: #718096;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.film-genre {
+    font-size: 14px;
+    color: #14B8A6;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.film-genre svg {
+    color: #14B8A6;
+}
+
+.btn-detail {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #14B8A6;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.btn-detail:hover {
+    background: #0D9488;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+}
+
+/* Empty State */
+.empty-state-films {
+    background: #FFFFFF;
+    padding: 80px 40px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 60px;
+}
+
+.empty-state-films h3 {
+    font-size: 28px;
+    color: #2D3748;
+    margin-bottom: 12px;
+}
+
+.empty-state-films p {
+    font-size: 18px;
+    color: #718096;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .films-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section-films {
+        padding: 60px 20px;
+    }
+
+    .hero-content-films h1 {
+        font-size: 40px;
+    }
+
+    .hero-content-films p {
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+
+    .hero-search-films {
+        flex-direction: column;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-search-films input {
+        border-radius: 50px;
+        margin-bottom: 15px;
+    }
+
+    .btn-search-films {
+        border-radius: 50px;
+    }
+
+    .filter-genre-section h2 {
+        font-size: 24px;
+    }
+
+    .genre-buttons {
+        gap: 10px;
+    }
+
+    .genre-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .films-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 20px;
+    }
+
+    .film-poster {
+        height: 280px;
+    }
+
+    .film-info h3 {
+        font-size: 16px;
+        min-height: auto;
+    }
+
+    .empty-state-films {
+        padding: 60px 30px;
+    }
+
+    .empty-state-films h3 {
+        font-size: 24px;
+    }
+
+    .empty-state-films p {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content-films h1 {
+        font-size: 32px;
+    }
+
+    .hero-content-films p {
+        font-size: 16px;
+    }
+
+    .films-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .film-card {
+        max-width: 100%;
+    }
+}
