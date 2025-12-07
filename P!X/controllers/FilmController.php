@@ -46,6 +46,12 @@ class FilmController {
         }
 
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Add status information to each film
+        foreach($films as &$film) {
+            $film['status'] = $this->film->getFilmStatus($film['id_film']);
+        }
+        
         $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
         // Count by status

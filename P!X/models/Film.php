@@ -98,6 +98,40 @@ class Film {
         return $stmt;
     }
 
+    // GET FILM STATUS (Sedang Tayang / Akan Tayang)
+    public function getFilmStatus($id_film) {
+        // Check if film has schedule playing today or in the past 7 days
+        $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
+                  WHERE id_film = :id_film 
+                  AND tanggal_tayang <= CURDATE() 
+                  AND tanggal_tayang >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id_film', $id_film);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if($result['count'] > 0) {
+            return 'Sedang Tayang';
+        }
+        
+        // Check if film has future schedule (Coming Soon)
+        $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
+                  WHERE id_film = :id_film 
+                  AND tanggal_tayang > CURDATE()";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id_film', $id_film);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if($result['count'] > 0) {
+            return 'Akan Tayang';
+        }
+        
+        return null;
+    }
+
     // UPDATE
     public function update() {
         $data = [
@@ -240,35 +274,6 @@ public function countByStatus($status) {
     return $stmt->rowCount();
 }
 
-// Get film status badge
-public function getFilmStatus($id_film) {
-    // Cek apakah ada jadwal yang akan datang
-    $query = "SELECT 
-                CASE 
-                    WHEN EXISTS (
-                        SELECT 1 FROM Jadwal_Tayang jt 
-                        WHERE jt.id_film = :id_film 
-                        AND CONCAT(jt.tanggal_tayang, ' ', jt.jam_selesai) >= NOW()
-                        AND jt.tanggal_tayang <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-                    ) THEN 'sedang_tayang'
-                    WHEN EXISTS (
-                        SELECT 1 FROM Jadwal_Tayang jt 
-                        WHERE jt.id_film = :id_film 
-                        AND jt.tanggal_tayang > CURDATE()
-                    ) THEN 'akan_tayang'
-                    WHEN EXISTS (
-                        SELECT 1 FROM Jadwal_Tayang jt 
-                        WHERE jt.id_film = :id_film
-                    ) THEN 'telah_tayang'
-                    ELSE 'tidak_ada_jadwal'
-                END as status";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(':id_film', $id_film);
-    $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    return $row['status'] ?? 'tidak_ada_jadwal';
-}
+
 }
 ?>

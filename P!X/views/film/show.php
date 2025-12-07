@@ -36,20 +36,30 @@
             $filmStatus = 'tidak_ada_jadwal';
             
             if($jadwal && $jadwal['first_date']) {
-                if($today < $jadwal['first_date']) {
-                    $filmStatus = 'akan_tayang';
-                } elseif($today > $jadwal['last_date']) {
-                    $filmStatus = 'telah_tayang';
-                } else {
+                // Check if film has schedule today or within the last 7 days (Now Showing)
+                $query_now = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
+                              WHERE id_film = :id_film 
+                              AND tanggal_tayang <= CURDATE() 
+                              AND tanggal_tayang >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+                $stmt_now = $this->db->prepare($query_now);
+                $stmt_now->bindParam(':id_film', $filmData['id_film']);
+                $stmt_now->execute();
+                $result_now = $stmt_now->fetch(PDO::FETCH_ASSOC);
+                
+                if($result_now['count'] > 0) {
                     $filmStatus = 'sedang_tayang';
+                } elseif($today < $jadwal['first_date']) {
+                    $filmStatus = 'akan_tayang';
+                } else {
+                    $filmStatus = 'telah_tayang';
                 }
             }
             
             $statusConfig = [
-                'akan_tayang' => ['text' => '🎬 AKAN TAYANG', 'color' => '#667eea'],
-                'sedang_tayang' => ['text' => '🎥 SEDANG TAYANG', 'color' => '#21d07a'],
-                'telah_tayang' => ['text' => '✅ TELAH TAYANG', 'color' => '#f45c43'],
-                'tidak_ada_jadwal' => ['text' => '⚠️ BELUM ADA JADWAL', 'color' => '#6c757d']
+                'akan_tayang' => ['text' => 'AKAN TAYANG', 'color' => '#f59e0b'],
+                'sedang_tayang' => ['text' => 'SEDANG TAYANG', 'color' => '#1e3a8a'],
+                'telah_tayang' => ['text' => 'TELAH TAYANG', 'color' => '#6c757d'],
+                'tidak_ada_jadwal' => ['text' => 'BELUM ADA JADWAL', 'color' => '#6c757d']
             ];
             $currentStatus = $statusConfig[$filmStatus];
             ?>

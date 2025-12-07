@@ -12,6 +12,7 @@ class Bioskop {
     public $kota;
     public $alamat_bioskop;
     public $jumlah_studio;
+    public $logo_url;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -24,7 +25,8 @@ class Bioskop {
             'nama_bioskop' => htmlspecialchars(strip_tags($this->nama_bioskop)),
             'kota' => htmlspecialchars(strip_tags($this->kota)),
             'alamat_bioskop' => htmlspecialchars(strip_tags($this->alamat_bioskop)),
-            'jumlah_studio' => htmlspecialchars(strip_tags($this->jumlah_studio))
+            'jumlah_studio' => htmlspecialchars(strip_tags($this->jumlah_studio)),
+            'logo_url' => htmlspecialchars(strip_tags($this->logo_url))
         ];
 
         return $this->qb->reset()->table($this->table_name)->insert($data);
@@ -65,6 +67,7 @@ class Bioskop {
             $this->kota = $row['kota'];
             $this->alamat_bioskop = $row['alamat_bioskop'];
             $this->jumlah_studio = $row['jumlah_studio'];
+            $this->logo_url = $row['logo_url'];
             return true;
         }
         
@@ -77,7 +80,8 @@ class Bioskop {
             'nama_bioskop' => htmlspecialchars(strip_tags($this->nama_bioskop)),
             'kota' => htmlspecialchars(strip_tags($this->kota)),
             'alamat_bioskop' => htmlspecialchars(strip_tags($this->alamat_bioskop)),
-            'jumlah_studio' => htmlspecialchars(strip_tags($this->jumlah_studio))
+            'jumlah_studio' => htmlspecialchars(strip_tags($this->jumlah_studio)),
+            'logo_url' => htmlspecialchars(strip_tags($this->logo_url))
         ];
 
         return $this->qb->reset()

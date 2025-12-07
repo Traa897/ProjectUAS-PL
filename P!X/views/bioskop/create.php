@@ -43,6 +43,13 @@
                           placeholder="Masukkan alamat lengkap bioskop..."></textarea>
             </div>
 
+            <div class="form-group">
+                <label for="logo_url">Logo URL</label>
+                <input type="text" id="logo_url" name="logo_url" 
+                       placeholder="assets/FOTO BIOSKOP/CGV bpp.png">
+                <small style="color: #666;">Gunakan path relatif, contoh: assets/FOTO BIOSKOP/CGV bpp.png (BUKAN path absolut C:\xampp\...)</small>
+            </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Simpan</button>
                 <a href="index.php?module=bioskop" class="btn btn-secondary"> Batal</a>

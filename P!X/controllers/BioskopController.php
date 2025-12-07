@@ -68,6 +68,7 @@ class BioskopController {
             $this->bioskop->kota = $_POST['kota'];
             $this->bioskop->alamat_bioskop = $_POST['alamat_bioskop'];
             $this->bioskop->jumlah_studio = $_POST['jumlah_studio'];
+            $this->bioskop->logo_url = $_POST['logo_url'] ?? '';
 
             if($this->bioskop->create()) {
                 header("Location: index.php?module=bioskop&message=Bioskop berhasil ditambahkan!");
@@ -100,6 +101,7 @@ class BioskopController {
             $this->bioskop->kota = $_POST['kota'];
             $this->bioskop->alamat_bioskop = $_POST['alamat_bioskop'];
             $this->bioskop->jumlah_studio = $_POST['jumlah_studio'];
+            $this->bioskop->logo_url = $_POST['logo_url'] ?? '';
 
             if($this->bioskop->update()) {
                 header("Location: index.php?module=bioskop&message=Bioskop berhasil diupdate!");

@@ -43,6 +43,14 @@
                 <textarea id="alamat_bioskop" name="alamat_bioskop" rows="3" required><?php echo htmlspecialchars($this->bioskop->alamat_bioskop); ?></textarea>
             </div>
 
+            <div class="form-group">
+                <label for="logo_url">Logo URL</label>
+                <input type="text" id="logo_url" name="logo_url" 
+                       value="<?php echo htmlspecialchars($this->bioskop->logo_url ?? ''); ?>"
+                       placeholder="assets/FOTO BIOSKOP/CGV bpp.png">
+                <small style="color: #666;">Gunakan path relatif, contoh: assets/FOTO BIOSKOP/CGV bpp.png (BUKAN path absolut C:\xampp\...)</small>
+            </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Update Bioskop</button>
                 <a href="index.php?module=bioskop" class="btn btn-secondary"> Batal</a>

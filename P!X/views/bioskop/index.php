@@ -64,9 +64,16 @@
                      onmouseover="this.style.transform='translateY(-5px)'" 
                      onmouseout="this.style.transform='translateY(0)'">
                     <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px;">
-                            🏢
-                        </div>
+                        <!-- tempat logo dengan kontainer bulat -->
+                        <?php if(!empty($bioskop['logo_url'])): ?>
+                            <div style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-right: 15px;">
+                                <img src="<?php echo htmlspecialchars($bioskop['logo_url']); ?>" alt="<?php echo htmlspecialchars($bioskop['nama_bioskop']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        <?php else: ?>
+                            <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-right: 15px;">
+                                🏢
+                            </div>
+                        <?php endif; ?>
                         <div>
                             <h3 style="font-size: 18px; margin: 0; color: #032541;">
                                 <?php echo htmlspecialchars($bioskop['nama_bioskop']); ?>

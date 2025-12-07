@@ -40,9 +40,13 @@ CREATE TABLE Bioskop (
     kota VARCHAR(50) NOT NULL,
     alamat_bioskop TEXT NOT NULL,
     jumlah_studio INT NOT NULL DEFAULT 4,
+    logo_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+ALTER TABLE bioskop
+ADD logo_url VARCHAR(100);
+
 
 -- 4. Tabel Jadwal Tayang
 CREATE TABLE Jadwal_Tayang (
@@ -130,16 +134,6 @@ INSERT INTO Genre (nama_genre, deskripsi) VALUES
 ('Thriller', 'Film menegangkan dan penuh misteri'),
 ('Animation', 'Film animasi untuk semua usia');
 
--- Insert Film
-INSERT INTO Film (judul_film, tahun_rilis, durasi_menit, sipnosis, rating, poster_url, id_genre) VALUES
-('Pengabdi Setan 2: Communion', 2022, 119, 'Rini dan keluarganya berusaha bertahan dari teror ibunya yang telah meninggal. Mereka pindah ke apartemen kumuh di Jakarta, namun teror justru semakin mengintensif.', 7.5, 'https://via.placeholder.com/300x450', 4),
-('Dilan 1990', 2018, 110, 'Kisah cinta remaja antara Dilan dan Milea di tahun 1990 di Bandung. Dilan adalah seorang siswa SMA yang cerdas dan unik dalam mendekati wanita.', 8.0, 'https://via.placeholder.com/300x450', 6),
-('The Raid: Redemption', 2011, 101, 'Tim elit polisi Indonesia menyerbu gedung bertingkat yang dikuasai gembong narkoba kejam. Pertarungan sengit dimulai di setiap lantai.', 8.5, 'https://via.placeholder.com/300x450', 1),
-('Keluarga Cemara', 2019, 110, 'Keluarga yang dulunya kaya raya harus bangkit dari keterpurukan ekonomi. Mereka belajar arti kebahagiaan yang sesungguhnya.', 7.8, 'https://via.placeholder.com/300x450', 2),
-('Gundala', 2019, 123, 'Saka, seorang pemuda biasa yang mendapat kekuatan petir setelah tersambar. Ia menjadi superhero Indonesia pertama yang melawan kejahatan.', 7.0, 'https://via.placeholder.com/300x450', 5),
-('Laskar Pelangi', 2008, 125, 'Perjuangan 10 anak Belitung untuk mendapatkan pendidikan di sekolah Muhammadiyah yang terancam ditutup.', 8.2, 'https://via.placeholder.com/300x450', 2),
-('Ada Apa Dengan Cinta?', 2002, 112, 'Kisah cinta remaja antara Cinta dan Rangga yang berbeda latar belakang dan kepribadian.', 7.9, 'https://via.placeholder.com/300x450', 6),
-('Warkop DKI Reborn: Jangkrik Boss', 2016, 100, 'Tiga detektif kocak yang selalu membuat kekacauan dalam menjalankan misi mereka.', 6.5, 'https://via.placeholder.com/300x450', 3);
 
 -- Insert Bioskop
 INSERT INTO Bioskop (nama_bioskop, kota, alamat_bioskop, jumlah_studio) VALUES

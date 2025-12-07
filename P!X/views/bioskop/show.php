@@ -9,9 +9,15 @@
     <div class="detail-container" style="grid-template-columns: 1fr;">
         <div class="detail-info">
             <div style="display: flex; align-items: center; margin-bottom: 30px;">
-                <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin-right: 25px;">
-                    🏢
-                </div>
+                <?php if(!empty($bioskopData['logo_url'])): ?>
+                    <div style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-right: 25px;">
+                        <img src="<?php echo htmlspecialchars($bioskopData['logo_url']); ?>" alt="<?php echo htmlspecialchars($bioskopData['nama_bioskop']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                <?php else: ?>
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 52px; margin-right: 25px;">
+                        🏢
+                    </div>
+                <?php endif; ?>
                 <div>
                     <h2 style="margin: 0 0 10px 0;"><?php echo htmlspecialchars($bioskopData['nama_bioskop']); ?></h2>
                     <p style="font-size: 18px; color: #01b4e4; margin: 0;">
