@@ -1,5 +1,5 @@
 <?php
-// models/Film.php
+// models/Film.php - FIXED DUPLICATE ISSUE
 require_once 'models/QueryBuilder.php';
 
 class Film {
@@ -19,7 +19,6 @@ class Film {
     public function __construct($db) {
         $this->conn = $db;
         $this->qb = new QueryBuilder($db);
-    
     }
 
     // CREATE
@@ -37,14 +36,18 @@ class Film {
         return $this->qb->reset()->table($this->table_name)->insert($data);
     }
 
-    // READ ALL
+    // READ ALL - FIXED: Tambahkan DISTINCT untuk menghindari duplikasi
     public function readAll() {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name . ' f')
-            ->select('f.*, g.nama_genre')
-            ->leftJoin('Genre g', 'f.id_genre', '=', 'g.id_genre')
-            ->orderBy('f.tahun_rilis', 'DESC')
-            ->get();
+        // Gunakan query manual dengan DISTINCT
+        $query = "SELECT DISTINCT f.id_film, f.judul_film, f.tahun_rilis, f.durasi_menit, 
+                         f.sipnosis, f.rating, f.poster_url, f.id_genre, g.nama_genre
+                  FROM {$this->table_name} f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  GROUP BY f.id_film
+                  ORDER BY f.tahun_rilis DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
         
         return $stmt;
     }
@@ -72,35 +75,43 @@ class Film {
         return false;
     }
 
-    // READ BY GENRE
+    // READ BY GENRE - FIXED
     public function readByGenre($id_genre) {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name . ' f')
-            ->select('f.*, g.nama_genre')
-            ->leftJoin('Genre g', 'f.id_genre', '=', 'g.id_genre')
-            ->where('f.id_genre', '=', $id_genre)
-            ->orderBy('f.tahun_rilis', 'DESC')
-            ->get();
+        $query = "SELECT DISTINCT f.id_film, f.judul_film, f.tahun_rilis, f.durasi_menit, 
+                         f.sipnosis, f.rating, f.poster_url, f.id_genre, g.nama_genre
+                  FROM {$this->table_name} f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  WHERE f.id_genre = :id_genre
+                  GROUP BY f.id_film
+                  ORDER BY f.tahun_rilis DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id_genre', $id_genre);
+        $stmt->execute();
         
         return $stmt;
     }
 
-    // SEARCH
+    // SEARCH - FIXED
     public function search($keyword) {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name . ' f')
-            ->select('f.*, g.nama_genre')
-            ->leftJoin('Genre g', 'f.id_genre', '=', 'g.id_genre')
-            ->whereLike('f.judul_film', $keyword)
-            ->orderBy('f.tahun_rilis', 'DESC')
-            ->get();
+        $query = "SELECT DISTINCT f.id_film, f.judul_film, f.tahun_rilis, f.durasi_menit, 
+                         f.sipnosis, f.rating, f.poster_url, f.id_genre, g.nama_genre
+                  FROM {$this->table_name} f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  WHERE f.judul_film LIKE :keyword
+                  GROUP BY f.id_film
+                  ORDER BY f.tahun_rilis DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $searchParam = "%$keyword%";
+        $stmt->bindParam(':keyword', $searchParam);
+        $stmt->execute();
         
         return $stmt;
     }
 
-    // GET FILM STATUS (Sedang Tayang / Akan Tayang)
+    // GET FILM STATUS
     public function getFilmStatus($id_film) {
-        // Check if film has schedule playing today or in the past 7 days
         $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
                   WHERE id_film = :id_film 
                   AND tanggal_tayang <= CURDATE() 
@@ -115,7 +126,6 @@ class Film {
             return 'Sedang Tayang';
         }
         
-        // Check if film has future schedule (Coming Soon)
         $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
                   WHERE id_film = :id_film 
                   AND tanggal_tayang > CURDATE()";
@@ -172,108 +182,95 @@ class Film {
             ->avg('rating');
     }
 
-    // GET TOP RATED
+    // GET TOP RATED - FIXED
     public function getTopRated($limit = 5) {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name . ' f')
-            ->select('f.*, g.nama_genre')
-            ->leftJoin('Genre g', 'f.id_genre', '=', 'g.id_genre')
-            ->orderBy('f.rating', 'DESC')
-            ->limit($limit)
-            ->get();
+        $query = "SELECT DISTINCT f.id_film, f.judul_film, f.tahun_rilis, f.durasi_menit, 
+                         f.sipnosis, f.rating, f.poster_url, f.id_genre, g.nama_genre
+                  FROM {$this->table_name} f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  GROUP BY f.id_film
+                  ORDER BY f.rating DESC
+                  LIMIT :limit";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
         
         return $stmt;
     }
 
-    // GET FILM WITH ACTORS
-    public function getFilmWithActors($id_film) {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name . ' f')
-            ->select('f.*, g.nama_genre, GROUP_CONCAT(a.nama_aktor SEPARATOR ", ") as daftar_aktor')
-            ->leftJoin('Genre g', 'f.id_genre', '=', 'g.id_genre')
-            ->leftJoin('Film_Aktor fa', 'f.id_film', '=', 'fa.id_film')
-            ->leftJoin('Aktor a', 'fa.id_aktor', '=', 'a.id_aktor')
-            ->where('f.id_film', '=', $id_film)
-            ->groupBy('f.id_film')
-            ->first();
+    // READ FILMS BY STATUS - FIXED
+    public function readAkanTayang() {
+        $query = "SELECT DISTINCT f.id_film, f.judul_film, f.tahun_rilis, f.durasi_menit, 
+                         f.sipnosis, f.rating, f.poster_url, f.id_genre, g.nama_genre
+                  FROM {$this->table_name} f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+                  WHERE jt.tanggal_tayang > CURDATE()
+                    AND NOT EXISTS (
+                        SELECT 1 FROM Jadwal_Tayang jt2 
+                        WHERE jt2.id_film = f.id_film 
+                        AND jt2.tanggal_tayang <= CURDATE()
+                    )
+                  GROUP BY f.id_film
+                  ORDER BY f.tahun_rilis DESC";
         
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
         return $stmt;
     }
-    // READ FILMS BY STATUS (Tambahkan di akhir class Film, sebelum closing bracket)
 
-// Get films that are "Akan Tayang" (Coming Soon)
-public function readAkanTayang() {
-    $query = "SELECT DISTINCT f.*, g.nama_genre
-              FROM " . $this->table_name . " f
-              LEFT JOIN Genre g ON f.id_genre = g.id_genre
-              LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-              WHERE jt.tanggal_tayang > CURDATE()
-                AND NOT EXISTS (
-                    SELECT 1 FROM Jadwal_Tayang jt2 
-                    WHERE jt2.id_film = f.id_film 
-                    AND jt2.tanggal_tayang <= CURDATE()
-                )
-              GROUP BY f.id_film
-              ORDER BY f.tahun_rilis DESC";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->execute();
-    return $stmt;
-}
-
-// Get films that are "Sedang Tayang" (Now Showing)
-public function readSedangTayang() {
-    $query = "SELECT DISTINCT f.*, g.nama_genre
-              FROM " . $this->table_name . " f
-              LEFT JOIN Genre g ON f.id_genre = g.id_genre
-              INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-              WHERE CONCAT(jt.tanggal_tayang, ' ', jt.jam_selesai) >= NOW()
-                AND jt.tanggal_tayang <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-              GROUP BY f.id_film
-              ORDER BY f.tahun_rilis DESC";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->execute();
-    return $stmt;
-}
-
-// Get films that are "Telah Tayang" (Already Shown)
-public function readTelahTayang() {
-    $query = "SELECT DISTINCT f.*, g.nama_genre
-              FROM " . $this->table_name . " f
-              LEFT JOIN Genre g ON f.id_genre = g.id_genre
-              LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-              WHERE NOT EXISTS (
-                    SELECT 1 FROM Jadwal_Tayang jt2 
-                    WHERE jt2.id_film = f.id_film 
-                    AND CONCAT(jt2.tanggal_tayang, ' ', jt2.jam_selesai) >= NOW()
-                )
-              GROUP BY f.id_film
-              ORDER BY f.tahun_rilis DESC";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->execute();
-    return $stmt;
-}
-
-// Count films by status
-public function countByStatus($status) {
-    switch($status) {
-        case 'akan_tayang':
-            $stmt = $this->readAkanTayang();
-            break;
-        case 'sedang_tayang':
-            $stmt = $this->readSedangTayang();
-            break;
-        case 'telah_tayang':
-            $stmt = $this->readTelahTayang();
-            break;
-        default:
-            return 0;
+    public function readSedangTayang() {
+        $query = "SELECT DISTINCT f.id_film, f.judul_film, f.tahun_rilis, f.durasi_menit, 
+                         f.sipnosis, f.rating, f.poster_url, f.id_genre, g.nama_genre
+                  FROM {$this->table_name} f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+                  WHERE CONCAT(jt.tanggal_tayang, ' ', jt.jam_selesai) >= NOW()
+                    AND jt.tanggal_tayang <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                  GROUP BY f.id_film
+                  ORDER BY f.tahun_rilis DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
     }
-    return $stmt->rowCount();
-}
 
+    public function readTelahTayang() {
+        $query = "SELECT DISTINCT f.id_film, f.judul_film, f.tahun_rilis, f.durasi_menit, 
+                         f.sipnosis, f.rating, f.poster_url, f.id_genre, g.nama_genre
+                  FROM {$this->table_name} f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+                  WHERE NOT EXISTS (
+                        SELECT 1 FROM Jadwal_Tayang jt2 
+                        WHERE jt2.id_film = f.id_film 
+                        AND CONCAT(jt2.tanggal_tayang, ' ', jt2.jam_selesai) >= NOW()
+                    )
+                  GROUP BY f.id_film
+                  ORDER BY f.tahun_rilis DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
 
+    // Count films by status
+    public function countByStatus($status) {
+        switch($status) {
+            case 'akan_tayang':
+                $stmt = $this->readAkanTayang();
+                break;
+            case 'sedang_tayang':
+                $stmt = $this->readSedangTayang();
+                break;
+            case 'telah_tayang':
+                $stmt = $this->readTelahTayang();
+                break;
+            default:
+                return 0;
+        }
+        return $stmt->rowCount();
+    }
 }
 ?>

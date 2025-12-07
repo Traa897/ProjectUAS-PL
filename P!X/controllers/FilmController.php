@@ -1,5 +1,5 @@
 <?php
-// controllers/FilmController.php - FULL VERSION WITH STATUS & SECURITY
+// controllers/FilmController.php - FIXED DUPLICATE DISPLAY
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Genre.php';
@@ -46,6 +46,26 @@ class FilmController {
         }
 
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // PERBAIKAN: Hapus duplikasi berdasarkan id_film
+        $uniqueFilms = [];
+        $seenIds = [];
+        
+        foreach($films as $film) {
+            if(!in_array($film['id_film'], $seenIds)) {
+                $seenIds[] = $film['id_film'];
+                $uniqueFilms[] = $film;
+            }
+        }
+        
+        $films = $uniqueFilms;
+        
+        // DEBUG: Log jumlah film untuk masing-masing ID
+        $filmIds = array_column($films, 'id_film');
+        $filmTitles = array_column($films, 'judul_film');
+        error_log("Total films: " . count($films));
+        error_log("Film IDs: " . implode(', ', $filmIds));
+        error_log("Film Titles: " . implode(', ', $filmTitles));
         
         // Add status information to each film
         foreach($films as &$film) {
