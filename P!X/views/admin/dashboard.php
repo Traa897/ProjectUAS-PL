@@ -103,7 +103,6 @@
     <!-- Kelola Film Section -->
     <div class="section-header" style="margin-top: 40px;">
         <h2>Kelola Film</h2>
-        <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film</a>
     </div>
 
     <?php if(empty($films)): ?>

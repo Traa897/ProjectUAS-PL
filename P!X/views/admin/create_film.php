@@ -58,8 +58,8 @@
                 <label for="poster_url">URL Poster</label>
                 <input type="url" id="poster_url" name="poster_url" 
                        placeholder="https://example.com/poster.jpg"
-                       value="https://via.placeholder.com/300x450">
-                <small style="color: #666;">Kosongkan untuk menggunakan poster default</small>
+                       value="https://example.com/poster.jpg">
+                <small style="color: #666;">masukan poster url disini</small>
             </div>
 
             <div class="form-group">

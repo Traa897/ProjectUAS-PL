@@ -102,12 +102,12 @@
                 if(isset($_SESSION['user_id'])): ?>
                     <a href="index.php?module=transaksi&action=pilihJadwal&id_film=<?php echo $filmData['id_film']; ?>" 
                        class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
-                        🎫 Booking Tiket
+                        Booking Tiket
                     </a>
                 <?php elseif(!isset($_SESSION['user_id']) && !isset($_SESSION['admin_id'])): ?>
                     <a href="index.php?module=auth&action=index" 
                        class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
-                        🎫 Login untuk Booking
+                        Login untuk Booking
                     </a>
                 <?php endif; ?>
                 

@@ -2,7 +2,7 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>🎫 Booking Tiket</h1>
+        <h1>Booking Tiket</h1>
         <a href="index.php?module=transaksi&action=pilihJadwal&id_film=<?php echo $this->jadwal->id_film; ?>" class="btn btn-secondary">⬅️ Kembali</a>
     </div>
 
@@ -20,26 +20,26 @@
 
     <!-- Pre-Sale Banner -->
     <?php if($isPresale): ?>
-    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 25px; border-radius: 10px; margin-bottom: 25px; color: white; box-shadow: 0 4px 16px rgba(240, 147, 251, 0.4);">
+    <div style="background: #FFE8AD; padding: 25px; border-radius: 10px; margin-bottom: 25px; color: #333; box-shadow: 0 4px 16px rgba(255, 232, 173, 0.4);">
         <div style="display: flex; align-items: center; gap: 20px;">
             <div style="font-size: 48px;">⚡</div>
             <div style="flex: 1;">
-                <h3 style="margin: 0 0 8px 0; font-size: 22px;">🎟️ Pre-Sale Booking</h3>
-                <p style="margin: 0; opacity: 0.95; font-size: 15px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 22px; color: #333;">Pre-Sale Booking</h3>
+                <p style="margin: 0; font-size: 15px; color: #555;">
                     Anda sedang melakukan pre-sale booking untuk penayangan <strong><?php echo date('l, d F Y', strtotime($tanggalTayang)); ?></strong>. 
                     Tiket dapat digunakan pada tanggal tersebut.
                 </p>
             </div>
-            <div style="background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 20px; text-align: center; min-width: 100px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3);">
-                <div style="font-size: 32px; font-weight: 700;">
+            <div style="background: rgba(0,0,0,0.1); padding: 15px 25px; border-radius: 20px; text-align: center; min-width: 100px; border: 2px solid rgba(0,0,0,0.15);">
+                <div style="font-size: 32px; font-weight: 700; color: #333;">
                     <?php echo $selisihHari; ?>
                 </div>
-                <div style="font-size: 12px; opacity: 0.9;">HARI LAGI</div>
+                <div style="font-size: 12px; color: #555;">HARI LAGI</div>
             </div>
         </div>
     </div>
     <?php elseif($isToday): ?>
-    <div style="background: linear-gradient(135deg, #21d07a, #05a85b); padding: 25px; border-radius: 10px; margin-bottom: 25px; color: white; box-shadow: 0 4px 16px rgba(33, 208, 122, 0.4);">
+    <div style="background: #0281AA; padding: 25px; border-radius: 10px; margin-bottom: 25px; color: white; box-shadow: 0 4px 16px rgba(2, 129, 170, 0.4);">
         <div style="display: flex; align-items: center; gap: 20px;">
             <div style="font-size: 48px;">🔥</div>
             <div style="flex: 1;">
@@ -133,11 +133,7 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 18px;">
-                            <?php if($isPresale): ?>
-                                ⚡ Konfirmasi Pre-Sale Booking
-                            <?php else: ?>
-                                💳 Proses Booking
-                            <?php endif; ?>
+                            Konfirmasi Booking
                         </button>
                     </div>
                 </form>
@@ -150,11 +146,11 @@
                 <h3 style="margin: 0 0 20px 0; color: #032541;">📝 Ringkasan Pesanan</h3>
                 
                 <?php if($isPresale): ?>
-                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600; font-size: 13px;">
+                <div style="background: #FFE8AD; color: #333; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600; font-size: 13px;">
                     ⚡ PRE-SALE BOOKING
                 </div>
                 <?php elseif($isToday): ?>
-                <div style="background: linear-gradient(135deg, #21d07a, #05a85b); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600; font-size: 13px;">
+                <div style="background: #0281AA; color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600; font-size: 13px;">
                     🔥 TAYANG HARI INI
                 </div>
                 <?php endif; ?>

@@ -71,10 +71,10 @@
             <div style="margin-bottom: 40px;">
                 <!-- Date Header with Status Badge -->
                 <div style="background: <?php 
-                    echo $isPresale ? 'linear-gradient(135deg, #cca31aff 0%, #d4bc74ff 100%)' : 
-                        ($isToday ? 'linear-gradient(135deg, #21d07a, #05a85b)' : 
-                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'); 
-                ?>; padding: 20px 30px; border-radius: 10px; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                    echo $isPresale ? '#FFE8AD' : 
+                        ($isToday ? '#0281AA' : 
+                        ($isTomorrow ? '#D1E8FF' : '#f0f0f0'));
+                ?>; padding: 20px 30px; border-radius: 10px; margin-bottom: 20px; color: <?php echo $isPresale ? '#333' : 'white'; ?>; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                     <div>
                         <h3 style="margin: 0 0 5px 0; font-size: 24px;">
                             <?php 
@@ -94,9 +94,9 @@
                     </div>
                     
                     <?php if($isPresale): ?>
-                        <div style="background: rgba(255,255,255,0.25); padding: 12px 25px; border-radius: 30px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.4);">
-                            <div style="font-size: 24px; font-weight: 700; text-align: center;"><?php echo $selisihHari; ?></div>
-                            <div style="font-size: 11px; opacity: 0.9; text-align: center;">HARI LAGI</div>
+                        <div style="background: rgba(0,0,0,0.1); padding: 12px 25px; border-radius: 30px; border: 2px solid rgba(0,0,0,0.15);">
+                            <div style="font-size: 24px; font-weight: 700; text-align: center; color: #333;"><?php echo $selisihHari; ?></div>
+                            <div style="font-size: 11px; text-align: center; color: #555;">HARI LAGI</div>
                         </div>
                     <?php elseif($isToday): ?>
                         <div style="background: rgba(255,255,255,0.25); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.4);">
@@ -107,7 +107,7 @@
 
                 <!-- Pre-Sale Info Banner -->
                 <?php if($isPresale): ?>
-                <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffe6a7 100%); border: 3px solid #ffc107; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);">
+                <div style="background: #FFE8AD; border: 3px solid #d97706; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255, 232, 173, 0.3);">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <div style="font-size: 48px;">⚡</div>
                         <div style="flex: 1;">
@@ -134,7 +134,7 @@
                                 ⚡ PRE-SALE
                             </div>
                             <?php elseif($isToday): ?>
-                            <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #21d07a, #05a85b); color: white; padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(33, 208, 122, 0.4);">
+                            <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #3160a5ff, #0d72bbff); color: white; padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(33, 208, 122, 0.4);">
                                 🔥 HARI INI
                             </div>
                             <?php endif; ?>
@@ -179,7 +179,7 @@
                                 <?php else: ?>
                                     <a href="index.php?module=transaksi&action=booking&id_jadwal=<?php echo $jadwal['id_tayang']; ?>" 
                                        class="btn btn-primary" style="padding: 12px 25px; font-size: 15px;">
-                                        🎫 Booking Sekarang
+                                        Booking Sekarang
                                     </a>
                                 <?php endif; ?>
                             </div>

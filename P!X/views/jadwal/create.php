@@ -43,7 +43,7 @@
             <div class="form-group">
                 <label for="nama_tayang">Nama Tayang</label>
                 <input type="text" id="nama_tayang" name="nama_tayang" 
-                       placeholder="Contoh: Premiere Night, Weekend Special (Opsional)">
+                       placeholder="Contoh: Premiere Night, Weekend Show, Regular Show, Action Night, Family Time, Superhero Show"> 
             </div>
 
             <div class="form-group">

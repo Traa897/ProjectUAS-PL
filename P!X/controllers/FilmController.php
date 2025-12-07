@@ -1,5 +1,5 @@
 <?php
-// controllers/FilmController.php - FIXED DUPLICATE DISPLAY
+// controllers/FilmController.php - FIXED VERSION - Anti Duplikasi
 require_once 'config/database.php';
 require_once 'models/Film.php';
 require_once 'models/Genre.php';
@@ -47,30 +47,31 @@ class FilmController {
 
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // PERBAIKAN: Hapus duplikasi berdasarkan id_film
+        // PERBAIKAN UTAMA: Hapus duplikasi berdasarkan id_film dengan array_unique
         $uniqueFilms = [];
         $seenIds = [];
         
         foreach($films as $film) {
-            if(!in_array($film['id_film'], $seenIds)) {
-                $seenIds[] = $film['id_film'];
+            $filmId = (int)$film['id_film'];
+            if(!in_array($filmId, $seenIds, true)) {
+                $seenIds[] = $filmId;
                 $uniqueFilms[] = $film;
             }
         }
         
         $films = $uniqueFilms;
         
-        // DEBUG: Log jumlah film untuk masing-masing ID
-        $filmIds = array_column($films, 'id_film');
-        $filmTitles = array_column($films, 'judul_film');
-        error_log("Total films: " . count($films));
-        error_log("Film IDs: " . implode(', ', $filmIds));
-        error_log("Film Titles: " . implode(', ', $filmTitles));
+        // DEBUG LOG (opsional - bisa dihapus di production)
+        error_log("=== FILM CONTROLLER DEBUG ===");
+        error_log("Total films after deduplication: " . count($films));
+        error_log("Film IDs: " . implode(', ', array_column($films, 'id_film')));
+        error_log("Film Titles: " . implode(', ', array_column($films, 'judul_film')));
         
         // Add status information to each film
         foreach($films as &$film) {
             $film['status'] = $this->film->getFilmStatus($film['id_film']);
         }
+        unset($film); // Break reference
         
         $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
@@ -138,6 +139,19 @@ class FilmController {
         }
         
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // VALIDASI: Cek apakah film sudah ada
+            $queryCheck = "SELECT COUNT(*) as count FROM Film WHERE judul_film = :judul_film";
+            $stmtCheck = $this->db->prepare($queryCheck);
+            $stmtCheck->bindParam(':judul_film', $_POST['judul_film']);
+            $stmtCheck->execute();
+            $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+            
+            if($resultCheck['count'] > 0) {
+                $_SESSION['flash'] = 'Film dengan judul tersebut sudah ada!';
+                header("Location: index.php?module=admin&action=createFilm");
+                exit();
+            }
+            
             $this->film->judul_film = $_POST['judul_film'];
             $this->film->tahun_rilis = $_POST['tahun_rilis'];
             $this->film->durasi_menit = $_POST['durasi_menit'];
