@@ -23,7 +23,7 @@
     
     <!-- Filter by Genre -->
     <div style="margin-bottom: 40px;">
-        <h3 style="font-size: 18px; color: #032541; margin-bottom: 15px; font-weight: 600;">Filter Genre</h3>
+       
         <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin;">
             <a href="index.php?module=film" 
                style="flex-shrink: 0; padding: 10px 20px; background: <?php echo empty($genre_filter) ? '#032541' : '#e0e0e0'; ?>; color: <?php echo empty($genre_filter) ? 'white' : '#666'; ?>; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap; font-size: 14px;">
@@ -69,7 +69,6 @@
                              style="width: 100%; height: 260px; object-fit: cover; display: block;">
                         
                         <?php
-                        // FIXED: Hanya tampilkan badge untuk pre-sale (2+ hari)
                         if(isset($film['status']) && $film['status']) {
                             $query_check = "SELECT MIN(tanggal_tayang) as nearest_date 
                                             FROM Jadwal_Tayang 
@@ -84,7 +83,6 @@
                             $nearestDate = $nearest['nearest_date'] ?? '';
                             $selisihHari = floor((strtotime($nearestDate) - strtotime($today)) / 86400);
                             
-                            // Hanya tampilkan badge jika pre-sale (2+ hari ke depan)
                             if($selisihHari >= 2):
                         ?>
                             <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">

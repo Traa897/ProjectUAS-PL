@@ -97,11 +97,9 @@
     <!-- Film Baru (Belum Ada Jadwal) -->
     <div class="section-header" style="margin-top: 40px;">
         <h2>Kelola Film</h2>
-       
     </div>
 
     <?php
-    // FIXED: Hanya tampilkan film yang BELUM PUNYA JADWAL SAMA SEKALI
     $query_new_films = "SELECT f.*, g.nama_genre 
                         FROM Film f
                         LEFT JOIN Genre g ON f.id_genre = g.id_genre
@@ -134,12 +132,10 @@
                         <img src="<?php echo htmlspecialchars($film['poster_url'] ?? 'https://via.placeholder.com/150x225'); ?>" 
                              alt="<?php echo htmlspecialchars($film['judul_film']); ?>">
                         
-                        <!-- Badge Film Baru -->
                         <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #6c757d, #5a6268); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
                             BELUM ADA JADWAL
                         </div>
                         
-                        <!-- Rating Badge -->
                         <div class="rating-badge">
                             <span class="rating-circle">
                                 <svg viewBox="0 0 36 36">
@@ -154,12 +150,7 @@
                         </div>
                         
                         <div class="card-actions-overlay">
-                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">Detail</a>
-                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">Edit</a>
-                            <a href="index.php?module=jadwal&action=create&film=<?php echo $film['id_film']; ?>" class="btn btn-primary btn-sm">Tambah Jadwal</a>
-                            <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $film['id_film']; ?>" 
-                               class="btn btn-danger btn-sm" 
-                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">Hapus</a>
+                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm" style="width: 100%;">Detail Film</a>
                         </div>
                     </div>
                     <div class="movie-info-scroll">
