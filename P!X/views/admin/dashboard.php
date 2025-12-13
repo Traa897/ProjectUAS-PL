@@ -4,8 +4,8 @@
     <div class="header-section">
         <h1>📊 Dashboard Admin</h1>
         <div style="display: flex; gap: 10px;">
-            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film</a>
-            <a href="index.php?module=jadwal&action=create" class="btn btn-info"> Tambah Jadwal</a>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
+            <a href="index.php?module=jadwal&action=create" class="btn btn-info">📅 Tambah Jadwal</a>
         </div>
     </div>
 
@@ -60,9 +60,9 @@
         </div>
     </div>
 
-    <!-- Status Film Statistics - FIXED: Hanya 2 status -->
+    <!-- Status Film Statistics -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>Status Film</h2>
+        <h2>📊 Status Film</h2>
     </div>
 
     <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
@@ -70,7 +70,6 @@
         require_once 'models/Film.php';
         $filmModel = new Film($this->db);
         
-        // PERBAIKAN: Hanya 2 status
         $countSedangTayang = $filmModel->countByStatus('sedang_tayang');
         $countAkanTayang = $filmModel->countByStatus('akan_tayang');
         ?>
@@ -92,15 +91,15 @@
         </div>
     </div>
 
-    <!-- Kelola Film Section -->
+    <!-- ===== KELOLA FILM SECTION - FIXED ===== -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>Kelola Film</h2>
+        <h2>🎬 Kelola Film (Semua Film)</h2>
     </div>
 
     <?php if(empty($films)): ?>
         <div class="empty-state">
-            <p>❌ Belum ada film dengan jadwal tayang</p>
-            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary"> Tambah Film Pertama</a>
+            <p>❌ Belum ada film di database</p>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film Pertama</a>
         </div>
     <?php else: ?>
         <div class="movie-scroll" style="margin-bottom: 40px;">
@@ -109,6 +108,33 @@
                     <div class="movie-poster-scroll">
                         <img src="<?php echo htmlspecialchars($film['poster_url'] ?? 'https://via.placeholder.com/150x225'); ?>" 
                              alt="<?php echo htmlspecialchars($film['judul_film']); ?>">
+                        
+                        <!-- Status Badge - FIXED untuk handle film tanpa jadwal -->
+                        <?php if(isset($film['status']) && $film['status']): ?>
+                            <?php
+                            // Film PUNYA jadwal - tampilkan status
+                            if($film['status'] == 'Sedang Tayang') {
+                                $bgColor = 'linear-gradient(135deg, #1e3a8a, #1e40af)';
+                                $label = '🔥 TAYANG';
+                            } elseif($film['status'] == 'Akan Tayang') {
+                                $bgColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                                $label = '⚡ AKAN TAYANG';
+                            } else {
+                                $bgColor = '#6c757d';
+                                $label = $film['status'];
+                            }
+                            ?>
+                            <div style="position: absolute; top: 8px; left: 8px; background: <?php echo $bgColor; ?>; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
+                                <?php echo $label; ?>
+                            </div>
+                        <?php else: ?>
+                            <!-- Film BELUM punya jadwal - tampilkan badge khusus -->
+                            <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #6c757d, #5a6268); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
+                                📅 BELUM ADA JADWAL
+                            </div>
+                        <?php endif; ?>
+                        
+                        <!-- Rating Badge -->
                         <div class="rating-badge">
                             <span class="rating-circle">
                                 <svg viewBox="0 0 36 36">
@@ -121,12 +147,19 @@
                                 <span class="rating-number"><?php echo number_format($film['rating'] * 10, 0); ?></span>
                             </span>
                         </div>
+                        
                         <div class="card-actions-overlay">
-                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm"> Detail</a>
-                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm"> Edit</a>
+                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">👁️ Detail</a>
+                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
+                            
+                            <?php if(!isset($film['status']) || $film['status'] == null): ?>
+                                <!-- Jika film belum ada jadwal, tambahkan tombol tambah jadwal -->
+                                <a href="index.php?module=jadwal&action=create&film=<?php echo $film['id_film']; ?>" class="btn btn-primary btn-sm">➕ Jadwal</a>
+                            <?php endif; ?>
+                            
                             <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $film['id_film']; ?>" 
                                class="btn btn-danger btn-sm" 
-                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')"> Hapus</a>
+                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
                         </div>
                     </div>
                     <div class="movie-info-scroll">
@@ -135,6 +168,12 @@
                         <p style="font-size: 12px; color: #01b4e4;">
                             <?php echo htmlspecialchars($film['nama_genre'] ?? 'No Genre'); ?>
                         </p>
+                        
+                        <?php if(!isset($film['status']) || $film['status'] == null): ?>
+                            <p style="font-size: 11px; color: #dc3545; margin-top: 5px; font-weight: 600;">
+                                ⚠️ Belum ada jadwal tayang
+                            </p>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>

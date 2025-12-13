@@ -1,4 +1,5 @@
 <?php
+// models/Film.php - COMPLETE FIXED VERSION
 
 require_once 'models/BaseModel.php';
 
@@ -39,7 +40,7 @@ class Film extends BaseModel {
         ];
     }
     
-    // PERBAIKAN 1: readAll - Hanya tampil film yang PUNYA JADWAL (untuk Public/User)
+    // FIXED: readAll - HANYA film yang PUNYA jadwal tayang (untuk Public/User)
     public function readAll() {
         $query = "SELECT 
                     f.id_film, 
@@ -53,7 +54,10 @@ class Film extends BaseModel {
                     g.nama_genre
                   FROM Film f
                   LEFT JOIN Genre g ON f.id_genre = g.id_genre
-                  INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+                  WHERE EXISTS (
+                      SELECT 1 FROM Jadwal_Tayang jt 
+                      WHERE jt.id_film = f.id_film
+                  )
                   GROUP BY f.id_film
                   ORDER BY f.tahun_rilis DESC, f.id_film ASC";
         
@@ -63,7 +67,7 @@ class Film extends BaseModel {
         return $stmt;
     }
     
-    // NEW: readAllIncludingNoSchedule - SEMUA FILM termasuk tanpa jadwal (untuk Admin)
+    // NEW: readAllIncludingNoSchedule - SEMUA film termasuk tanpa jadwal (untuk Admin Dashboard)
     public function readAllIncludingNoSchedule() {
         $query = "SELECT 
                     f.id_film, 
@@ -77,7 +81,7 @@ class Film extends BaseModel {
                     g.nama_genre
                   FROM Film f
                   LEFT JOIN Genre g ON f.id_genre = g.id_genre
-                  ORDER BY f.tahun_rilis DESC, f.id_film ASC";
+                  ORDER BY f.created_at DESC, f.id_film DESC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -85,7 +89,7 @@ class Film extends BaseModel {
         return $stmt;
     }
 
-    // PERBAIKAN 2: readByGenre - Hanya tampil film yang PUNYA JADWAL (untuk Public/User)
+    // FIXED: readByGenre - Hanya film dengan jadwal
     public function readByGenre($id_genre) {
         $query = "SELECT 
                     f.id_film, 
@@ -99,8 +103,11 @@ class Film extends BaseModel {
                     g.nama_genre
                   FROM Film f
                   LEFT JOIN Genre g ON f.id_genre = g.id_genre
-                  INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
                   WHERE f.id_genre = :id_genre
+                    AND EXISTS (
+                        SELECT 1 FROM Jadwal_Tayang jt 
+                        WHERE jt.id_film = f.id_film
+                    )
                   GROUP BY f.id_film
                   ORDER BY f.tahun_rilis DESC, f.id_film ASC";
         
@@ -111,7 +118,7 @@ class Film extends BaseModel {
         return $stmt;
     }
     
-    // NEW: readByGenreAll - SEMUA FILM di genre ini termasuk tanpa jadwal (untuk Admin)
+    // NEW: readByGenreAll - SEMUA film di genre (untuk Admin)
     public function readByGenreAll($id_genre) {
         $query = "SELECT 
                     f.id_film, 
@@ -135,7 +142,7 @@ class Film extends BaseModel {
         return $stmt;
     }
 
-    // PERBAIKAN 3: getFilmStatus - FIXED LOGIC dengan Prioritas
+    // FIXED: getFilmStatus dengan prioritas yang benar
     public function getFilmStatus($id_film) {
         // PRIORITAS 1: Cek apakah sedang tayang (ada jadwal hari ini yang belum selesai)
         $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
@@ -148,45 +155,29 @@ class Film extends BaseModel {
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Jika sedang tayang hari ini, return langsung - TIDAK CEK LAGI!
         if($result['count'] > 0) {
             return 'Sedang Tayang';
         }
         
-        // PRIORITAS 2: Cek apakah ada jadwal besok (bukan pre-sale)
+        // PRIORITAS 2: Cek jadwal masa depan (>= besok)
         $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
                   WHERE id_film = :id_film 
-                  AND tanggal_tayang = DATE_ADD(CURDATE(), INTERVAL 1 DAY)";
+                  AND tanggal_tayang > CURDATE()";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id_film', $id_film);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Jika tayang besok, return "Akan Tayang" (belum pre-sale)
         if($result['count'] > 0) {
             return 'Akan Tayang';
         }
         
-        // PRIORITAS 3: Cek apakah ada jadwal di masa depan (>1 hari) - ini Pre-Sale
-        $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
-                  WHERE id_film = :id_film 
-                  AND tanggal_tayang > DATE_ADD(CURDATE(), INTERVAL 1 DAY)";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id_film', $id_film);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if($result['count'] > 0) {
-            return 'Akan Tayang'; // Pre-Sale untuk jadwal >1 hari
-        }
-        
-        // Jika tidak ada status, kembalikan null
+        // Jika tidak ada jadwal sama sekali, return null
         return null;
     }
 
-    // PERBAIKAN 4: readSedangTayang
+    // FIXED: readSedangTayang
     public function readSedangTayang() {
         $query = "SELECT 
                     f.id_film, 
@@ -200,9 +191,12 @@ class Film extends BaseModel {
                     g.nama_genre
                   FROM Film f
                   LEFT JOIN Genre g ON f.id_genre = g.id_genre
-                  INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-                  WHERE CONCAT(jt.tanggal_tayang, ' ', jt.jam_selesai) >= NOW()
-                    AND jt.tanggal_tayang <= CURDATE()
+                  WHERE EXISTS (
+                      SELECT 1 FROM Jadwal_Tayang jt 
+                      WHERE jt.id_film = f.id_film
+                        AND CONCAT(jt.tanggal_tayang, ' ', jt.jam_selesai) >= NOW()
+                        AND jt.tanggal_tayang <= CURDATE()
+                  )
                   GROUP BY f.id_film
                   ORDER BY f.tahun_rilis DESC, f.id_film ASC";
         
@@ -211,7 +205,7 @@ class Film extends BaseModel {
         return $stmt;
     }
 
-    // PERBAIKAN 5: readAkanTayang - Untuk besok dan Pre-Sale
+    // FIXED: readAkanTayang
     public function readAkanTayang() {
         $query = "SELECT 
                     f.id_film, 
@@ -225,8 +219,11 @@ class Film extends BaseModel {
                     g.nama_genre
                   FROM Film f
                   LEFT JOIN Genre g ON f.id_genre = g.id_genre
-                  INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-                  WHERE jt.tanggal_tayang > CURDATE()
+                  WHERE EXISTS (
+                      SELECT 1 FROM Jadwal_Tayang jt 
+                      WHERE jt.id_film = f.id_film
+                        AND jt.tanggal_tayang > CURDATE()
+                  )
                   GROUP BY f.id_film
                   ORDER BY f.tahun_rilis DESC, f.id_film ASC";
         
@@ -235,7 +232,7 @@ class Film extends BaseModel {
         return $stmt;
     }
 
-    // countByStatus - Hanya untuk akan_tayang dan sedang_tayang
+    // countByStatus
     public function countByStatus($status) {
         switch($status) {
             case 'akan_tayang':
@@ -267,7 +264,7 @@ class Film extends BaseModel {
         return false;
     }
 
-    // search - Override untuk hanya tampilkan film dengan jadwal (untuk Public/User)
+    // FIXED: search - HANYA film dengan jadwal (untuk Public/User)
     public function search($keyword, $fields = []) {
         if (empty($fields)) {
             $fields = $this->getSearchableFields();
@@ -285,8 +282,11 @@ class Film extends BaseModel {
                     g.nama_genre
                   FROM Film f
                   LEFT JOIN Genre g ON f.id_genre = g.id_genre
-                  INNER JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
                   WHERE (f.judul_film LIKE :keyword OR f.sipnosis LIKE :keyword)
+                    AND EXISTS (
+                        SELECT 1 FROM Jadwal_Tayang jt 
+                        WHERE jt.id_film = f.id_film
+                    )
                   GROUP BY f.id_film
                   ORDER BY f.tahun_rilis DESC, f.id_film ASC";
         
@@ -298,7 +298,7 @@ class Film extends BaseModel {
         return $stmt;
     }
     
-    // NEW: searchAllFilms - Search SEMUA FILM termasuk tanpa jadwal (untuk Admin)
+    // NEW: searchAllFilms - Search SEMUA film (untuk Admin)
     public function searchAllFilms($keyword) {
         $query = "SELECT 
                     f.id_film, 
