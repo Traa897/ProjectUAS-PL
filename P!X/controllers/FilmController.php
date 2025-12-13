@@ -1,4 +1,5 @@
 <?php
+// controllers/FilmController.php - FIXED VERSION
 
 require_once 'config/database.php';
 require_once 'models/BaseModel.php';
@@ -60,10 +61,20 @@ class FilmController {
         
         $films = $uniqueFilms;
         
-        foreach($films as &$film) {
-            $film['status'] = $this->film->getFilmStatus($film['id_film']);
+        // PERBAIKAN: Set status dan filter film yang tidak punya status
+        foreach($films as $key => &$film) {
+            $status = $this->film->getFilmStatus($film['id_film']);
+            $film['status'] = $status;
+            
+            // Jika filter status aktif dan film tidak punya status, hapus dari array
+            if($status_filter != '' && $status == null) {
+                unset($films[$key]);
+            }
         }
         unset($film);
+        
+        // Re-index array setelah unset
+        $films = array_values($films);
         
         $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
@@ -78,7 +89,6 @@ class FilmController {
         if(isset($_GET['id'])) {
             $this->film->id_film = $_GET['id'];
             
-            // readOne() akan populate properties
             if($this->film->readOne()) {
                 $filmData = [
                     'id_film' => $this->film->id_film,
@@ -234,5 +244,3 @@ class FilmController {
         }
     }
 }
-
-
