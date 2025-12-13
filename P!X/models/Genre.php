@@ -1,6 +1,7 @@
 <?php
 // models/Genre.php
 require_once 'models/QueryBuilder.php';
+require_once 'models/BaseModel.php';
 
 class Genre {
     private $conn;

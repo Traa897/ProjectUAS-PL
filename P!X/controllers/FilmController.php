@@ -1,6 +1,7 @@
 <?php
-// controllers/FilmController.php - FIXED VERSION - Anti Duplikasi
+
 require_once 'config/database.php';
+require_once 'models/BaseModel.php';
 require_once 'models/Film.php';
 require_once 'models/Genre.php';
 
@@ -16,13 +17,11 @@ class FilmController {
         $this->genre = new Genre($this->db);
     }
 
-    // INDEX - List all films (Welcome Page)
     public function index() {
         $search = isset($_GET['search']) ? $_GET['search'] : '';
         $genre_filter = isset($_GET['genre']) ? $_GET['genre'] : '';
         $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
 
-        // Filter by Status
         if($status_filter != '') {
             switch($status_filter) {
                 case 'akan_tayang':
@@ -47,7 +46,7 @@ class FilmController {
 
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // PERBAIKAN UTAMA: Hapus duplikasi berdasarkan id_film dengan array_unique
+        // Deduplicate
         $uniqueFilms = [];
         $seenIds = [];
         
@@ -61,21 +60,13 @@ class FilmController {
         
         $films = $uniqueFilms;
         
-        // DEBUG LOG (opsional - bisa dihapus di production)
-        error_log("=== FILM CONTROLLER DEBUG ===");
-        error_log("Total films after deduplication: " . count($films));
-        error_log("Film IDs: " . implode(', ', array_column($films, 'id_film')));
-        error_log("Film Titles: " . implode(', ', array_column($films, 'judul_film')));
-        
-        // Add status information to each film
         foreach($films as &$film) {
             $film['status'] = $this->film->getFilmStatus($film['id_film']);
         }
-        unset($film); // Break reference
+        unset($film);
         
         $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
-        // Count by status
         $countAkanTayang = $this->film->countByStatus('akan_tayang');
         $countSedangTayang = $this->film->countByStatus('sedang_tayang');
         $countTelahTayang = $this->film->countByStatus('telah_tayang');
@@ -83,38 +74,35 @@ class FilmController {
         require_once 'views/film/index.php';
     }
 
-    // SHOW - Detail film
     public function show() {
         if(isset($_GET['id'])) {
             $this->film->id_film = $_GET['id'];
-            $this->film->readOne();
             
-            $filmData = [
-                'id_film' => $this->film->id_film,
-                'judul_film' => $this->film->judul_film,
-                'tahun_rilis' => $this->film->tahun_rilis,
-                'durasi_menit' => $this->film->durasi_menit,
-                'sipnosis' => $this->film->sipnosis,
-                'rating' => $this->film->rating,
-                'poster_url' => $this->film->poster_url,
-                'id_genre' => $this->film->id_genre
-            ];
-            
-            $query = "SELECT nama_genre FROM Genre WHERE id_genre = :id_genre";
-            $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':id_genre', $this->film->id_genre);
-            $stmt->execute();
-            $genre = $stmt->fetch(PDO::FETCH_ASSOC);
-            $filmData['nama_genre'] = $genre ? $genre['nama_genre'] : 'Unknown';
-            
-            require_once 'views/film/show.php';
+            // readOne() akan populate properties
+            if($this->film->readOne()) {
+                $filmData = [
+                    'id_film' => $this->film->id_film,
+                    'judul_film' => $this->film->judul_film,
+                    'tahun_rilis' => $this->film->tahun_rilis,
+                    'durasi_menit' => $this->film->durasi_menit,
+                    'sipnosis' => $this->film->sipnosis,
+                    'rating' => $this->film->rating,
+                    'poster_url' => $this->film->poster_url,
+                    'id_genre' => $this->film->id_genre,
+                    'nama_genre' => $this->film->nama_genre ?? 'Unknown'
+                ];
+                
+                require_once 'views/film/show.php';
+            } else {
+                header("Location: index.php?module=film&error=Film tidak ditemukan");
+                exit();
+            }
         } else {
             header("Location: index.php?module=film&error=Film tidak ditemukan");
             exit();
         }
     }
 
-    // CREATE - Show form (ADMIN ONLY)
     public function create() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -128,7 +116,6 @@ class FilmController {
         require_once 'views/film/create.php';
     }
 
-    // STORE - Save new film (ADMIN ONLY)
     public function store() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -139,7 +126,7 @@ class FilmController {
         }
         
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // VALIDASI: Cek apakah film sudah ada
+            // Check duplicate
             $queryCheck = "SELECT COUNT(*) as count FROM Film WHERE judul_film = :judul_film";
             $stmtCheck = $this->db->prepare($queryCheck);
             $stmtCheck->bindParam(':judul_film', $_POST['judul_film']);
@@ -172,7 +159,6 @@ class FilmController {
         }
     }
 
-    // EDIT - Show edit form (ADMIN ONLY)
     public function edit() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -195,7 +181,6 @@ class FilmController {
         }
     }
 
-    // UPDATE - Update film (ADMIN ONLY)
     public function update() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -227,7 +212,6 @@ class FilmController {
         }
     }
 
-    // DELETE - Delete film (ADMIN ONLY)
     public function delete() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -250,4 +234,5 @@ class FilmController {
         }
     }
 }
-?>
+
+

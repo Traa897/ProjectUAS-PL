@@ -1,6 +1,7 @@
 <?php
-// controllers/BioskopController.php
+// controllers/BioskopController.php - FIXED untuk OOP
 require_once 'config/database.php';
+require_once 'models/BaseModel.php';
 require_once 'models/Bioskop.php';
 
 class BioskopController {
@@ -33,7 +34,6 @@ class BioskopController {
     // SHOW - Detail cinema with schedules
     public function show() {
         if(isset($_GET['id'])) {
-            $this->bioskop->id_bioskop = $_GET['id'];
             $bioskopData = $this->bioskop->getBioskopWithSchedules($_GET['id']);
             
             if($bioskopData) {
@@ -83,13 +83,20 @@ class BioskopController {
     // EDIT - Show edit form
     public function edit() {
         if(isset($_GET['id'])) {
+            // Set id_bioskop dan panggil readOne()
             $this->bioskop->id_bioskop = $_GET['id'];
+            
+            // Panggil readOne() - method ini akan populate properties
             if($this->bioskop->readOne()) {
+                // Data sudah ter-populate ke $this->bioskop
                 require_once 'views/bioskop/edit.php';
             } else {
                 header("Location: index.php?module=bioskop&error=Bioskop tidak ditemukan");
                 exit();
             }
+        } else {
+            header("Location: index.php?module=bioskop&error=ID tidak valid");
+            exit();
         }
     }
 

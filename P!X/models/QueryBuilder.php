@@ -1,5 +1,7 @@
 <?php
 // models/QueryBuilder.php
+require_once 'models/BaseModel.php';
+
 
 class QueryBuilder {
     private $pdo;

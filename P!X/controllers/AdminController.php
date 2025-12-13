@@ -1,10 +1,9 @@
+
 <?php
-// controllers/AdminController.php - FIXED VERSION
-require_once 'config/database.php';
+
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
-require_once 'models/QueryBuilder.php';
-require_once 'models/Genre.php';
+require_once 'models/Genre.php';    
 
 class AdminController {
     private $db;

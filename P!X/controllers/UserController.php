@@ -1,6 +1,7 @@
 <?php
-// controllers/UserController.php
+
 require_once 'config/database.php';
+require_once 'models/BaseModel.php';
 require_once 'models/User.php';
 require_once 'models/Transaksi.php';
 
@@ -129,4 +130,3 @@ class UserController {
         require_once 'views/user/detail_tiket.php';
     }
 }
-?>

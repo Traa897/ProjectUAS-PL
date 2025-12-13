@@ -1,12 +1,7 @@
 <?php
-// models/DetailTransaksi.php
-require_once 'models/QueryBuilder.php';
+require_once 'models/BaseModel.php';
 
-class DetailTransaksi {
-    private $conn;
-    private $qb;
-    private $table_name = "Detail_Transaksi";
-
+class DetailTransaksi extends BaseModel {
     public $id_detail;
     public $id_transaksi;
     public $id_jadwal_tayang;
@@ -14,28 +9,27 @@ class DetailTransaksi {
     public $harga_tiket;
     public $jenis_tiket;
 
-    public function __construct($db) {
-        $this->conn = $db;
-        $this->qb = new QueryBuilder($db);
+    protected function getTableName() {
+        return "Detail_Transaksi";
     }
-
-    // CREATE Detail Transaksi
-    public function create() {
-        $data = [
-            'id_transaksi' => htmlspecialchars(strip_tags($this->id_transaksi)),
-            'id_jadwal_tayang' => htmlspecialchars(strip_tags($this->id_jadwal_tayang)),
-            'nomor_kursi' => htmlspecialchars(strip_tags($this->nomor_kursi)),
-            'harga_tiket' => htmlspecialchars(strip_tags($this->harga_tiket)),
-            'jenis_tiket' => htmlspecialchars(strip_tags($this->jenis_tiket))
+    
+    protected function getPrimaryKey() {
+        return "id_detail";
+    }
+    
+    protected function prepareData() {
+        return [
+            'id_transaksi' => $this->sanitize($this->id_transaksi),
+            'id_jadwal_tayang' => $this->sanitize($this->id_jadwal_tayang),
+            'nomor_kursi' => $this->sanitize($this->nomor_kursi),
+            'harga_tiket' => $this->sanitize($this->harga_tiket),
+            'jenis_tiket' => $this->sanitize($this->jenis_tiket)
         ];
-
-        return $this->qb->reset()->table($this->table_name)->insert($data);
     }
 
-    // Get Detail by Transaksi
     public function getByTransaksi($id_transaksi) {
         $stmt = $this->qb->reset()
-            ->table($this->table_name . ' dt')
+            ->table($this->getTableName() . ' dt')
             ->select('dt.*, jt.tanggal_tayang, jt.jam_mulai, jt.jam_selesai, f.judul_film, b.nama_bioskop')
             ->leftJoin('Jadwal_Tayang jt', 'dt.id_jadwal_tayang', '=', 'jt.id_tayang')
             ->leftJoin('Film f', 'jt.id_film', '=', 'f.id_film')
@@ -46,10 +40,9 @@ class DetailTransaksi {
         return $stmt;
     }
 
-    // Get Kursi Terpesan by Jadwal
     public function getKursiTerpesanByJadwal($id_jadwal_tayang) {
         $stmt = $this->qb->reset()
-            ->table($this->table_name . ' dt')
+            ->table($this->getTableName() . ' dt')
             ->select('dt.nomor_kursi')
             ->leftJoin('Transaksi t', 'dt.id_transaksi', '=', 't.id_transaksi')
             ->where('dt.id_jadwal_tayang', '=', $id_jadwal_tayang)
@@ -64,10 +57,9 @@ class DetailTransaksi {
         return $kursi;
     }
 
-    // Check if Kursi Available
     public function isKursiAvailable($id_jadwal_tayang, $nomor_kursi) {
         $count = $this->qb->reset()
-            ->table($this->table_name . ' dt')
+            ->table($this->getTableName() . ' dt')
             ->leftJoin('Transaksi t', 'dt.id_transaksi', '=', 't.id_transaksi')
             ->where('dt.id_jadwal_tayang', '=', $id_jadwal_tayang)
             ->where('dt.nomor_kursi', '=', $nomor_kursi)
@@ -77,15 +69,6 @@ class DetailTransaksi {
         return $count === 0;
     }
 
-    // DELETE Detail
-    public function delete() {
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_detail', '=', htmlspecialchars(strip_tags($this->id_detail)))
-            ->delete();
-    }
-
-    // Generate Random Available Kursi
     public function generateRandomKursi($id_jadwal_tayang) {
         $kursi_terpesan = $this->getKursiTerpesanByJadwal($id_jadwal_tayang);
         $baris = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -99,7 +82,7 @@ class DetailTransaksi {
             $attempts++;
             
             if ($attempts > $max_attempts) {
-                return null; // Tidak ada kursi tersedia
+                return null;
             }
         } while (in_array($kursi, $kursi_terpesan));
         

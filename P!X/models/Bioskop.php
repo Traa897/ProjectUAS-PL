@@ -1,12 +1,10 @@
 <?php
-// models/Bioskop.php
-require_once 'models/QueryBuilder.php';
+// models/Bioskop.php - REFACTORED dengan OOP
+require_once 'models/BaseModel.php';
 
-class Bioskop {
-    private $conn;
-    private $qb;
-    private $table_name = "Bioskop";
-
+class Bioskop extends BaseModel {
+    use Searchable;
+    
     public $id_bioskop;
     public $nama_bioskop;
     public $kota;
@@ -14,113 +12,57 @@ class Bioskop {
     public $jumlah_studio;
     public $logo_url;
 
-    public function __construct($db) {
-        $this->conn = $db;
-        $this->qb = new QueryBuilder($db);
+    protected function getTableName() {
+        return "Bioskop";
     }
-
-    // CREATE
-    public function create() {
-        $data = [
-            'nama_bioskop' => htmlspecialchars(strip_tags($this->nama_bioskop)),
-            'kota' => htmlspecialchars(strip_tags($this->kota)),
-            'alamat_bioskop' => htmlspecialchars(strip_tags($this->alamat_bioskop)),
-            'jumlah_studio' => htmlspecialchars(strip_tags($this->jumlah_studio)),
-            'logo_url' => htmlspecialchars(strip_tags($this->logo_url))
+    
+    protected function getPrimaryKey() {
+        return "id_bioskop";
+    }
+    
+    protected function getSearchableFields() {
+        return ['nama_bioskop', 'kota', 'alamat_bioskop'];
+    }
+    
+    protected function prepareData() {
+        return [
+            'nama_bioskop' => $this->sanitize($this->nama_bioskop),
+            'kota' => $this->sanitize($this->kota),
+            'alamat_bioskop' => $this->sanitize($this->alamat_bioskop),
+            'jumlah_studio' => $this->sanitize($this->jumlah_studio),
+            'logo_url' => $this->sanitize($this->logo_url)
         ];
-
-        return $this->qb->reset()->table($this->table_name)->insert($data);
     }
-
-    // READ ALL
-    public function readAll() {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name)
+    
+    // Polymorphism - Override readOne untuk memastikan compatibility
+    public function readOne() {
+        $row = $this->qb->reset()
+            ->table($this->getTableName())
             ->select('*')
-            ->orderBy('nama_bioskop', 'ASC')
-            ->get();
-        
-        return $stmt;
-    }
+            ->where($this->getPrimaryKey(), '=', $this->id_bioskop)
+            ->first();
 
-    // READ BY CITY
+        if ($row) {
+            $this->populateFromArray($row);
+            return true;
+        }
+        
+        return false;
+    }
+    
     public function readByCity($kota) {
         $stmt = $this->qb->reset()
-            ->table($this->table_name)
+            ->table($this->getTableName())
             ->where('kota', '=', $kota)
             ->orderBy('nama_bioskop', 'ASC')
             ->get();
         
         return $stmt;
     }
-
-    // READ ONE
-    public function readOne() {
-        $row = $this->qb->reset()
-            ->table($this->table_name)
-            ->select('*')
-            ->where('id_bioskop', '=', $this->id_bioskop)
-            ->first();
-
-        if ($row) {
-            $this->nama_bioskop = $row['nama_bioskop'];
-            $this->kota = $row['kota'];
-            $this->alamat_bioskop = $row['alamat_bioskop'];
-            $this->jumlah_studio = $row['jumlah_studio'];
-            $this->logo_url = $row['logo_url'];
-            return true;
-        }
-        
-        return false;
-    }
-
-    // UPDATE
-    public function update() {
-        $data = [
-            'nama_bioskop' => htmlspecialchars(strip_tags($this->nama_bioskop)),
-            'kota' => htmlspecialchars(strip_tags($this->kota)),
-            'alamat_bioskop' => htmlspecialchars(strip_tags($this->alamat_bioskop)),
-            'jumlah_studio' => htmlspecialchars(strip_tags($this->jumlah_studio)),
-            'logo_url' => htmlspecialchars(strip_tags($this->logo_url))
-        ];
-
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_bioskop', '=', htmlspecialchars(strip_tags($this->id_bioskop)))
-            ->update($data);
-    }
-
-    // DELETE
-    public function delete() {
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_bioskop', '=', htmlspecialchars(strip_tags($this->id_bioskop)))
-            ->delete();
-    }
-
-    // COUNT TOTAL
-    public function countTotal() {
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->count();
-    }
-
-    // SEARCH
-    public function search($keyword) {
-        $stmt = $this->qb->reset()
-            ->table($this->table_name)
-            ->whereLike('nama_bioskop', $keyword)
-            ->orWhereLike('kota', $keyword)
-            ->orderBy('nama_bioskop', 'ASC')
-            ->get();
-        
-        return $stmt;
-    }
-
-    // GET BIOSKOP WITH SCHEDULES
+    
     public function getBioskopWithSchedules($id_bioskop) {
         $stmt = $this->qb->reset()
-            ->table($this->table_name . ' b')
+            ->table($this->getTableName() . ' b')
             ->select('b.*, COUNT(jt.id_tayang) as total_jadwal')
             ->leftJoin('Jadwal_Tayang jt', 'b.id_bioskop', '=', 'jt.id_bioskop')
             ->where('b.id_bioskop', '=', $id_bioskop)

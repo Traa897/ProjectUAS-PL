@@ -1,9 +1,6 @@
+
 <?php
-// controllers/JadwalController.php - FIXED VERSION
-require_once 'config/database.php';
 require_once 'models/Jadwal.php';
-require_once 'models/Film.php';
-require_once 'models/Bioskop.php';
 
 class JadwalController {
     private $db;
@@ -19,15 +16,12 @@ class JadwalController {
         $this->bioskop = new Bioskop($this->db);
     }
 
-    // INDEX - FIXED: Gunakan INNER JOIN untuk memastikan data film dan bioskop ada
     public function index() {
         $date_filter = isset($_GET['date']) ? $_GET['date'] : '';
         $film_filter = isset($_GET['film']) ? $_GET['film'] : '';
         $bioskop_filter = isset($_GET['bioskop']) ? $_GET['bioskop'] : '';
 
-        // PERBAIKAN: Gunakan query manual dengan INNER JOIN
         if($date_filter != '' || $film_filter != '' || $bioskop_filter != '') {
-            // Build custom query with filters
             $query = "SELECT jt.*, 
                              f.judul_film, 
                              b.nama_bioskop, 
@@ -62,23 +56,10 @@ class JadwalController {
             }
             $stmt->execute();
         } else {
-            // Tampilkan semua jadwal dengan INNER JOIN
-            $query = "SELECT jt.*, 
-                             f.judul_film, 
-                             b.nama_bioskop, 
-                             b.kota
-                      FROM Jadwal_Tayang jt
-                      INNER JOIN Film f ON jt.id_film = f.id_film
-                      INNER JOIN Bioskop b ON jt.id_bioskop = b.id_bioskop
-                      ORDER BY jt.tanggal_tayang ASC, jt.jam_mulai ASC";
-            
-            $stmt = $this->db->prepare($query);
-            $stmt->execute();
+            $stmt = $this->jadwal->readAll();
         }
 
         $jadwals = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Get list film dan bioskop untuk filter
         $films = $this->film->readAll()->fetchAll(PDO::FETCH_ASSOC);
         $bioskops = $this->bioskop->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
@@ -88,7 +69,6 @@ class JadwalController {
     public function create() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
-        // Cek apakah admin
         if(!isset($_SESSION['admin_id'])) {
             $_SESSION['flash'] = 'Anda harus login sebagai admin!';
             header("Location: index.php?module=auth&action=index");

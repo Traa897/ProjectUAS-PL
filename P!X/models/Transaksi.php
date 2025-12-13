@@ -1,12 +1,8 @@
 <?php
-// models/Transaksi.php
-require_once 'models/QueryBuilder.php';
+// models/Transaksi.php - REFACTORED
+require_once 'models/BaseModel.php';
 
-class Transaksi {
-    private $conn;
-    private $qb;
-    private $table_name = "Transaksi";
-
+class Transaksi extends BaseModel {
     public $id_transaksi;
     public $id_user;
     public $id_admin;
@@ -18,39 +14,45 @@ class Transaksi {
     public $status_pembayaran;
     public $tanggal_pembayaran;
 
-    public function __construct($db) {
-        $this->conn = $db;
-        $this->qb = new QueryBuilder($db);
-    }
-
-    // CREATE Transaksi
-   // Di method create()
-public function create() {
-    $this->kode_booking = 'BKG' . date('YmdHis') . rand(100, 999);
-    
-    $data = [
-        'id_user' => htmlspecialchars(strip_tags($this->id_user)),
-        'id_admin' => $this->id_admin ? htmlspecialchars(strip_tags($this->id_admin)) : null,
-        'kode_booking' => $this->kode_booking,
-        'jumlah_tiket' => htmlspecialchars(strip_tags($this->jumlah_tiket)),
-        'total_harga' => htmlspecialchars(strip_tags($this->total_harga)),
-        'metode_pembayaran' => htmlspecialchars(strip_tags($this->metode_pembayaran)),
-        'status_pembayaran' => 'berhasil', // PERBAIKAN: Langsung berhasil
-        'tanggal_pembayaran' => date('Y-m-d H:i:s')
-    ];
-
-    if($this->qb->reset()->table($this->table_name)->insert($data)) {
-        $this->id_transaksi = $this->conn->lastInsertId();
-        return true;
+    protected function getTableName() {
+        return "Transaksi";
     }
     
-    return false;   
-}
+    protected function getPrimaryKey() {
+        return "id_transaksi";
+    }
+    
+    protected function prepareData() {
+        return [
+            'id_user' => $this->sanitize($this->id_user),
+            'id_admin' => $this->id_admin ? $this->sanitize($this->id_admin) : null,
+            'jumlah_tiket' => $this->sanitize($this->jumlah_tiket),
+            'total_harga' => $this->sanitize($this->total_harga),
+            'metode_pembayaran' => $this->sanitize($this->metode_pembayaran)
+        ];
+    }
+    
+    // Polymorphism - Override create
+    public function create() {
+        $this->kode_booking = 'BKG' . date('YmdHis') . rand(100, 999);
+        
+        $data = $this->prepareData();
+        $data['kode_booking'] = $this->kode_booking;
+        $data['status_pembayaran'] = 'berhasil';
+        $data['tanggal_pembayaran'] = date('Y-m-d H:i:s');
 
-    // READ ALL Transaksi
+        if($this->qb->reset()->table($this->getTableName())->insert($data)) {
+            $this->id_transaksi = $this->conn->lastInsertId();
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Polymorphism - Override readAll dengan JOIN
     public function readAll() {
         $stmt = $this->qb->reset()
-            ->table($this->table_name . ' t')
+            ->table($this->getTableName() . ' t')
             ->select('t.*, u.nama_lengkap as nama_user, u.email, a.nama_lengkap as nama_admin')
             ->leftJoin('User u', 't.id_user', '=', 'u.id_user')
             ->leftJoin('Admin a', 't.id_admin', '=', 'a.id_admin')
@@ -60,10 +62,9 @@ public function create() {
         return $stmt;
     }
 
-    // READ BY USER
     public function readByUser($id_user) {
         $stmt = $this->qb->reset()
-            ->table($this->table_name . ' t')
+            ->table($this->getTableName() . ' t')
             ->select('t.*, a.nama_lengkap as nama_admin')
             ->leftJoin('Admin a', 't.id_admin', '=', 'a.id_admin')
             ->where('t.id_user', '=', $id_user)
@@ -73,10 +74,10 @@ public function create() {
         return $stmt;
     }
 
-    // READ ONE
+    // Polymorphism - Override readOne dengan JOIN
     public function readOne() {
         $row = $this->qb->reset()
-            ->table($this->table_name . ' t')
+            ->table($this->getTableName() . ' t')
             ->select('t.*, u.nama_lengkap as nama_user, u.email, u.no_telpon')
             ->leftJoin('User u', 't.id_user', '=', 'u.id_user')
             ->where('t.id_transaksi', '=', $this->id_transaksi)
@@ -85,10 +86,9 @@ public function create() {
         return $row;
     }
 
-    // GET BY KODE BOOKING
     public function getByKodeBooking($kode_booking) {
         $row = $this->qb->reset()
-            ->table($this->table_name)
+            ->table($this->getTableName())
             ->select('*')
             ->where('kode_booking', '=', $kode_booking)
             ->first();
@@ -96,15 +96,12 @@ public function create() {
         return $row;
     }
 
-    // GET DETAIL WITH TICKETS
     public function getDetailWithTickets($id_transaksi) {
-        // Get transaksi info
         $this->id_transaksi = $id_transaksi;
         $transaksi = $this->readOne();
         
         if(!$transaksi) return null;
         
-        // Get detail tickets
         $query = "SELECT dt.*, jt.tanggal_tayang, jt.jam_mulai, jt.jam_selesai, 
                          f.judul_film, f.durasi_menit, b.nama_bioskop, b.alamat_bioskop, b.kota
                   FROM Detail_Transaksi dt
@@ -125,7 +122,6 @@ public function create() {
         ];
     }
 
-    // UPDATE STATUS PEMBAYARAN
     public function updateStatusPembayaran($status) {
         $data = [
             'status_pembayaran' => $status,
@@ -133,37 +129,20 @@ public function create() {
         ];
 
         return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_transaksi', '=', $this->id_transaksi)
+            ->table($this->getTableName())
+            ->where($this->getPrimaryKey(), '=', $this->id_transaksi)
             ->update($data);
     }
 
-    // DELETE
-    public function delete() {
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->where('id_transaksi', '=', htmlspecialchars(strip_tags($this->id_transaksi)))
-            ->delete();
-    }
-
-    // COUNT TOTAL
-    public function countTotal() {
-        return $this->qb->reset()
-            ->table($this->table_name)
-            ->count();
-    }
-
-    // COUNT BY STATUS
     public function countByStatus($status) {
         return $this->qb->reset()
-            ->table($this->table_name)
+            ->table($this->getTableName())
             ->where('status_pembayaran', '=', $status)
             ->count();
     }
 
-    // GET TOTAL REVENUE
     public function getTotalRevenue() {
-        $query = "SELECT SUM(total_harga) as total FROM " . $this->table_name . " 
+        $query = "SELECT SUM(total_harga) as total FROM " . $this->getTableName() . " 
                   WHERE status_pembayaran = 'berhasil'";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -172,4 +151,3 @@ public function create() {
         return $row['total'] ?? 0;
     }
 }
-?>

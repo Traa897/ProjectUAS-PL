@@ -1,6 +1,7 @@
 <?php
 // models/Admin.php
 require_once 'config/database.php';
+require_once 'models/BaseModel.php';
 
 class Admin {
     private $conn;
