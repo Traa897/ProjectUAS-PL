@@ -31,75 +31,82 @@ class AdminController {
     }
 
     public function dashboard() {
-    $totalFilms = $this->qb->reset()->table('Film')->count();
-    $totalBioskops = $this->qb->reset()->table('Bioskop')->count();
-    $totalJadwals = $this->qb->reset()->table('Jadwal_Tayang')->count();
-    $totalUsers = $this->qb->reset()->table('User')->count();
-    
-    $totalTransaksi = $this->transaksi->countTotal();
-    $transaksiSuccess = $this->transaksi->countByStatus('berhasil');
-    $totalRevenue = $this->transaksi->getTotalRevenue();
-    
-    $query = "SELECT t.*, 
-                     u.nama_lengkap as nama_user,
-                     u.email,
-                     u.no_telpon
-              FROM Transaksi t
-              LEFT JOIN User u ON t.id_user = u.id_user
-              ORDER BY t.tanggal_transaksi DESC
-              LIMIT 10";
-    $stmt = $this->db->prepare($query);
-    $stmt->execute();
-    $recentTransactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $query = "SELECT 
-                f.id_film, 
-                f.judul_film, 
-                f.poster_url, 
-                COUNT(DISTINCT t.id_transaksi) as total_transaksi,
-                COALESCE(SUM(t.jumlah_tiket), 0) as total_tiket,
-                COALESCE(SUM(t.total_harga), 0) as total_pendapatan
-              FROM Film f
-              LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
-              LEFT JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
-              LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi 
-                AND t.status_pembayaran = 'berhasil'
-              GROUP BY f.id_film, f.judul_film, f.poster_url
-              HAVING total_tiket > 0
-              ORDER BY total_tiket DESC
-              LIMIT 5";
-    $stmt = $this->db->prepare($query);
-    $stmt->execute();
-    $topFilms = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $query = "SELECT 
-                DATE_FORMAT(tanggal_transaksi, '%Y-%m') as bulan,
-                COUNT(*) as jumlah_transaksi,
-                SUM(total_harga) as pendapatan
-              FROM Transaksi
-              WHERE status_pembayaran = 'berhasil'
-                AND tanggal_transaksi >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-              GROUP BY DATE_FORMAT(tanggal_transaksi, '%Y-%m')
-              ORDER BY bulan DESC";
-    $stmt = $this->db->prepare($query);
-    $stmt->execute();
-    $monthlyRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // ✅ FIXED: Gunakan readAllIncludingNoSchedule() untuk admin
-    // Agar admin bisa lihat SEMUA film termasuk yang belum ada jadwal
-    $stmt = $this->film->readAllIncludingNoSchedule();
-    $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // ✅ PENTING: Set status untuk setiap film
-    foreach($films as $key => &$film) {
-        $status = $this->film->getFilmStatus($film['id_film']);
-        $film['status'] = $status; // Bisa null jika belum ada jadwal
+        $totalFilms = $this->qb->reset()->table('Film')->count();
+        $totalBioskops = $this->qb->reset()->table('Bioskop')->count();
+        $totalJadwals = $this->qb->reset()->table('Jadwal_Tayang')->count();
+        $totalUsers = $this->qb->reset()->table('User')->count();
+        
+        $totalTransaksi = $this->transaksi->countTotal();
+        $transaksiSuccess = $this->transaksi->countByStatus('berhasil');
+        $totalRevenue = $this->transaksi->getTotalRevenue();
+        
+        $query = "SELECT t.*, 
+                         u.nama_lengkap as nama_user,
+                         u.email,
+                         u.no_telpon
+                  FROM Transaksi t
+                  LEFT JOIN User u ON t.id_user = u.id_user
+                  ORDER BY t.tanggal_transaksi DESC
+                  LIMIT 10";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $recentTransactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $query = "SELECT 
+                    f.id_film, 
+                    f.judul_film, 
+                    f.poster_url, 
+                    COUNT(DISTINCT t.id_transaksi) as total_transaksi,
+                    COALESCE(SUM(t.jumlah_tiket), 0) as total_tiket,
+                    COALESCE(SUM(t.total_harga), 0) as total_pendapatan
+                  FROM Film f
+                  LEFT JOIN Jadwal_Tayang jt ON f.id_film = jt.id_film
+                  LEFT JOIN Detail_Transaksi dt ON jt.id_tayang = dt.id_jadwal_tayang
+                  LEFT JOIN Transaksi t ON dt.id_transaksi = t.id_transaksi 
+                    AND t.status_pembayaran = 'berhasil'
+                  GROUP BY f.id_film, f.judul_film, f.poster_url
+                  HAVING total_tiket > 0
+                  ORDER BY total_tiket DESC
+                  LIMIT 5";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $topFilms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $query = "SELECT 
+                    DATE_FORMAT(tanggal_transaksi, '%Y-%m') as bulan,
+                    COUNT(*) as jumlah_transaksi,
+                    SUM(total_harga) as pendapatan
+                  FROM Transaksi
+                  WHERE status_pembayaran = 'berhasil'
+                    AND tanggal_transaksi >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                  GROUP BY DATE_FORMAT(tanggal_transaksi, '%Y-%m')
+                  ORDER BY bulan DESC";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $monthlyRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // FIXED: Dashboard hanya tampilkan film baru (belum ada jadwal)
+        // Film yang sudah punya jadwal akan hilang dari dashboard
+        $query = "SELECT f.*, g.nama_genre 
+                  FROM Film f
+                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                  WHERE NOT EXISTS (
+                      SELECT 1 FROM Jadwal_Tayang jt 
+                      WHERE jt.id_film = f.id_film
+                  )
+                  ORDER BY f.created_at DESC";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Set status untuk setiap film (untuk compatibility)
+        foreach($films as $key => &$film) {
+            $film['status'] = null; // Film baru belum punya status
+        }
+        unset($film);
+        
+        require_once 'views/admin/dashboard.php';
     }
-    unset($film);
-    
-    require_once 'views/admin/dashboard.php';
-}
-
 
     public function createFilm() {
         $genre = new Genre($this->db);
@@ -108,10 +115,8 @@ class AdminController {
         require_once 'views/admin/create_film.php';
     }
     
-    // ✅ STORE FILM DENGAN VALIDASI
     public function storeFilm() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // VALIDASI INPUT
             $validator = new Validator($_POST);
             $validator
                 ->required('judul_film', 'Judul film wajib diisi')
@@ -183,10 +188,8 @@ class AdminController {
         }
     }
     
-    // ✅ UPDATE FILM DENGAN VALIDASI
     public function updateFilm() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // VALIDASI INPUT
             $validator = new Validator($_POST);
             $validator
                 ->required('id_film', 'ID film tidak valid')

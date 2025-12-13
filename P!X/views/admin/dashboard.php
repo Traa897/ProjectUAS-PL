@@ -2,17 +2,22 @@
 
 <div class="container">
     <div class="header-section">
-        <h1>📊 Dashboard Admin</h1>
+        <h1>Dashboard Admin</h1>
         <div style="display: flex; gap: 10px;">
-            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
-            <a href="index.php?module=jadwal&action=create" class="btn btn-info">📅 Tambah Jadwal</a>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film</a>
+            <a href="index.php?module=jadwal&action=create" class="btn btn-info">Tambah Jadwal</a>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">🎬</div>
+            <div class="stat-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                    <polyline points="17 2 12 7 7 2"></polyline>
+                </svg>
+            </div>
             <div class="stat-info">
                 <h3><?php echo $totalFilms; ?></h3>
                 <p>Total Film</p>
@@ -20,7 +25,12 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">🏢</div>
+            <div class="stat-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+            </div>
             <div class="stat-info">
                 <h3><?php echo $totalBioskops; ?></h3>
                 <p>Total Bioskop</p>
@@ -28,7 +38,14 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">📅</div>
+            <div class="stat-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </div>
             <div class="stat-info">
                 <h3><?php echo $totalJadwals; ?></h3>
                 <p>Jadwal Tayang</p>
@@ -36,7 +53,14 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
             <div class="stat-info">
                 <h3><?php echo $totalUsers; ?></h3>
                 <p>User Aktif</p>
@@ -44,7 +68,12 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">🎫</div>
+            <div class="stat-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
             <div class="stat-info">
                 <h3><?php echo $totalTransaksi; ?></h3>
                 <p>Total Transaksi</p>
@@ -52,7 +81,12 @@
         </div>
 
         <div class="stat-card" style="grid-column: span 2;">
-            <div class="stat-icon">💰</div>
+            <div class="stat-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </div>
             <div class="stat-info">
                 <h3>Rp <?php echo number_format($totalRevenue, 0, ',', '.'); ?></h3>
                 <p>Total Pendapatan</p>
@@ -60,79 +94,50 @@
         </div>
     </div>
 
-    <!-- Status Film Statistics -->
+    <!-- Film Baru (Belum Ada Jadwal) -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>📊 Status Film</h2>
+        <h2>Kelola Film</h2>
+       
     </div>
 
-    <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
-        <?php
-        require_once 'models/Film.php';
-        $filmModel = new Film($this->db);
-        
-        $countSedangTayang = $filmModel->countByStatus('sedang_tayang');
-        $countAkanTayang = $filmModel->countByStatus('akan_tayang');
-        ?>
-        
-        <div class="stat-card" style="border-left: 5px solid #1e3a8a;">
-            <div class="stat-icon">🔥</div>
-            <div class="stat-info">
-                <h3><?php echo $countSedangTayang; ?></h3>
-                <p>Sedang Tayang</p>
+    <?php
+    // FIXED: Hanya tampilkan film yang BELUM PUNYA JADWAL SAMA SEKALI
+    $query_new_films = "SELECT f.*, g.nama_genre 
+                        FROM Film f
+                        LEFT JOIN Genre g ON f.id_genre = g.id_genre
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM Jadwal_Tayang jt 
+                            WHERE jt.id_film = f.id_film
+                        )
+                        ORDER BY f.created_at DESC
+                        LIMIT 10";
+    $stmt_new_films = $this->db->prepare($query_new_films);
+    $stmt_new_films->execute();
+    $newFilms = $stmt_new_films->fetchAll(PDO::FETCH_ASSOC);
+    ?>
+
+    <?php if(empty($newFilms)): ?>
+        <div style="background: #f8f9fa; padding: 40px; border-radius: 10px; text-align: center;">
+            <div style="width: 60px; height: 60px; background: #e0e0e0; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
             </div>
-        </div>
-
-        <div class="stat-card" style="border-left: 5px solid #f59e0b;">
-            <div class="stat-icon">⚡</div>
-            <div class="stat-info">
-                <h3><?php echo $countAkanTayang; ?></h3>
-                <p>Akan Tayang (Pre-Sale)</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== KELOLA FILM SECTION - FIXED ===== -->
-    <div class="section-header" style="margin-top: 40px;">
-        <h2>🎬 Kelola Film (Semua Film)</h2>
-    </div>
-
-    <?php if(empty($films)): ?>
-        <div class="empty-state">
-            <p>❌ Belum ada film di database</p>
-            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film Pertama</a>
+            <p style="color: #666; margin: 0;">Semua film sudah memiliki jadwal tayang</p>
         </div>
     <?php else: ?>
         <div class="movie-scroll" style="margin-bottom: 40px;">
-            <?php foreach($films as $film): ?>
+            <?php foreach($newFilms as $film): ?>
                 <div class="movie-card-scroll">
                     <div class="movie-poster-scroll">
                         <img src="<?php echo htmlspecialchars($film['poster_url'] ?? 'https://via.placeholder.com/150x225'); ?>" 
                              alt="<?php echo htmlspecialchars($film['judul_film']); ?>">
                         
-                        <!-- Status Badge - FIXED untuk handle film tanpa jadwal -->
-                        <?php if(isset($film['status']) && $film['status']): ?>
-                            <?php
-                            // Film PUNYA jadwal - tampilkan status
-                            if($film['status'] == 'Sedang Tayang') {
-                                $bgColor = 'linear-gradient(135deg, #1e3a8a, #1e40af)';
-                                $label = '🔥 TAYANG';
-                            } elseif($film['status'] == 'Akan Tayang') {
-                                $bgColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
-                                $label = '⚡ AKAN TAYANG';
-                            } else {
-                                $bgColor = '#6c757d';
-                                $label = $film['status'];
-                            }
-                            ?>
-                            <div style="position: absolute; top: 8px; left: 8px; background: <?php echo $bgColor; ?>; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
-                                <?php echo $label; ?>
-                            </div>
-                        <?php else: ?>
-                            <!-- Film BELUM punya jadwal - tampilkan badge khusus -->
-                            <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #6c757d, #5a6268); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
-                                📅 BELUM ADA JADWAL
-                            </div>
-                        <?php endif; ?>
+                        <!-- Badge Film Baru -->
+                        <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #6c757d, #5a6268); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
+                            BELUM ADA JADWAL
+                        </div>
                         
                         <!-- Rating Badge -->
                         <div class="rating-badge">
@@ -149,17 +154,12 @@
                         </div>
                         
                         <div class="card-actions-overlay">
-                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">👁️ Detail</a>
-                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
-                            
-                            <?php if(!isset($film['status']) || $film['status'] == null): ?>
-                                <!-- Jika film belum ada jadwal, tambahkan tombol tambah jadwal -->
-                                <a href="index.php?module=jadwal&action=create&film=<?php echo $film['id_film']; ?>" class="btn btn-primary btn-sm">➕ Jadwal</a>
-                            <?php endif; ?>
-                            
+                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">Detail</a>
+                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="index.php?module=jadwal&action=create&film=<?php echo $film['id_film']; ?>" class="btn btn-primary btn-sm">Tambah Jadwal</a>
                             <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $film['id_film']; ?>" 
                                class="btn btn-danger btn-sm" 
-                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
+                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">Hapus</a>
                         </div>
                     </div>
                     <div class="movie-info-scroll">
@@ -168,12 +168,9 @@
                         <p style="font-size: 12px; color: #01b4e4;">
                             <?php echo htmlspecialchars($film['nama_genre'] ?? 'No Genre'); ?>
                         </p>
-                        
-                        <?php if(!isset($film['status']) || $film['status'] == null): ?>
-                            <p style="font-size: 11px; color: #dc3545; margin-top: 5px; font-weight: 600;">
-                                ⚠️ Belum ada jadwal tayang
-                            </p>
-                        <?php endif; ?>
+                        <p style="font-size: 11px; color: #dc3545; margin-top: 5px; font-weight: 600;">
+                            Perlu ditambahkan jadwal
+                        </p>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -182,12 +179,12 @@
 
     <!-- Top Selling Films -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>🏆 Film Terlaris</h2>
+        <h2>Film Terlaris</h2>
     </div>
 
     <?php if(empty($topFilms)): ?>
-        <div class="empty-state">
-            <p>❌ Belum ada data penjualan film</p>
+        <div style="background: #f8f9fa; padding: 40px; border-radius: 10px; text-align: center;">
+            <p style="color: #666; margin: 0;">Belum ada data penjualan film</p>
         </div>
     <?php else: ?>
         <div style="overflow-x: auto;">
@@ -237,30 +234,33 @@
 
     <!-- Recent Transactions -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>🎫 Transaksi Terbaru</h2>
+        <h2>Transaksi Terbaru</h2>
     </div>
 
     <?php if(empty($recentTransactions)): ?>
-        <div class="empty-state">
-            <p>❌ Belum ada transaksi</p>
+        <div style="background: #f8f9fa; padding: 40px; border-radius: 10px; text-align: center;">
+            <p style="color: #666; margin: 0;">Belum ada transaksi</p>
         </div>
     <?php else: ?>
         <div style="display: grid; gap: 15px;">
             <?php foreach($recentTransactions as $trans): ?>
                 <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center;">
                     <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
-                        🎫
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
                     </div>
                     <div>
                         <h4 style="margin: 0 0 5px 0; color: #032541;">
                             <?php echo htmlspecialchars($trans['kode_booking']); ?>
                         </h4>
                         <p style="margin: 3px 0; color: #666; font-size: 14px;">
-                            👤 <?php echo htmlspecialchars($trans['nama_user'] ?? $trans['email'] ?? 'User'); ?> • 
+                            <?php echo htmlspecialchars($trans['nama_user'] ?? $trans['email'] ?? 'User'); ?> • 
                             <?php echo htmlspecialchars($trans['email']); ?>
                         </p>
                         <p style="margin: 3px 0; color: #666; font-size: 14px;">
-                            🕐 <?php echo date('d/m/Y H:i', strtotime($trans['tanggal_transaksi'])); ?> • 
+                            <?php echo date('d/m/Y H:i', strtotime($trans['tanggal_transaksi'])); ?> • 
                             <?php echo $trans['jumlah_tiket']; ?> tiket
                         </p>
                     </div>
@@ -278,55 +278,6 @@
                 </div>
             <?php endforeach; ?>
         </div>
-    <?php endif; ?>
-
-    <!-- Monthly Revenue Chart -->
-    <?php if(!empty($monthlyRevenue)): ?>
-    <div class="section-header" style="margin-top: 40px;">
-        <h2>📈 Pendapatan Bulanan (6 Bulan Terakhir)</h2>
-    </div>
-    
-    <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div style="overflow-x: auto;">
-            <table style="width: 100%;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #032541;">
-                        <th style="padding: 15px; text-align: left; color: #032541;">Bulan</th>
-                        <th style="padding: 15px; text-align: center; color: #032541;">Transaksi</th>
-                        <th style="padding: 15px; text-align: right; color: #032541;">Pendapatan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($monthlyRevenue as $data): ?>
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td style="padding: 15px;">
-                                <?php 
-                                $bulanIndo = [
-                                    '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
-                                    '04' => 'April', '05' => 'Mei', '06' => 'Juni',
-                                    '07' => 'Juli', '08' => 'Agustus', '09' => 'September',
-                                    '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-                                ];
-                                $parts = explode('-', $data['bulan']);
-                                echo $bulanIndo[$parts[1]] . ' ' . $parts[0];
-                                ?>
-                            </td>
-                            <td style="padding: 15px; text-align: center;">
-                                <span style="padding: 5px 12px; background: #f8f9fa; border-radius: 15px; font-weight: 600;">
-                                    <?php echo number_format($data['jumlah_transaksi']); ?>
-                                </span>
-                            </td>
-                            <td style="padding: 15px; text-align: right;">
-                                <strong style="color: #01b4e4; font-size: 16px;">
-                                    Rp <?php echo number_format($data['pendapatan'], 0, ',', '.'); ?>
-                                </strong>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
     <?php endif; ?>
 </div>
 

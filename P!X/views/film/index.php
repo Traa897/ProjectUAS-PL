@@ -1,10 +1,10 @@
 <?php require_once 'views/layouts/header.php'; ?>
 
-<!-- Hero Section with Background -->
+<!-- Hero Section -->
 <div style="background: linear-gradient(rgba(13, 37, 63, 0.8), rgba(13, 37, 63, 0.8)), url('assets/bakcground film/Belakang-Kiri-1024x576.jpg') center/cover; padding: 100px 20px; color: white; position: relative;">
     <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
         <h1 style="font-size: 52px; margin: 0 0 15px 0; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Daftar Film</h1>
-        <p style="font-size: 22px; margin: 0 0 40px 0; opacity: 0.95; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Saksikan Film Terbaik Untuk Anda </p>
+        <p style="font-size: 22px; margin: 0 0 40px 0; opacity: 0.95; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Saksikan Film Terbaik Untuk Anda</p>
         
         <!-- Search Bar -->
         <form method="GET" action="index.php" style="max-width: 700px; display: flex; gap: 0; background: white; border-radius: 50px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
@@ -21,25 +21,17 @@
 
 <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 50px 20px;">
     
-    <!-- Film Count Header -->
-    <div style="margin-bottom: 30px;">
-        <h2 style="font-size: 28px; color: #032541; margin: 0;">
-          
-           
-        </h2>
-    </div>
-
-    <!-- Filter by Genre - Horizontal Scroll -->
+    <!-- Filter by Genre -->
     <div style="margin-bottom: 40px;">
- 
+        <h3 style="font-size: 18px; color: #032541; margin-bottom: 15px; font-weight: 600;">Filter Genre</h3>
         <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin;">
             <a href="index.php?module=film" 
-               style="flex-shrink: 0; padding: 12px 24px; background: <?php echo empty($genre_filter) ? 'linear-gradient(135deg, #0d7377, #14a1a6)' : '#6c757d'; ?>; color: white; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap;">
+               style="flex-shrink: 0; padding: 10px 20px; background: <?php echo empty($genre_filter) ? '#032541' : '#e0e0e0'; ?>; color: <?php echo empty($genre_filter) ? 'white' : '#666'; ?>; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap; font-size: 14px;">
                 Semua Genre
             </a>
             <?php foreach($genres as $genre): ?>
                 <a href="index.php?module=film&genre=<?php echo $genre['id_genre']; ?>" 
-                   style="flex-shrink: 0; padding: 12px 24px; background: <?php echo ($genre_filter == $genre['id_genre']) ? 'linear-gradient(135deg, #0d7377, #14a1a6)' : '#6c757d'; ?>; color: white; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap;">
+                   style="flex-shrink: 0; padding: 10px 20px; background: <?php echo ($genre_filter == $genre['id_genre']) ? '#032541' : '#e0e0e0'; ?>; color: <?php echo ($genre_filter == $genre['id_genre']) ? 'white' : '#666'; ?>; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap; font-size: 14px;">
                     <?php echo htmlspecialchars($genre['nama_genre']); ?>
                 </a>
             <?php endforeach; ?>
@@ -49,7 +41,13 @@
     <!-- Film Horizontal Scroll -->
     <?php if(empty($films)): ?>
         <div style="text-align: center; padding: 80px 20px; background: #f8f9fa; border-radius: 15px;">
-            <h3 style="font-size: 24px; color: #6c757d; margin: 0 0 10px 0;">😢 Tidak ada film ditemukan</h3>
+            <div style="width: 80px; height: 80px; background: #e0e0e0; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #999;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                    <polyline points="17 2 12 7 7 2"></polyline>
+                </svg>
+            </div>
+            <h3 style="font-size: 24px; color: #6c757d; margin: 0 0 10px 0;">Tidak ada film ditemukan</h3>
             <p style="color: #999; margin: 0 0 20px 0;">
                 <?php if($status_filter != ''): ?>
                     Belum ada film dengan status ini. Coba filter lain atau lihat semua film.
@@ -57,8 +55,8 @@
                     Coba ubah filter atau kata kunci pencarian
                 <?php endif; ?>
             </p>
-            <a href="index.php?module=film" style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #0d7377, #14a1a6); color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">
-                🔄 Reset Filter
+            <a href="index.php?module=film" style="display: inline-block; padding: 12px 30px; background: #032541; color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">
+                Reset Filter
             </a>
         </div>
     <?php else: ?>
@@ -70,10 +68,9 @@
                              alt="<?php echo htmlspecialchars($film['judul_film']); ?>"
                              style="width: 100%; height: 260px; object-fit: cover; display: block;">
                         
-                        <!-- Status Badge - FIXED LOGIC -->
-                        <?php if(isset($film['status']) && $film['status']): ?>
-                            <?php
-                            // Cek jadwal terdekat untuk tentukan badge
+                        <?php
+                        // FIXED: Hanya tampilkan badge untuk pre-sale (2+ hari)
+                        if(isset($film['status']) && $film['status']) {
                             $query_check = "SELECT MIN(tanggal_tayang) as nearest_date 
                                             FROM Jadwal_Tayang 
                                             WHERE id_film = :id_film 
@@ -84,29 +81,19 @@
                             $nearest = $stmt_check->fetch(PDO::FETCH_ASSOC);
                             
                             $today = date('Y-m-d');
-                            $tomorrow = date('Y-m-d', strtotime('+1 day'));
                             $nearestDate = $nearest['nearest_date'] ?? '';
+                            $selisihHari = floor((strtotime($nearestDate) - strtotime($today)) / 86400);
                             
-                            $isToday = ($nearestDate == $today);
-                            $isTomorrow = ($nearestDate == $tomorrow);
-                            $isPresale = ($nearestDate > $tomorrow);
-                            
-                            // Tentukan warna dan label
-                            if($isToday) {
-                                $bgColor = 'linear-gradient(135deg, #1e3a8a, #1e40af)';
-                                $label = '🔥 TAYANG';
-                            } elseif($isTomorrow) {
-                                $bgColor = 'linear-gradient(135deg, #764ba2, #667eea)';
-                                $label = '⏭️ BESOK';
-                            } else {
-                                $bgColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
-                                $label = '⚡ PRE-SALE';
-                            }
-                            ?>
-                            <div style="position: absolute; top: 8px; left: 8px; background: <?php echo $bgColor; ?>; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
-                                <?php echo $label; ?>
+                            // Hanya tampilkan badge jika pre-sale (2+ hari ke depan)
+                            if($selisihHari >= 2):
+                        ?>
+                            <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
+                                PRE-SALE
                             </div>
-                        <?php endif; ?>
+                        <?php 
+                            endif;
+                        }
+                        ?>
                         
                         <!-- Rating Badge -->
                         <div style="position: absolute; bottom: -18px; left: 10px; width: 40px; height: 40px; background: #032541; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #21d07a; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
@@ -123,7 +110,7 @@
                         </p>
                         
                         <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" 
-                           style="display: block; text-align: center; padding: 8px; background: linear-gradient(135deg, #0d7377, #14a1a6); color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; transition: all 0.3s;">
+                           style="display: block; text-align: center; padding: 8px; background: #032541; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; transition: all 0.3s;">
                             Lihat Detail
                         </a>
                     </div>
