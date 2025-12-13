@@ -18,91 +18,90 @@ class FilmController {
         $this->genre = new Genre($this->db);
     }
 
-    // FIXED: Halaman Film Public - HANYA tampilkan film dengan jadwal tayang
     public function index() {
-        if(session_status() == PHP_SESSION_NONE) session_start();
-        
-        $search = isset($_GET['search']) ? $_GET['search'] : '';
-        $genre_filter = isset($_GET['genre']) ? $_GET['genre'] : '';
-        $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
-        
-        // PERBAIKAN: Di halaman film public, SELALU hanya tampilkan film dengan jadwal
-        // Tidak peduli admin atau user, di sini HANYA film yang punya jadwal
-        
-        if($status_filter != '') {
-            switch($status_filter) {
-                case 'akan_tayang':
-                    $stmt = $this->film->readAkanTayang();
-                    break;
-                case 'sedang_tayang':
-                    $stmt = $this->film->readSedangTayang();
-                    break;
-                default:
-                    // Default: hanya film dengan jadwal
-                    $stmt = $this->film->readAll();
-            }
-        } elseif($search != '') {
-            // Search: hanya film dengan jadwal
-            $stmt = $this->film->search($search);
-        } elseif($genre_filter != '') {
-            // Filter genre: hanya film dengan jadwal
-            $stmt = $this->film->readByGenre($genre_filter);
-        } else {
-            // Default: hanya film dengan jadwal
-            $stmt = $this->film->readAll();
+    if(session_status() == PHP_SESSION_NONE) session_start();
+    
+    $search = isset($_GET['search']) ? $_GET['search'] : '';
+    $genre_filter = isset($_GET['genre']) ? $_GET['genre'] : '';
+    $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
+    
+    // ✅ FIXED: Untuk PUBLIC/USER, SELALU gunakan readAll()
+    // Yang HANYA menampilkan film dengan jadwal tayang
+    
+    if($status_filter != '') {
+        switch($status_filter) {
+            case 'akan_tayang':
+                $stmt = $this->film->readAkanTayang();
+                break;
+            case 'sedang_tayang':
+                $stmt = $this->film->readSedangTayang();
+                break;
+            default:
+                // Default: hanya film dengan jadwal
+                $stmt = $this->film->readAll();
         }
-
-        $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Deduplicate films SEBELUM processing
-        $uniqueFilms = [];
-        $seenIds = [];
-        
-        foreach($films as $film) {
-            $filmId = (int)$film['id_film'];
-            
-            // Only add if not seen before
-            if(!in_array($filmId, $seenIds, true)) {
-                $seenIds[] = $filmId;
-                $uniqueFilms[] = $film;
-            }
-        }
-        
-        // Replace with deduplicated films
-        $films = $uniqueFilms;
-        
-        // Set status untuk setiap film
-        foreach($films as $key => &$film) {
-            $status = $this->film->getFilmStatus($film['id_film']);
-            $film['status'] = $status;
-            
-            // Jika filter status aktif dan film tidak cocok, hapus
-            if($status_filter != '') {
-                if($status_filter == 'akan_tayang' && $status != 'Akan Tayang') {
-                    unset($films[$key]);
-                    continue;
-                }
-                if($status_filter == 'sedang_tayang' && $status != 'Sedang Tayang') {
-                    unset($films[$key]);
-                    continue;
-                }
-            }
-        }
-        unset($film);
-        
-        // Re-index array after unset
-        $films = array_values($films);
-        
-        // Get all genres for filter
-        $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Count by status
-        $countAkanTayang = $this->film->countByStatus('akan_tayang');
-        $countSedangTayang = $this->film->countByStatus('sedang_tayang');
-        
-        // Pass data to view
-        require_once 'views/film/index.php';
+    } elseif($search != '') {
+        // Search: hanya film dengan jadwal
+        $stmt = $this->film->search($search);
+    } elseif($genre_filter != '') {
+        // Filter genre: hanya film dengan jadwal
+        $stmt = $this->film->readByGenre($genre_filter);
+    } else {
+        // Default: hanya film dengan jadwal
+        $stmt = $this->film->readAll();
     }
+
+    $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Deduplicate films SEBELUM processing
+    $uniqueFilms = [];
+    $seenIds = [];
+    
+    foreach($films as $film) {
+        $filmId = (int)$film['id_film'];
+        
+        // Only add if not seen before
+        if(!in_array($filmId, $seenIds, true)) {
+            $seenIds[] = $filmId;
+            $uniqueFilms[] = $film;
+        }
+    }
+    
+    // Replace with deduplicated films
+    $films = $uniqueFilms;
+    
+    // ✅ Set status untuk setiap film
+    foreach($films as $key => &$film) {
+        $status = $this->film->getFilmStatus($film['id_film']);
+        $film['status'] = $status;
+        
+        // Jika filter status aktif dan film tidak cocok, hapus
+        if($status_filter != '') {
+            if($status_filter == 'akan_tayang' && $status != 'Akan Tayang') {
+                unset($films[$key]);
+                continue;
+            }
+            if($status_filter == 'sedang_tayang' && $status != 'Sedang Tayang') {
+                unset($films[$key]);
+                continue;
+            }
+        }
+    }
+    unset($film);
+    
+    // Re-index array after unset
+    $films = array_values($films);
+    
+    // Get all genres for filter
+    $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Count by status
+    $countAkanTayang = $this->film->countByStatus('akan_tayang');
+    $countSedangTayang = $this->film->countByStatus('sedang_tayang');
+    
+    // Pass data to view
+    require_once 'views/film/index.php';
+}
 
     public function show() {
         if(isset($_GET['id'])) {
