@@ -1,5 +1,5 @@
 <?php
-// models/User.php - REFACTORED dengan OOP
+
 require_once 'models/BaseModel.php';
 
 class User extends BaseModel {

@@ -1,5 +1,5 @@
 <?php
-// models/Film.php - COMPLETE FIXED VERSION
+
 require_once 'models/BaseModel.php';
 
 class Film extends BaseModel {
@@ -135,9 +135,9 @@ class Film extends BaseModel {
         return $stmt;
     }
 
-    // PERBAIKAN 3: getFilmStatus - Hanya 2 status: SEDANG TAYANG dan AKAN TAYANG
+    // PERBAIKAN 3: getFilmStatus - FIXED LOGIC dengan Prioritas
     public function getFilmStatus($id_film) {
-        // Cek apakah sedang tayang (ada jadwal yang belum selesai hari ini)
+        // PRIORITAS 1: Cek apakah sedang tayang (ada jadwal hari ini yang belum selesai)
         $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
                   WHERE id_film = :id_film 
                   AND CONCAT(tanggal_tayang, ' ', jam_selesai) >= NOW()
@@ -148,14 +148,30 @@ class Film extends BaseModel {
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
+        // Jika sedang tayang hari ini, return langsung - TIDAK CEK LAGI!
         if($result['count'] > 0) {
             return 'Sedang Tayang';
         }
         
-        // Cek apakah akan tayang (ada jadwal di masa depan) - INI PRE-SALE
+        // PRIORITAS 2: Cek apakah ada jadwal besok (bukan pre-sale)
         $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
                   WHERE id_film = :id_film 
-                  AND tanggal_tayang > CURDATE()";
+                  AND tanggal_tayang = DATE_ADD(CURDATE(), INTERVAL 1 DAY)";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id_film', $id_film);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Jika tayang besok, return "Akan Tayang" (belum pre-sale)
+        if($result['count'] > 0) {
+            return 'Akan Tayang';
+        }
+        
+        // PRIORITAS 3: Cek apakah ada jadwal di masa depan (>1 hari) - ini Pre-Sale
+        $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
+                  WHERE id_film = :id_film 
+                  AND tanggal_tayang > DATE_ADD(CURDATE(), INTERVAL 1 DAY)";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id_film', $id_film);
@@ -163,7 +179,7 @@ class Film extends BaseModel {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if($result['count'] > 0) {
-            return 'Akan Tayang'; // Pre-Sale
+            return 'Akan Tayang'; // Pre-Sale untuk jadwal >1 hari
         }
         
         // Jika tidak ada status, kembalikan null
@@ -195,7 +211,7 @@ class Film extends BaseModel {
         return $stmt;
     }
 
-    // PERBAIKAN 5: readAkanTayang - Ini untuk PRE-SALE
+    // PERBAIKAN 5: readAkanTayang - Untuk besok dan Pre-Sale
     public function readAkanTayang() {
         $query = "SELECT 
                     f.id_film, 
@@ -219,8 +235,6 @@ class Film extends BaseModel {
         return $stmt;
     }
 
-    // TIDAK PERLU readTelahTayang - Dihapus
-    
     // countByStatus - Hanya untuk akan_tayang dan sedang_tayang
     public function countByStatus($status) {
         switch($status) {

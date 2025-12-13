@@ -1,8 +1,9 @@
 <?php
-// controllers/AuthController.php - FIXED VERSION
+// controllers/AuthController.php 
 require_once 'config/database.php';
 require_once 'models/User.php';
 require_once 'models/Admin.php';
+require_once 'models/Validator.php';
 
 class AuthController {
     private $db;
@@ -20,31 +21,43 @@ class AuthController {
 
     // Show Login Form
     public function index() {
-        // Jangan load header.php karena sudah ada di login.php
         require_once 'views/auth/login.php';
     }
 
-    // Process Login
+    // Process Login - WITH VALIDATION
     public function login() {
         if($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: index.php?module=auth&action=index');
             exit();
         }
 
-        $username = isset($_POST['username']) ? trim($_POST['username']) : '';
-        $password = isset($_POST['password']) ? $_POST['password'] : '';
+        // VALIDASI INPUT
+        $validator = new Validator($_POST);
+        $validator
+            ->required('username', 'Username wajib diisi')
+            ->required('password', 'Password wajib diisi')
+            ->min('username', 3, 'Username minimal 3 karakter');
+        
+        if($validator->fails()) {
+            $error = $validator->firstError();
+            require_once 'views/auth/login.php';
+            return;
+        }
+
+        $username = trim($_POST['username']);
+        $password = $_POST['password'];
+        
+        // Cek apakah admin
         $query = "SELECT * FROM Admin WHERE username = :username LIMIT 1";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':username', $username);
         $stmt->execute();
         $adminCheck = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Jika username ditemukan di tabel Admin, maka role = admin
-        $role = $adminCheck ?  'admin': 'user';
+        $role = $adminCheck ? 'admin' : 'user';
 
         if($role === 'admin') {
-            // ADMIN LOGIN - PERBAIKAN
-            // Langsung cek di database tanpa hashing dulu
+            // ADMIN LOGIN
             $query = "SELECT * FROM Admin WHERE username = :username LIMIT 1";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':username', $username);
@@ -52,20 +65,15 @@ class AuthController {
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if($admin) {
-                // Cek password - bisa plain text atau hashed
                 $passwordValid = false;
                 
-                // Cek apakah password di database adalah plain text
                 if($admin['password'] === $password) {
                     $passwordValid = true;
-                }
-                // Atau cek dengan password_verify untuk password yang di-hash
-                elseif(password_verify($password, $admin['password'])) {
+                } elseif(password_verify($password, $admin['password'])) {
                     $passwordValid = true;
                 }
                 
                 if($passwordValid) {
-                    // Login berhasil
                     $_SESSION['admin_id'] = $admin['id_admin'];
                     $_SESSION['admin_username'] = $admin['username'];
                     $_SESSION['admin_name'] = $admin['nama_lengkap'];
@@ -77,7 +85,6 @@ class AuthController {
                 }
             }
             
-            // Login gagal
             $error = 'Username atau password admin salah';
             require_once 'views/auth/login.php';
             
@@ -99,44 +106,66 @@ class AuthController {
         }
     }
 
-    // Show Register Form
+    // Show Register Form - WITH VALIDATION
     public function register() {
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = isset($_POST['username']) ? trim($_POST['username']) : '';
-            $email = isset($_POST['email']) ? trim($_POST['email']) : '';
-            $password = isset($_POST['password']) ? $_POST['password'] : '';
-            $nama_lengkap = isset($_POST['nama_lengkap']) ? trim($_POST['nama_lengkap']) : '';
-            $no_telpon = isset($_POST['no_telpon']) ? trim($_POST['no_telpon']) : '';
-
-            // Validasi
-            if($username === '' || $email === '' || $password === '' || $nama_lengkap === '') {
-                $error = 'Semua field wajib diisi';
+            // VALIDASI KOMPREHENSIF
+            $validator = new Validator($_POST);
+            $validator
+                ->required('username', 'Username wajib diisi')
+                ->min('username', 3, 'Username minimal 3 karakter')
+                ->max('username', 50, 'Username maksimal 50 karakter')
+                ->required('email', 'Email wajib diisi')
+                ->email('email', 'Format email tidak valid')
+                ->required('password', 'Password wajib diisi')
+                ->min('password', 6, 'Password minimal 6 karakter')
+                ->required('nama_lengkap', 'Nama lengkap wajib diisi')
+                ->min('nama_lengkap', 3, 'Nama lengkap minimal 3 karakter');
+            
+            // Validasi unique username & email
+            if(isset($_POST['username'])) {
+                $validator->unique('username', 'User', 'username', $this->db, null, 'Username sudah digunakan');
+            }
+            
+            if(isset($_POST['email'])) {
+                $validator->unique('email', 'User', 'email', $this->db, null, 'Email sudah digunakan');
+            }
+            
+            // Validasi no_telpon jika diisi
+            if(!empty($_POST['no_telpon'])) {
+                $validator
+                    ->numeric('no_telpon', 'No. telepon harus berupa angka')
+                    ->min('no_telpon', 10, 'No. telepon minimal 10 digit')
+                    ->max('no_telpon', 15, 'No. telepon maksimal 15 digit');
+            }
+            
+            // Validasi tanggal lahir jika diisi
+            if(!empty($_POST['tanggal_lahir'])) {
+                $validator->date('tanggal_lahir', 'Y-m-d', 'Format tanggal tidak valid');
+            }
+            
+            // Cek hasil validasi
+            if($validator->fails()) {
+                $error = $validator->firstError();
+                $errors = $validator->errors(); // untuk tampilkan semua error
                 require_once 'views/auth/register.php';
                 return;
             }
 
-            // Check username exists
-            if($this->user->usernameExists($username)) {
-                $error = 'Username sudah digunakan';
-                require_once 'views/auth/register.php';
-                return;
-            }
+            // Jika validasi lolos, create user
+            $username = trim($_POST['username']);
+            $email = trim($_POST['email']);
+            $password = $_POST['password'];
+            $nama_lengkap = trim($_POST['nama_lengkap']);
+            $no_telpon = trim($_POST['no_telpon'] ?? '');
 
-            // Check email exists
-            if($this->user->emailExists($email)) {
-                $error = 'Email sudah digunakan';
-                require_once 'views/auth/register.php';
-                return;
-            }
-
-            // Create user
             $this->user->username = $username;
             $this->user->email = $email;
             $this->user->password = $password;
             $this->user->nama_lengkap = $nama_lengkap;
             $this->user->no_telpon = $no_telpon;
-            $this->user->tanggal_lahir = isset($_POST['tanggal_lahir']) ? $_POST['tanggal_lahir'] : null;
-            $this->user->alamat = isset($_POST['alamat']) ? $_POST['alamat'] : null;
+            $this->user->tanggal_lahir = $_POST['tanggal_lahir'] ?? null;
+            $this->user->alamat = $_POST['alamat'] ?? null;
 
             if($this->user->create()) {
                 $_SESSION['flash'] = 'Akun berhasil dibuat! Silakan login.';
@@ -155,7 +184,6 @@ class AuthController {
     public function logout() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
-        // Destroy all session data
         session_unset();
         session_destroy();
         

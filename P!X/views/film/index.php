@@ -3,8 +3,8 @@
 <!-- Hero Section with Background -->
 <div style="background: linear-gradient(rgba(13, 37, 63, 0.8), rgba(13, 37, 63, 0.8)), url('assets/bakcground film/Belakang-Kiri-1024x576.jpg') center/cover; padding: 100px 20px; color: white; position: relative;">
     <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
-        <h1 style="font-size: 52px; margin: 0 0 15px 0; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">🎬 Daftar Film</h1>
-        <p style="font-size: 22px; margin: 0 0 40px 0; opacity: 0.95; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Koleksi Film Terbaik Indonesia</p>
+        <h1 style="font-size: 52px; margin: 0 0 15px 0; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Daftar Film</h1>
+        <p style="font-size: 22px; margin: 0 0 40px 0; opacity: 0.95; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Saksikan Film Terbaik Untuk Anda </p>
         
         <!-- Search Bar -->
         <form method="GET" action="index.php" style="max-width: 700px; display: flex; gap: 0; background: white; border-radius: 50px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
@@ -12,8 +12,8 @@
             <input type="text" name="search" placeholder="Cari film berdasarkan judul..." 
                    value="<?php echo htmlspecialchars($search ?? ''); ?>"
                    style="flex: 1; padding: 18px 30px; border: none; font-size: 16px; outline: none; color: #333;">
-            <button type="submit" style="padding: 18px 40px; background: linear-gradient(135deg, #0d95a6, #14b8c9); color: white; border: none; font-weight: 600; cursor: pointer; font-size: 16px; transition: all 0.3s;">
-                🔍 Cari
+            <button type="submit" style="padding: 18px 25px; background: linear-gradient(135deg, #0d95a6, #14b8c9); color: white; border: none; font-weight: 600; cursor: pointer; font-size: 16px; transition: all 0.3s;">
+                Cari
             </button>
         </form>
     </div>
@@ -24,23 +24,14 @@
     <!-- Film Count Header -->
     <div style="margin-bottom: 30px;">
         <h2 style="font-size: 28px; color: #032541; margin: 0;">
-            <?php 
-            if($status_filter == 'akan_tayang') {
-                echo ' Film Akan Tayang (Pre-Sale)';
-            } elseif($status_filter == 'sedang_tayang') {
-                echo ' Film Sedang Tayang';
-            } else {
-                echo 'Semua Film';
-            }
-            ?> 
-            (<?php echo count($films); ?>)
+          
+           
         </h2>
     </div>
 
-
     <!-- Filter by Genre - Horizontal Scroll -->
     <div style="margin-bottom: 40px;">
-        <h3 style="font-size: 20px; color: #032541; margin: 0 0 15px 0;"> Filter by Genre</h3>
+ 
         <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin;">
             <a href="index.php?module=film" 
                style="flex-shrink: 0; padding: 12px 24px; background: <?php echo empty($genre_filter) ? 'linear-gradient(135deg, #0d7377, #14a1a6)' : '#6c757d'; ?>; color: white; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap;">
@@ -79,10 +70,41 @@
                              alt="<?php echo htmlspecialchars($film['judul_film']); ?>"
                              style="width: 100%; height: 260px; object-fit: cover; display: block;">
                         
-                        <!-- Status Badge -->
+                        <!-- Status Badge - FIXED LOGIC -->
                         <?php if(isset($film['status']) && $film['status']): ?>
-                            <div style="position: absolute; top: 8px; left: 8px; background: <?php echo $film['status'] == 'Sedang Tayang' ? 'linear-gradient(135deg, #1e3a8a, #1e40af)' : 'linear-gradient(135deg, #f59e0b, #d97706)'; ?>; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
-                                <?php echo $film['status'] == 'Sedang Tayang' ? '🔥 TAYANG' : '⚡ PRE-SALE'; ?>
+                            <?php
+                            // Cek jadwal terdekat untuk tentukan badge
+                            $query_check = "SELECT MIN(tanggal_tayang) as nearest_date 
+                                            FROM Jadwal_Tayang 
+                                            WHERE id_film = :id_film 
+                                            AND tanggal_tayang >= CURDATE()";
+                            $stmt_check = $this->db->prepare($query_check);
+                            $stmt_check->bindParam(':id_film', $film['id_film']);
+                            $stmt_check->execute();
+                            $nearest = $stmt_check->fetch(PDO::FETCH_ASSOC);
+                            
+                            $today = date('Y-m-d');
+                            $tomorrow = date('Y-m-d', strtotime('+1 day'));
+                            $nearestDate = $nearest['nearest_date'] ?? '';
+                            
+                            $isToday = ($nearestDate == $today);
+                            $isTomorrow = ($nearestDate == $tomorrow);
+                            $isPresale = ($nearestDate > $tomorrow);
+                            
+                            // Tentukan warna dan label
+                            if($isToday) {
+                                $bgColor = 'linear-gradient(135deg, #1e3a8a, #1e40af)';
+                                $label = '🔥 TAYANG';
+                            } elseif($isTomorrow) {
+                                $bgColor = 'linear-gradient(135deg, #764ba2, #667eea)';
+                                $label = '⏭️ BESOK';
+                            } else {
+                                $bgColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                                $label = '⚡ PRE-SALE';
+                            }
+                            ?>
+                            <div style="position: absolute; top: 8px; left: 8px; background: <?php echo $bgColor; ?>; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
+                                <?php echo $label; ?>
                             </div>
                         <?php endif; ?>
                         

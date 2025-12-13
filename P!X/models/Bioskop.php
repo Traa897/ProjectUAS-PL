@@ -1,5 +1,5 @@
 <?php
-// models/Bioskop.php - REFACTORED dengan OOP
+
 require_once 'models/BaseModel.php';
 
 class Bioskop extends BaseModel {

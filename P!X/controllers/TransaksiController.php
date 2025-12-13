@@ -1,10 +1,10 @@
 <?php
-// controllers/TransaksiController.php - FIXED VERSION with Pre-Sale Info
 require_once 'config/database.php';
 require_once 'models/Transaksi.php';
 require_once 'models/DetailTransaksi.php';
 require_once 'models/Jadwal.php';
 require_once 'models/Film.php';
+require_once 'models/Validator.php';
 
 class TransaksiController {
     private $db;
@@ -20,7 +20,6 @@ class TransaksiController {
         $this->jadwal = new Jadwal($this->db);
     }
 
-    // Halaman Pilih Jadwal - FIXED
     public function pilihJadwal() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -37,12 +36,10 @@ class TransaksiController {
 
         $id_film = $_GET['id_film'];
         
-        // Get Film Info - FIXED
         $film = new Film($this->db);
         $film->id_film = $id_film;
         $filmData = $film->readOne() ? $film : null;
 
-        // Get Available Schedules with complete data
         $query = "SELECT jt.*, f.judul_film, b.nama_bioskop, b.kota 
                   FROM Jadwal_Tayang jt
                   LEFT JOIN Film f ON jt.id_film = f.id_film
@@ -55,7 +52,6 @@ class TransaksiController {
         $stmt->execute();
         $jadwals = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Filter only future schedules
         $today = date('Y-m-d');
         $jadwals = array_filter($jadwals, function($j) use ($today) {
             return $j['tanggal_tayang'] >= $today;
@@ -64,7 +60,6 @@ class TransaksiController {
         require_once 'views/transaksi/pilih_jadwal.php';
     }
 
-    // Halaman Booking Tiket - FIXED
     public function booking() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -75,7 +70,6 @@ class TransaksiController {
 
         $id_jadwal = $_GET['id_jadwal'];
         
-        // Get Complete Jadwal Info with JOIN - FIXED
         $query = "SELECT jt.*, f.judul_film, f.poster_url, b.nama_bioskop, b.kota, b.alamat_bioskop
                   FROM Jadwal_Tayang jt
                   LEFT JOIN Film f ON jt.id_film = f.id_film
@@ -93,16 +87,14 @@ class TransaksiController {
             exit();
         }
 
-        // Pass as object for compatibility with view
         $this->jadwal = (object) $jadwalData;
 
-        // Get Kursi Terpesan
         $kursiTerpesan = $this->detailTransaksi->getKursiTerpesanByJadwal($id_jadwal);
         
         require_once 'views/transaksi/booking.php';
     }
 
-    // Process Booking dengan Random Seat
+    // ✅ PROSES BOOKING DENGAN VALIDASI LENGKAP
     public function prosesBooking() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -111,19 +103,49 @@ class TransaksiController {
             exit();
         }
 
-        $id_jadwal = $_POST['id_jadwal'];
-        $jumlah_tiket = isset($_POST['jumlah_tiket']) ? (int)$_POST['jumlah_tiket'] : 0;
-        $metode_pembayaran = $_POST['metode_pembayaran'];
-
-        if($jumlah_tiket < 1 || $jumlah_tiket > 10) {
-            $_SESSION['flash'] = 'Jumlah tiket harus antara 1-10!';
-            header("Location: index.php?module=transaksi&action=booking&id_jadwal=" . $id_jadwal);
+        // VALIDASI INPUT
+        $validator = new Validator($_POST);
+        $validator
+            ->required('id_jadwal', 'Jadwal harus dipilih')
+            ->numeric('id_jadwal', 'ID jadwal tidak valid')
+            ->required('jumlah_tiket', 'Jumlah tiket wajib diisi')
+            ->numeric('jumlah_tiket', 'Jumlah tiket harus berupa angka')
+            ->between('jumlah_tiket', 1, 10, 'Jumlah tiket harus antara 1-10')
+            ->required('metode_pembayaran', 'Metode pembayaran wajib dipilih');
+        
+        // Validasi metode pembayaran
+        $allowedMethods = ['transfer', 'e-wallet', 'kartu_kredit', 'tunai'];
+        $validator->custom('metode_pembayaran', function($value) use ($allowedMethods) {
+            return in_array($value, $allowedMethods);
+        }, 'Metode pembayaran tidak valid');
+        
+        if($validator->fails()) {
+            $_SESSION['flash'] = $validator->firstError();
+            header("Location: index.php?module=transaksi&action=booking&id_jadwal=" . ($_POST['id_jadwal'] ?? ''));
             exit();
         }
 
-        // Get Jadwal Info
+        $id_jadwal = (int)$_POST['id_jadwal'];
+        $jumlah_tiket = (int)$_POST['jumlah_tiket'];
+        $metode_pembayaran = $_POST['metode_pembayaran'];
+
+        // Validasi jadwal exists
         $this->jadwal->id_tayang = $id_jadwal;
-        $this->jadwal->readOne();
+        if(!$this->jadwal->readOne()) {
+            $_SESSION['flash'] = 'Jadwal tidak ditemukan!';
+            header("Location: index.php?module=film");
+            exit();
+        }
+
+        // Cek ketersediaan kursi
+        $kursiTerpesan = $this->detailTransaksi->getKursiTerpesanByJadwal($id_jadwal);
+        $kursiTersedia = 100 - count($kursiTerpesan);
+        
+        if($kursiTersedia < $jumlah_tiket) {
+            $_SESSION['flash'] = 'Maaf, kursi tersedia hanya ' . $kursiTersedia . ' kursi!';
+            header("Location: index.php?module=transaksi&action=booking&id_jadwal=" . $id_jadwal);
+            exit();
+        }
 
         // Generate Random Kursi
         $kursiTerpilih = [];
@@ -149,7 +171,6 @@ class TransaksiController {
         $this->transaksi->tanggal_pembayaran = date('Y-m-d H:i:s');
 
         if($this->transaksi->create()) {
-            // Create Detail Transaksi for each ticket
             foreach($kursiTerpilih as $kursi) {
                 $this->detailTransaksi->id_transaksi = $this->transaksi->id_transaksi;
                 $this->detailTransaksi->id_jadwal_tayang = $id_jadwal;
@@ -169,7 +190,6 @@ class TransaksiController {
         }
     }
 
-    // Konfirmasi Pembayaran (Struk)
     public function konfirmasi() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -191,7 +211,6 @@ class TransaksiController {
         require_once 'views/transaksi/konfirmasi.php';
     }
 
-    // Update Status (Admin Only)
     public function updateStatus() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
@@ -215,7 +234,6 @@ class TransaksiController {
         exit();
     }
 
-    // Detail Transaksi (Admin)
     public function detail() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         

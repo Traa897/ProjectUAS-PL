@@ -23,7 +23,7 @@
             </h1>
             
             <?php 
-            // PERBAIKAN: Cek status film - Hanya 2 status
+            // FIXED: Cek status film dengan prioritas
             $query = "SELECT COUNT(*) as count FROM Jadwal_Tayang WHERE id_film = :id_film";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':id_film', $filmData['id_film']);
@@ -31,45 +31,50 @@
             $jadwalCount = $stmt->fetch(PDO::FETCH_ASSOC);
             
             $filmStatus = 'tidak_ada_jadwal';
+            $nearestDate = null;
             
             if($jadwalCount['count'] > 0) {
-                // Cek sedang tayang
-                $query_now = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
-                              WHERE id_film = :id_film 
-                              AND CONCAT(tanggal_tayang, ' ', jam_selesai) >= NOW()
-                              AND tanggal_tayang <= CURDATE()";
-                $stmt_now = $this->db->prepare($query_now);
-                $stmt_now->bindParam(':id_film', $filmData['id_film']);
-                $stmt_now->execute();
-                $result_now = $stmt_now->fetch(PDO::FETCH_ASSOC);
+                // Cek jadwal terdekat
+                $query_nearest = "SELECT MIN(tanggal_tayang) as nearest_date 
+                                  FROM Jadwal_Tayang 
+                                  WHERE id_film = :id_film 
+                                  AND tanggal_tayang >= CURDATE()";
+                $stmt_nearest = $this->db->prepare($query_nearest);
+                $stmt_nearest->bindParam(':id_film', $filmData['id_film']);
+                $stmt_nearest->execute();
+                $nearest = $stmt_nearest->fetch(PDO::FETCH_ASSOC);
+                $nearestDate = $nearest['nearest_date'] ?? null;
                 
-                if($result_now['count'] > 0) {
-                    $filmStatus = 'sedang_tayang';
-                } else {
-                    // Cek akan tayang (Pre-Sale)
-                    $query_future = "SELECT COUNT(*) as count FROM Jadwal_Tayang 
-                                    WHERE id_film = :id_film 
-                                    AND tanggal_tayang > CURDATE()";
-                    $stmt_future = $this->db->prepare($query_future);
-                    $stmt_future->bindParam(':id_film', $filmData['id_film']);
-                    $stmt_future->execute();
-                    $result_future = $stmt_future->fetch(PDO::FETCH_ASSOC);
+                if($nearestDate) {
+                    $today = date('Y-m-d');
+                    $tomorrow = date('Y-m-d', strtotime('+1 day'));
                     
-                    if($result_future['count'] > 0) {
-                        $filmStatus = 'akan_tayang'; // Pre-Sale
+                    // Hitung selisih hari
+                    $selisihHari = floor((strtotime($nearestDate) - strtotime($today)) / 86400);
+                    
+                    if($selisihHari == 0) {
+                        $filmStatus = 'sedang_tayang';
+                    } elseif($selisihHari == 1) {
+                        $filmStatus = 'besok';
+                    } else {
+                        $filmStatus = 'presale';
                     }
                 }
             }
             ?>
             
-            <!-- Status Badge -->
+            <!-- Status Badge dengan 3 kondisi -->
             <?php if($filmStatus == 'sedang_tayang'): ?>
-            <div style="display: inline-block; padding: 8px 20px; background: #1e3a8a; color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px;">
-                🔥 SEDANG TAYANG
+            <div style="display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #1e3a8a, #1e40af); color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);">
+                🔥 SEDANG TAYANG HARI INI
             </div>
-            <?php elseif($filmStatus == 'akan_tayang'): ?>
-            <div style="display: inline-block; padding: 8px 20px; background: #f59e0b; color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px;">
-                ⚡ PRE-SALE - AKAN TAYANG
+            <?php elseif($filmStatus == 'besok'): ?>
+            <div style="display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #764ba2, #667eea); color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4);">
+                ⏭️ TAYANG BESOK
+            </div>
+            <?php elseif($filmStatus == 'presale'): ?>
+            <div style="display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);">
+                ⚡ PRE-SALE - BOOKING TERSEDIA
             </div>
             <?php endif; ?>
             
@@ -99,21 +104,29 @@
                 </p>
             </div>
             
-            <!-- PERBAIKAN: Tombol Booking untuk SEDANG TAYANG dan AKAN TAYANG (Pre-Sale) -->
+            <!-- Tombol Booking - FIXED untuk semua status -->
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <?php 
                 if(session_status() == PHP_SESSION_NONE) session_start();
                 
-                // Booking tersedia untuk SEDANG TAYANG dan AKAN TAYANG (Pre-Sale)
-                if(isset($_SESSION['user_id']) && ($filmStatus == 'sedang_tayang' || $filmStatus == 'akan_tayang')): ?>
+                // Booking tersedia untuk SEMUA status kecuali tidak_ada_jadwal
+                if(isset($_SESSION['user_id']) && in_array($filmStatus, ['sedang_tayang', 'besok', 'presale'])): ?>
                     <a href="index.php?module=transaksi&action=pilihJadwal&id_film=<?php echo $filmData['id_film']; ?>" 
-                       class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
-                        <?php echo $filmStatus == 'akan_tayang' ? '⚡ Pre-Sale Booking' : '🎫 Booking Tiket'; ?>
+                       class="btn btn-primary" style="padding: 15px 30px; font-size: 16px; <?php echo $filmStatus == 'presale' ? 'background: linear-gradient(135deg, #f59e0b, #d97706);' : ''; ?>">
+                        <?php 
+                        if($filmStatus == 'sedang_tayang') {
+                            echo '🎫 Booking Tiket Sekarang';
+                        } elseif($filmStatus == 'besok') {
+                            echo '⏭️ Booking untuk Besok';
+                        } else {
+                            echo '⚡ Pre-Sale Booking';
+                        }
+                        ?>
                     </a>
-                <?php elseif(!isset($_SESSION['user_id']) && !isset($_SESSION['admin_id']) && ($filmStatus == 'sedang_tayang' || $filmStatus == 'akan_tayang')): ?>
+                <?php elseif(!isset($_SESSION['user_id']) && !isset($_SESSION['admin_id']) && in_array($filmStatus, ['sedang_tayang', 'besok', 'presale'])): ?>
                     <a href="index.php?module=auth&action=index" 
                        class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
-                        🔐 Login untuk <?php echo $filmStatus == 'akan_tayang' ? 'Pre-Sale' : 'Booking'; ?>
+                        🔐 Login untuk Booking
                     </a>
                 <?php elseif($filmStatus == 'tidak_ada_jadwal'): ?>
                     <div style="padding: 15px 30px; background: #f8d7da; color: #721c24; border-radius: 5px; font-weight: 600;">
@@ -123,12 +136,23 @@
                 
                 <?php if(isset($_SESSION['admin_id'])): ?>
                     <a href="index.php?module=admin&action=editFilm&id=<?php echo $filmData['id_film']; ?>" 
-                       class="btn btn-warning" style="padding: 15px 20px;">✏️ Edit</a>
+                       class="btn btn-warning" style="padding: 15px 20px;"> Edit</a>
                     <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $filmData['id_film']; ?>" 
                        class="btn btn-danger" style="padding: 15px 20px;"
                        onclick="return confirm('Yakin hapus film ini?')">🗑️ Hapus</a>
                 <?php endif; ?>
             </div>
+            
+            <!-- Info tambahan untuk Pre-Sale -->
+            <?php if($filmStatus == 'presale' && $nearestDate): ?>
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 2px solid #ffc107;">
+                <strong style="color: #856404; font-size: 14px;">ℹ️ Info Pre-Sale:</strong>
+                <p style="margin: 5px 0 0 0; color: #856404; font-size: 13px;">
+                    Film ini akan tayang pada <strong><?php echo date('d F Y', strtotime($nearestDate)); ?></strong>. 
+                    Anda dapat membeli tiket sekarang untuk penayangan tersebut!
+                </p>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

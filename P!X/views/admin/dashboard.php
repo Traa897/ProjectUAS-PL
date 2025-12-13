@@ -4,8 +4,8 @@
     <div class="header-section">
         <h1>📊 Dashboard Admin</h1>
         <div style="display: flex; gap: 10px;">
-            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film</a>
-            <a href="index.php?module=jadwal&action=create" class="btn btn-info">📅 Tambah Jadwal</a>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">Tambah Film</a>
+            <a href="index.php?module=jadwal&action=create" class="btn btn-info"> Tambah Jadwal</a>
         </div>
     </div>
 
@@ -62,7 +62,7 @@
 
     <!-- Status Film Statistics - FIXED: Hanya 2 status -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>📊 Statistik Status Film</h2>
+        <h2>Status Film</h2>
     </div>
 
     <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
@@ -94,13 +94,13 @@
 
     <!-- Kelola Film Section -->
     <div class="section-header" style="margin-top: 40px;">
-        <h2>🎬 Kelola Film</h2>
+        <h2>Kelola Film</h2>
     </div>
 
     <?php if(empty($films)): ?>
         <div class="empty-state">
             <p>❌ Belum ada film dengan jadwal tayang</p>
-            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary">➕ Tambah Film Pertama</a>
+            <a href="index.php?module=admin&action=createFilm" class="btn btn-primary"> Tambah Film Pertama</a>
         </div>
     <?php else: ?>
         <div class="movie-scroll" style="margin-bottom: 40px;">
@@ -122,11 +122,11 @@
                             </span>
                         </div>
                         <div class="card-actions-overlay">
-                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm">👁️ Detail</a>
-                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm">✏️ Edit</a>
+                            <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" class="btn btn-info btn-sm"> Detail</a>
+                            <a href="index.php?module=admin&action=editFilm&id=<?php echo $film['id_film']; ?>" class="btn btn-warning btn-sm"> Edit</a>
                             <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $film['id_film']; ?>" 
                                class="btn btn-danger btn-sm" 
-                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')">🗑️ Hapus</a>
+                               onclick="return confirm('Hapus film <?php echo htmlspecialchars($film['judul_film']); ?>?')"> Hapus</a>
                         </div>
                     </div>
                     <div class="movie-info-scroll">

@@ -80,20 +80,17 @@
 
    
 <!-- Quick Actions -->
-<div class="section-header" style="margin-top: 40px;">
+<div class="section-header" style="margin-top: 20px;">
     <h2>Lainnya</h2>
 </div>
 
 <div style="display: flex; justify-content: flex-start; gap: 15px; margin-bottom: 30px;">
     <a href="index.php?module=user&action=riwayat" style="background: #02739A; padding: 10px; border-radius: 8px; color: white; text-decoration: none; text-align: center; transition: transform 0.2s; width: 150px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
-        <div style="font-size: 24px; margin-bottom: 5px;">🎫</div>
-        <h3 style="margin: 0; font-size: 14px;">Riwayat Tiket</h3>
+        <div style="font-size: 18px; margin-bottom: 5px;">Riwayat Tiket</div>
+ 
     </a>
 
-    <a href="index.php?module=user&action=profile" style="background: #4facfe; padding: 10px; border-radius: 8px; color: white; text-decoration: none; text-align: center; transition: transform 0.2s; width: 150px;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
-        <div style="font-size: 24px; margin-bottom: 5px;">⚙️</div>
-        <h3 style="margin: 0; font-size: 14px;">Pengaturan</h3>
-    </a>
+  
 </div>
 
     <!-- Recent Transactions -->

@@ -1,5 +1,5 @@
 <?php
-// models/Transaksi.php - REFACTORED
+// models/Transaksi.php
 require_once 'models/BaseModel.php';
 
 class Transaksi extends BaseModel {

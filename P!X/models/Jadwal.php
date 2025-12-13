@@ -1,5 +1,5 @@
 <?php
-// models/Jadwal.php - REFACTORED dengan OOP
+// models/Jadwal.php 
 require_once 'models/BaseModel.php';
 
 class Jadwal extends BaseModel {
