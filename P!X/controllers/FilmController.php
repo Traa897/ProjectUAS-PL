@@ -1,5 +1,5 @@
 <?php
-// controllers/FilmController.php - FIXED VERSION
+// controllers/FilmController.php - FIXED VERSION (Tanpa Telah Tayang)
 
 require_once 'config/database.php';
 require_once 'models/BaseModel.php';
@@ -18,11 +18,18 @@ class FilmController {
         $this->genre = new Genre($this->db);
     }
 
+    // FIXED: Hapus case 'telah_tayang' + Filter untuk Public/User
     public function index() {
+        if(session_status() == PHP_SESSION_NONE) session_start();
+        
         $search = isset($_GET['search']) ? $_GET['search'] : '';
         $genre_filter = isset($_GET['genre']) ? $_GET['genre'] : '';
         $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
+        
+        // PERBAIKAN: Cek apakah admin atau bukan
+        $isAdmin = isset($_SESSION['admin_id']);
 
+        // PERBAIKAN: Hanya 2 status - akan_tayang dan sedang_tayang
         if($status_filter != '') {
             switch($status_filter) {
                 case 'akan_tayang':
@@ -31,23 +38,46 @@ class FilmController {
                 case 'sedang_tayang':
                     $stmt = $this->film->readSedangTayang();
                     break;
-                case 'telah_tayang':
-                    $stmt = $this->film->readTelahTayang();
-                    break;
+                // HAPUS case 'telah_tayang' - tidak dipakai lagi
                 default:
-                    $stmt = $this->film->readAll();
+                    // Admin: tampilkan semua film (termasuk tanpa jadwal)
+                    // Public/User: hanya film dengan jadwal
+                    if($isAdmin) {
+                        $stmt = $this->film->readAllIncludingNoSchedule();
+                    } else {
+                        $stmt = $this->film->readAll();
+                    }
             }
         } elseif($search != '') {
-            $stmt = $this->film->search($search);
+            // Admin: search semua film
+            // Public/User: search hanya film dengan jadwal
+            if($isAdmin) {
+                $stmt = $this->film->searchAllFilms($search);
+            } else {
+                $stmt = $this->film->search($search);
+            }
         } elseif($genre_filter != '') {
-            $stmt = $this->film->readByGenre($genre_filter);
+            // Admin: tampilkan semua film di genre ini
+            // Public/User: hanya film dengan jadwal
+            if($isAdmin) {
+                $stmt = $this->film->readByGenreAll($genre_filter);
+            } else {
+                $stmt = $this->film->readByGenre($genre_filter);
+            }
         } else {
-            $stmt = $this->film->readAll();
+            // Default view
+            // Admin: tampilkan semua film (termasuk tanpa jadwal)
+            // Public/User: hanya film dengan jadwal
+            if($isAdmin) {
+                $stmt = $this->film->readAllIncludingNoSchedule();
+            } else {
+                $stmt = $this->film->readAll();
+            }
         }
 
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Deduplicate
+        // Deduplicate films
         $uniqueFilms = [];
         $seenIds = [];
         
@@ -76,12 +106,15 @@ class FilmController {
         // Re-index array setelah unset
         $films = array_values($films);
         
+        // Get all genres for filter
         $genres = $this->genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
         
+        // Count by status - FIXED: Hanya 2 status
         $countAkanTayang = $this->film->countByStatus('akan_tayang');
         $countSedangTayang = $this->film->countByStatus('sedang_tayang');
-        $countTelahTayang = $this->film->countByStatus('telah_tayang');
+        // HAPUS: $countTelahTayang
         
+        // Pass isAdmin to view
         require_once 'views/film/index.php';
     }
 
@@ -244,3 +277,4 @@ class FilmController {
         }
     }
 }
+?>

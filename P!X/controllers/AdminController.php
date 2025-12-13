@@ -1,6 +1,4 @@
-
 <?php
-
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
 require_once 'models/Genre.php';    
@@ -35,7 +33,7 @@ class AdminController {
 
     // Dashboard Admin - FIXED
     public function dashboard() {
-        // Get statistics
+        // Get statistics - SEMUA FILM (termasuk yang tidak ada jadwal)
         $totalFilms = $this->qb->reset()->table('Film')->count();
         $totalBioskops = $this->qb->reset()->table('Bioskop')->count();
         $totalJadwals = $this->qb->reset()->table('Jadwal_Tayang')->count();

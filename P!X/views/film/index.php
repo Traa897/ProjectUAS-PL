@@ -3,7 +3,7 @@
 <!-- Hero Section with Background -->
 <div style="background: linear-gradient(rgba(13, 37, 63, 0.8), rgba(13, 37, 63, 0.8)), url('assets/bakcground film/Belakang-Kiri-1024x576.jpg') center/cover; padding: 100px 20px; color: white; position: relative;">
     <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
-        <h1 style="font-size: 52px; margin: 0 0 15px 0; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Daftar Film</h1>
+        <h1 style="font-size: 52px; margin: 0 0 15px 0; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">🎬 Daftar Film</h1>
         <p style="font-size: 22px; margin: 0 0 40px 0; opacity: 0.95; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Koleksi Film Terbaik Indonesia</p>
         
         <!-- Search Bar -->
@@ -13,7 +13,7 @@
                    value="<?php echo htmlspecialchars($search ?? ''); ?>"
                    style="flex: 1; padding: 18px 30px; border: none; font-size: 16px; outline: none; color: #333;">
             <button type="submit" style="padding: 18px 40px; background: linear-gradient(135deg, #0d95a6, #14b8c9); color: white; border: none; font-weight: 600; cursor: pointer; font-size: 16px; transition: all 0.3s;">
-                Cari
+                🔍 Cari
             </button>
         </form>
     </div>
@@ -23,12 +23,24 @@
     
     <!-- Film Count Header -->
     <div style="margin-bottom: 30px;">
-        <h2 style="font-size: 28px; color: #032541; margin: 0;">Semua Film (<?php echo count($films); ?>)</h2>
+        <h2 style="font-size: 28px; color: #032541; margin: 0;">
+            <?php 
+            if($status_filter == 'akan_tayang') {
+                echo ' Film Akan Tayang (Pre-Sale)';
+            } elseif($status_filter == 'sedang_tayang') {
+                echo ' Film Sedang Tayang';
+            } else {
+                echo 'Semua Film';
+            }
+            ?> 
+            (<?php echo count($films); ?>)
+        </h2>
     </div>
+
 
     <!-- Filter by Genre - Horizontal Scroll -->
     <div style="margin-bottom: 40px;">
-        <h3 style="font-size: 20px; color: #032541; margin: 0 0 15px 0;">Filter by Genre</h3>
+        <h3 style="font-size: 20px; color: #032541; margin: 0 0 15px 0;"> Filter by Genre</h3>
         <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin;">
             <a href="index.php?module=film" 
                style="flex-shrink: 0; padding: 12px 24px; background: <?php echo empty($genre_filter) ? 'linear-gradient(135deg, #0d7377, #14a1a6)' : '#6c757d'; ?>; color: white; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap;">
@@ -47,9 +59,15 @@
     <?php if(empty($films)): ?>
         <div style="text-align: center; padding: 80px 20px; background: #f8f9fa; border-radius: 15px;">
             <h3 style="font-size: 24px; color: #6c757d; margin: 0 0 10px 0;">😢 Tidak ada film ditemukan</h3>
-            <p style="color: #999; margin: 0 0 20px 0;">Coba ubah filter atau kata kunci pencarian</p>
+            <p style="color: #999; margin: 0 0 20px 0;">
+                <?php if($status_filter != ''): ?>
+                    Belum ada film dengan status ini. Coba filter lain atau lihat semua film.
+                <?php else: ?>
+                    Coba ubah filter atau kata kunci pencarian
+                <?php endif; ?>
+            </p>
             <a href="index.php?module=film" style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #0d7377, #14a1a6); color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">
-                Reset Filter
+                🔄 Reset Filter
             </a>
         </div>
     <?php else: ?>
@@ -64,7 +82,7 @@
                         <!-- Status Badge -->
                         <?php if(isset($film['status']) && $film['status']): ?>
                             <div style="position: absolute; top: 8px; left: 8px; background: <?php echo $film['status'] == 'Sedang Tayang' ? 'linear-gradient(135deg, #1e3a8a, #1e40af)' : 'linear-gradient(135deg, #f59e0b, #d97706)'; ?>; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
-                                <?php echo $film['status'] == 'Sedang Tayang' ? 'Sedang Tayang' : 'Akan Tayang'; ?>
+                                <?php echo $film['status'] == 'Sedang Tayang' ? '🔥 TAYANG' : '⚡ PRE-SALE'; ?>
                             </div>
                         <?php endif; ?>
                         

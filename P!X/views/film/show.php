@@ -1,7 +1,7 @@
 <?php require_once 'views/layouts/header.php'; ?>
 
 <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
-    <a href="index.php?module=film" class="btn btn-secondary" style="margin-bottom: 20px;">← Kembali ke Daftar Film</a>
+    <a href="index.php?module=film" class="btn btn-secondary" style="margin-bottom: 20px;">Kembali</a>
     
     <div class="film-detail" style="display: grid; grid-template-columns: 300px 1fr; gap: 40px; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
         <!-- Poster -->
