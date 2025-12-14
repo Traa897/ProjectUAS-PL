@@ -6,7 +6,6 @@
     <title>Admin Dashboard - P!X</title>
     <link rel="stylesheet" href="assets/style.css">
     <style>
-        /* Admin Navbar Styles */
         .admin-navbar {
             background: linear-gradient(to right, #032541 0%, #01b4e4 100%);
             padding: 0;
@@ -57,7 +56,6 @@
             padding: 10px 20px;
             border-radius: 8px;
             transition: all 0.3s;
-            position: relative;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -226,19 +224,6 @@
             color: #c82333;
         }
 
-        /* Badge */
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #ffc107;
-            color: #333;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            margin-left: 8px;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .admin-nav-container {
                 flex-direction: column;
@@ -257,41 +242,50 @@
     </style>
 </head>
 <body>
-<!-- Admin Navbar -->
 <nav class="admin-navbar">
     <div class="admin-nav-container">
         <a href="index.php?module=admin&action=dashboard" class="admin-nav-brand">P!X Admin</a>
         
         <div style="display: flex; align-items: center; gap: 15px;">
             <div class="admin-nav-menu">
+                <!-- Dashboard -->
                 <a href="index.php?module=admin&action=dashboard" class="admin-nav-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'dashboard') || !isset($_GET['action']) ? 'active' : ''; ?>">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
                     </svg>
                     Dashboard
                 </a>
                 
+                <!-- Film -->
                 <a href="index.php?module=film" class="admin-nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                        <polyline points="17 2 12 7 7 2"></polyline>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                        <line x1="7" y1="2" x2="7" y2="22"></line>
+                        <line x1="17" y1="2" x2="17" y2="22"></line>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <line x1="2" y1="7" x2="7" y2="7"></line>
+                        <line x1="2" y1="17" x2="7" y2="17"></line>
+                        <line x1="17" y1="17" x2="22" y2="17"></line>
+                        <line x1="17" y1="7" x2="22" y2="7"></line>
                     </svg>
                     Film
                 </a>
                 
+                <!-- Bioskop -->
                 <a href="index.php?module=bioskop" class="admin-nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
                     Bioskop
                 </a>
                 
+                <!-- Jadwal -->
                 <a href="index.php?module=jadwal" class="admin-nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -299,19 +293,9 @@
                     </svg>
                     Jadwal
                 </a>
-                
-                <a href="index.php?module=admin&action=kelolaUser" class="admin-nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    Users
-                </a>
             </div>
             
-            <!-- Profile Dropdown -->
+            <!-- Profile Dropdown (LOGOUT ADA DI SINI) -->
             <div class="admin-profile-dropdown" id="adminProfileDropdown">
                 <div class="admin-profile-toggle" id="adminProfileToggle">
                     <div class="admin-avatar">
@@ -338,10 +322,10 @@
                     
                     <a href="index.php?module=admin&action=dashboard" class="admin-dropdown-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="3" width="7" height="9"></rect>
+                            <rect x="14" y="3" width="7" height="5"></rect>
+                            <rect x="14" y="12" width="7" height="9"></rect>
+                            <rect x="3" y="16" width="7" height="5"></rect>
                         </svg>
                         Dashboard
                     </a>
@@ -361,14 +345,6 @@
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                         </svg>
                         Tambah Jadwal
-                    </a>
-                    
-                    <a href="index.php?module=admin&action=kelolaUser" class="admin-dropdown-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                        </svg>
-                        Kelola User
                     </a>
                     
                     <a href="index.php?module=film" class="admin-dropdown-item">

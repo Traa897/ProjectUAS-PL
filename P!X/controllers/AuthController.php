@@ -181,14 +181,17 @@ class AuthController {
     }
 
     // Logout
+// Logout
     public function logout() {
         if(session_status() == PHP_SESSION_NONE) session_start();
         
         session_unset();
         session_destroy();
         
-        if(session_status() == PHP_SESSION_NONE) session_start();
+        // Start new session for flash message
+        session_start();
         $_SESSION['flash'] = 'Anda telah logout';
+        
         header('Location: index.php?module=film');
         exit();
     }
