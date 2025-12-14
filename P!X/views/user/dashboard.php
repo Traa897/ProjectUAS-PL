@@ -118,53 +118,10 @@
         </div>
     </div>
 
-   
-<!-- Quick Actions -->
-<div class="section-header" style="margin-top: 20px;">
-</div>
-
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-    <a href="index.php?module=user&action=riwayat" style="background: linear-gradient(135deg, #026B91 0%, #026B91 100%); padding: 20px; border-radius: 10px; color: white; text-decoration: none; text-align: center; transition: transform 0.3s; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-        <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; backdrop-filter: blur(10px);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-        </div>
-        <div style="font-size: 16px; font-weight: 600;">Riwayat Tiket</div>
-        <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Lihat semua transaksi</div>
-    </a>
-
-    <a href="index.php?module=user&action=profile" style="background: linear-gradient(135deg, #026B91 0%, #026B91 100%); padding: 20px; border-radius: 10px; color: white; text-decoration: none; text-align: center; transition: transform 0.3s; box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-        <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; backdrop-filter: blur(10px);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </div>
-        <div style="font-size: 16px; font-weight: 600;">Akun </div>
-        <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Perbarui data diri</div>
-    </a>
-
-    <a href="index.php?module=film" style="background: linear-gradient(135deg, #026B91 0%, #026B91 100%); padding: 20px; border-radius: 10px; color: white; text-decoration: none; text-align: center; transition: transform 0.3s; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-        <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; backdrop-filter: blur(10px);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                <polyline points="17 2 12 7 7 2"></polyline>
-            </svg>
-        </div>
-        <div style="font-size: 16px; font-weight: 600;">Lihat Film</div>
-        <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">Booking tiket baru</div>
-    </a>
-</div>
-
     <!-- Recent Transactions -->
     <div class="section-header">
         <h2>Transaksi Terakhir</h2>
-        <a href="index.php?module=user&action=riwayat" class="btn btn-secondary">Lihat Semua</a>
+       
     </div>
 
     <?php if(empty($transactions)): ?>
