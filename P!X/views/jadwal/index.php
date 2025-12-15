@@ -1,5 +1,5 @@
 <?php 
-// File: views/jadwal/index.php 
+// File: views/jadwal/index.php - SIMPLIFIED & FIXED
 require_once 'views/layouts/header.php'; 
 ?>
 

@@ -1,8 +1,7 @@
 <?php
 require_once 'models/Film.php';
 require_once 'models/Transaksi.php';
-require_once 'models/Genre.php';
-require_once 'models/Validator.php'; 
+require_once 'models/Genre.php';    
 
 class AdminController {
     private $db;
@@ -17,12 +16,9 @@ class AdminController {
         $this->transaksi = new Transaksi($this->db);
         $this->qb = new QueryBuilder($this->db);
         
-        // FIXED: Start session kalau belum
-        if(session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
+        if(session_status() == PHP_SESSION_NONE) session_start();
         
-        // FIXED: Proteksi admin - pastikan tidak redirect ke auth jika sudah login
+        // Check if user is admin
         if(!isset($_SESSION['admin_id'])) {
             $_SESSION['flash'] = 'Anda harus login sebagai admin!';
             header("Location: index.php?module=auth&action=index");
@@ -30,20 +26,25 @@ class AdminController {
         }
     }
 
+    // DEFAULT INDEX - Redirect to Dashboard
     public function index() {
         $this->dashboard();
     }
 
+    // Dashboard Admin - FIXED
     public function dashboard() {
+        // Get statistics - SEMUA FILM (termasuk yang tidak ada jadwal)
         $totalFilms = $this->qb->reset()->table('Film')->count();
         $totalBioskops = $this->qb->reset()->table('Bioskop')->count();
         $totalJadwals = $this->qb->reset()->table('Jadwal_Tayang')->count();
         $totalUsers = $this->qb->reset()->table('User')->count();
         
+        // Get transactions statistics
         $totalTransaksi = $this->transaksi->countTotal();
         $transaksiSuccess = $this->transaksi->countByStatus('berhasil');
         $totalRevenue = $this->transaksi->getTotalRevenue();
         
+        // Get recent transactions (last 10) - FIXED with LEFT JOIN
         $query = "SELECT t.*, 
                          u.nama_lengkap as nama_user,
                          u.email,
@@ -56,6 +57,7 @@ class AdminController {
         $stmt->execute();
         $recentTransactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
+        // Get top selling films
         $query = "SELECT 
                     f.id_film, 
                     f.judul_film, 
@@ -76,6 +78,7 @@ class AdminController {
         $stmt->execute();
         $topFilms = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
+        // Get monthly revenue (6 months)
         $query = "SELECT 
                     DATE_FORMAT(tanggal_transaksi, '%Y-%m') as bulan,
                     COUNT(*) as jumlah_transaksi,
@@ -89,27 +92,14 @@ class AdminController {
         $stmt->execute();
         $monthlyRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // FIXED: Dashboard hanya tampilkan film baru (belum ada jadwal)
-        $query = "SELECT f.*, g.nama_genre 
-                  FROM Film f
-                  LEFT JOIN Genre g ON f.id_genre = g.id_genre
-                  WHERE NOT EXISTS (
-                      SELECT 1 FROM Jadwal_Tayang jt 
-                      WHERE jt.id_film = f.id_film
-                  )
-                  ORDER BY f.created_at DESC";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
+        // Get all films for management
+        $stmt = $this->film->readAll();
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        foreach($films as $key => &$film) {
-            $film['status'] = null;
-        }
-        unset($film);
         
         require_once 'views/admin/dashboard.php';
     }
 
+    // CREATE Film - Show form
     public function createFilm() {
         $genre = new Genre($this->db);
         $genres = $genre->readAll()->fetchAll(PDO::FETCH_ASSOC);
@@ -117,40 +107,9 @@ class AdminController {
         require_once 'views/admin/create_film.php';
     }
     
+    // STORE Film - Save new film
     public function storeFilm() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $validator = new Validator($_POST);
-            $validator
-                ->required('judul_film', 'Judul film wajib diisi')
-                ->min('judul_film', 2, 'Judul film minimal 2 karakter')
-                ->max('judul_film', 200, 'Judul film maksimal 200 karakter')
-                ->required('tahun_rilis', 'Tahun rilis wajib diisi')
-                ->numeric('tahun_rilis', 'Tahun rilis harus berupa angka')
-                ->between('tahun_rilis', 1900, 2100, 'Tahun rilis tidak valid')
-                ->required('durasi_menit', 'Durasi wajib diisi')
-                ->numeric('durasi_menit', 'Durasi harus berupa angka')
-                ->between('durasi_menit', 1, 500, 'Durasi harus antara 1-500 menit')
-                ->required('sipnosis', 'Sinopsis wajib diisi')
-                ->min('sipnosis', 10, 'Sinopsis minimal 10 karakter')
-                ->required('rating', 'Rating wajib diisi')
-                ->numeric('rating', 'Rating harus berupa angka')
-                ->between('rating', 0, 10, 'Rating harus antara 0-10')
-                ->required('id_genre', 'Genre wajib dipilih');
-            
-            if(!empty($_POST['poster_url'])) {
-                $validator->url('poster_url', 'Format URL poster tidak valid');
-            }
-            
-            if(isset($_POST['judul_film'])) {
-                $validator->unique('judul_film', 'Film', 'judul_film', $this->db, null, 'Film dengan judul ini sudah ada');
-            }
-            
-            if($validator->fails()) {
-                $_SESSION['flash'] = $validator->firstError();
-                header("Location: index.php?module=admin&action=createFilm");
-                exit();
-            }
-            
             $this->film->judul_film = $_POST['judul_film'];
             $this->film->tahun_rilis = $_POST['tahun_rilis'];
             $this->film->durasi_menit = $_POST['durasi_menit'];
@@ -171,6 +130,7 @@ class AdminController {
         }
     }
     
+    // EDIT Film - Show edit form
     public function editFilm() {
         if(!isset($_GET['id'])) {
             header("Location: index.php?module=admin&action=dashboard");
@@ -190,37 +150,9 @@ class AdminController {
         }
     }
     
+    // UPDATE Film
     public function updateFilm() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $validator = new Validator($_POST);
-            $validator
-                ->required('id_film', 'ID film tidak valid')
-                ->required('judul_film', 'Judul film wajib diisi')
-                ->min('judul_film', 2, 'Judul film minimal 2 karakter')
-                ->max('judul_film', 200, 'Judul film maksimal 200 karakter')
-                ->required('tahun_rilis', 'Tahun rilis wajib diisi')
-                ->numeric('tahun_rilis', 'Tahun rilis harus berupa angka')
-                ->between('tahun_rilis', 1900, 2100, 'Tahun rilis tidak valid')
-                ->required('durasi_menit', 'Durasi wajib diisi')
-                ->numeric('durasi_menit', 'Durasi harus berupa angka')
-                ->between('durasi_menit', 1, 500, 'Durasi harus antara 1-500 menit')
-                ->required('sipnosis', 'Sinopsis wajib diisi')
-                ->min('sipnosis', 10, 'Sinopsis minimal 10 karakter')
-                ->required('rating', 'Rating wajib diisi')
-                ->numeric('rating', 'Rating harus berupa angka')
-                ->between('rating', 0, 10, 'Rating harus antara 0-10')
-                ->required('id_genre', 'Genre wajib dipilih');
-            
-            if(!empty($_POST['poster_url'])) {
-                $validator->url('poster_url', 'Format URL poster tidak valid');
-            }
-            
-            if($validator->fails()) {
-                $_SESSION['flash'] = $validator->firstError();
-                header("Location: index.php?module=admin&action=editFilm&id=" . $_POST['id_film']);
-                exit();
-            }
-            
             $this->film->id_film = $_POST['id_film'];
             $this->film->judul_film = $_POST['judul_film'];
             $this->film->tahun_rilis = $_POST['tahun_rilis'];
@@ -242,6 +174,7 @@ class AdminController {
         }
     }
     
+    // DELETE Film
     public function deleteFilm() {
         if(!isset($_GET['id'])) {
             header("Location: index.php?module=admin&action=dashboard");
@@ -259,6 +192,7 @@ class AdminController {
         exit();
     }
 
+    // Detail Transaksi
     public function detailTransaksi() {
         if(!isset($_GET['id'])) {
             header("Location: index.php?module=admin&action=dashboard");
@@ -275,6 +209,7 @@ class AdminController {
         require_once 'views/admin/detail_transaksi.php';
     }
 
+    // Update Status Transaksi
     public function updateStatus() {
         if($_SERVER['REQUEST_METHOD'] != 'POST') {
             header("Location: index.php?module=admin&action=dashboard");
@@ -296,6 +231,7 @@ class AdminController {
         exit();
     }
     
+    // USER MANAGEMENT
     public function kelolaUser() {
         $search = isset($_GET['search']) ? $_GET['search'] : '';
         
@@ -337,6 +273,7 @@ class AdminController {
         require_once 'views/admin/kelola_user.php';
     }
     
+    // Detail User
     public function detailUser() {
         if(!isset($_GET['id'])) {
             header("Location: index.php?module=admin&action=kelolaUser");
@@ -374,6 +311,7 @@ class AdminController {
         require_once 'views/admin/detail_user.php';
     }
     
+    // Toggle User Status
     public function toggleUserStatus() {
         if(!isset($_GET['id']) || !isset($_GET['status'])) {
             header("Location: index.php?module=admin&action=kelolaUser");

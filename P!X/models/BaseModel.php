@@ -10,7 +10,7 @@ abstract class BaseModel {
         $this->qb = new QueryBuilder($db);
     }
     
-    // Abstract methods 
+    // Abstract methods - harus diimplementasikan oleh child class
     abstract protected function getTableName();
     abstract protected function getPrimaryKey();
     
