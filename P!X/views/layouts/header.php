@@ -327,7 +327,7 @@
                             <rect x="14" y="12" width="7" height="9"></rect>
                             <rect x="3" y="16" width="7" height="5"></rect>
                         </svg>
-                        Dashboard
+                        📊 Dashboard
                     </a>
                     
                     <a href="index.php?module=admin&action=createFilm" class="admin-dropdown-item">
@@ -335,7 +335,7 @@
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        Tambah Film
+                        ➕ Tambah Film
                     </a>
                     
                     <a href="index.php?module=jadwal&action=create" class="admin-dropdown-item">
@@ -344,7 +344,7 @@
                             <line x1="16" y1="2" x2="16" y2="6"></line>
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                         </svg>
-                        Tambah Jadwal
+                        📅 Tambah Jadwal
                     </a>
                     
                     <a href="index.php?module=film" class="admin-dropdown-item">
@@ -352,17 +352,16 @@
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                             <polyline points="9 22 9 12 15 12 15 22"></polyline>
                         </svg>
-                        Lihat Website
+                        🌐 Lihat Website
                     </a>
                     
-                    <!-- FIXED: Link logout yang benar -->
-                    <a href="index.php?module=auth&action=logout" class="admin-dropdown-item danger" onclick="return confirm('Apakah Anda yakin ingin logout?');">
+                    <a href="index.php?module=auth&action=logout" class="admin-dropdown-item danger" onclick="if(confirm('Apakah Anda yakin ingin logout?')) { window.location.href='index.php?module=auth&action=logout'; } return false;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>
                         </svg>
-                        Logout
+                        🚪 Logout
                     </a>
                 </div>
             </div>
@@ -424,4 +423,6 @@ if(isset($_GET['error'])) {
     if(btn) btn.addEventListener('click', hideToast);
     setTimeout(function(){ t.classList.add('show'); }, 50);
 })();
-</script>   
+</script>
+</body>
+</html>

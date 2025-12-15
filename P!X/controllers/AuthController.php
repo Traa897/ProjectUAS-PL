@@ -163,17 +163,21 @@ class AuthController {
         }
     }
 
-    // ✅ FIXED LOGOUT - SUPER CRITICAL
+    // ✅ FIXED LOGOUT - PERBAIKAN TOTAL
     public function logout() {
         // STEP 1: Start session jika belum
         if(session_status() == PHP_SESSION_NONE) {
             session_start();
         }
         
-        // STEP 2: DESTROY SEMUA session variables
+        // STEP 2: Simpan info sebelum destroy (untuk redirect yang benar)
+        $wasAdmin = isset($_SESSION['admin_id']);
+        $wasUser = isset($_SESSION['user_id']);
+        
+        // STEP 3: DESTROY SEMUA session variables
         $_SESSION = array();
         
-        // STEP 3: Hapus session cookie
+        // STEP 4: Hapus session cookie
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000,
@@ -182,15 +186,16 @@ class AuthController {
             );
         }
         
-        // STEP 4: Destroy session
+        // STEP 5: Destroy session
         session_destroy();
         
-        // STEP 5: Start session BARU untuk flash message
+        // STEP 6: Start session BARU untuk flash message
         session_start();
         $_SESSION['flash'] = 'Anda telah logout';
         
-        // STEP 6: Redirect ke halaman PUBLIC
-        header('Location: index.php?module=film');
+        // STEP 7: Redirect ke halaman LOGIN (bukan film!)
+        // Ini akan memastikan header yang benar dimuat
+        header('Location: index.php?module=auth&action=index');
         exit();
     }
 }
