@@ -355,7 +355,8 @@
                         Lihat Website
                     </a>
                     
-                    <a href="index.php?module=auth&action=logout" class="admin-dropdown-item danger">
+                    <!-- FIXED: Link logout yang benar -->
+                    <a href="index.php?module=auth&action=logout" class="admin-dropdown-item danger" onclick="return confirm('Apakah Anda yakin ingin logout?');">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
@@ -423,4 +424,4 @@ if(isset($_GET['error'])) {
     if(btn) btn.addEventListener('click', hideToast);
     setTimeout(function(){ t.classList.add('show'); }, 50);
 })();
-</script>
+</script>   

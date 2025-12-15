@@ -1,5 +1,5 @@
 <?php
-// controllers/AuthController.php 
+// controllers/AuthController.php - FIXED LOGOUT
 require_once 'config/database.php';
 require_once 'models/User.php';
 require_once 'models/Admin.php';
@@ -180,20 +180,36 @@ class AuthController {
         }
     }
 
-    // Logout
-// Logout
+    // FIXED LOGOUT - Pastikan semua session dihapus dengan benar
     public function logout() {
-        if(session_status() == PHP_SESSION_NONE) session_start();
+        // Start session jika belum dimulai
+        if(session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
         
-        session_unset();
+        // Simpan info untuk flash message sebelum session dihancurkan
+        $wasAdmin = isset($_SESSION['admin_id']);
+        $wasUser = isset($_SESSION['user_id']);
+        
+        // CRITICAL: Hapus SEMUA session variables
+        $_SESSION = array(); // Reset semua session ke array kosong
+        
+        // Hapus session cookie jika ada
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), '', time()-42000, '/');
+        }
+        
+        // Hancurkan session
         session_destroy();
         
-        // Start new session for flash message
+        // CRITICAL: Start session baru untuk flash message
         session_start();
         $_SESSION['flash'] = 'Anda telah logout';
         
-        header('Location: index.php?module=film');
-        exit();
+        // CRITICAL: Redirect ke halaman public (film)
+        // Menggunakan absolute path untuk memastikan redirect berhasil
+        header('Location: index.php?module=film', true, 302);
+        exit(); // CRITICAL: Pastikan tidak ada kode yang dijalankan setelah redirect
     }
 }
 ?>
