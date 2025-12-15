@@ -1,5 +1,5 @@
 <?php
-// index.php - FIXED VERSION
+// index.php - MINIMAL FIX (Tidak ubah logic film)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -13,24 +13,16 @@ require_once __DIR__ . '/controllers/UserController.php';
 require_once __DIR__ . '/controllers/TransaksiController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 
+// ✅ HANYA INI YANG DIUBAH: Default ke film (public)
 $module = isset($_GET['module']) ? $_GET['module'] : 'film';
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 try {
-    // PERBAIKAN: Batasi akses berdasarkan role dengan lebih flexible
-    
-    // Modul yang butuh login admin
+    // Batasi akses admin
     $admin_only_actions = [
         'admin' => ['dashboard', 'createFilm', 'storeFilm', 'editFilm', 'updateFilm', 'deleteFilm', 'kelolaUser', 'detailUser', 'toggleUserStatus', 'detailTransaksi', 'updateStatus']
     ];
     
-    // Modul yang butuh login user
-    $user_only_actions = [
-        'user' => ['dashboard', 'profile', 'updateProfile', 'riwayat', 'detailTiket'],
-        'transaksi' => ['pilihJadwal', 'booking', 'prosesBooking', 'konfirmasi']
-    ];
-    
-    // Cek akses admin
     if(isset($admin_only_actions[$module]) && in_array($action, $admin_only_actions[$module])) {
         if(!isset($_SESSION['admin_id'])) {
             $_SESSION['flash'] = 'Anda harus login sebagai admin!';
@@ -39,7 +31,12 @@ try {
         }
     }
     
-    // Cek akses user
+    // Batasi akses user
+    $user_only_actions = [
+        'user' => ['dashboard', 'profile', 'updateProfile', 'riwayat', 'detailTiket'],
+        'transaksi' => ['pilihJadwal', 'booking', 'prosesBooking', 'konfirmasi']
+    ];
+    
     if(isset($user_only_actions[$module]) && in_array($action, $user_only_actions[$module])) {
         if(!isset($_SESSION['user_id'])) {
             $_SESSION['flash'] = 'Anda harus login sebagai user!';
@@ -48,7 +45,7 @@ try {
         }
     }
     
-    // Inisialisasi controller
+    // Initialize controller
     switch ($module) {
         case 'film':
             $controller = new FilmController();

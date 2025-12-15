@@ -1,4 +1,4 @@
-<?php require_once 'views/layouts/header.php'; ?>
+<?php require_once 'views/layouts/header_public.php'; ?>
 
 <!-- Hero Section -->
 <div style="background: linear-gradient(rgba(13, 37, 63, 0.8), rgba(13, 37, 63, 0.8)), url('assets/bakcground film/Belakang-Kiri-1024x576.jpg') center/cover; padding: 100px 20px; color: white; position: relative;">
@@ -23,7 +23,6 @@
     
     <!-- Filter by Genre -->
     <div style="margin-bottom: 40px;">
-       
         <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin;">
             <a href="index.php?module=film" 
                style="flex-shrink: 0; padding: 10px 20px; background: <?php echo empty($genre_filter) ? '#032541' : '#e0e0e0'; ?>; color: <?php echo empty($genre_filter) ? 'white' : '#666'; ?>; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap; font-size: 14px;">

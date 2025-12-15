@@ -1,5 +1,4 @@
 <?php
-// controllers/AuthController.php - FIXED LOGOUT
 require_once 'config/database.php';
 require_once 'models/User.php';
 require_once 'models/Admin.php';
@@ -19,19 +18,16 @@ class AuthController {
         if(session_status() == PHP_SESSION_NONE) session_start();
     }
 
-    // Show Login Form
     public function index() {
         require_once 'views/auth/login.php';
     }
 
-    // Process Login - WITH VALIDATION
     public function login() {
         if($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: index.php?module=auth&action=index');
             exit();
         }
 
-        // VALIDASI INPUT
         $validator = new Validator($_POST);
         $validator
             ->required('username', 'Username wajib diisi')
@@ -58,27 +54,21 @@ class AuthController {
 
         if($role === 'admin') {
             // ADMIN LOGIN
-            $query = "SELECT * FROM Admin WHERE username = :username LIMIT 1";
-            $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':username', $username);
-            $stmt->execute();
-            $admin = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if($admin) {
+            if($adminCheck) {
                 $passwordValid = false;
                 
-                if($admin['password'] === $password) {
+                if($adminCheck['password'] === $password) {
                     $passwordValid = true;
-                } elseif(password_verify($password, $admin['password'])) {
+                } elseif(password_verify($password, $adminCheck['password'])) {
                     $passwordValid = true;
                 }
                 
                 if($passwordValid) {
-                    $_SESSION['admin_id'] = $admin['id_admin'];
-                    $_SESSION['admin_username'] = $admin['username'];
-                    $_SESSION['admin_name'] = $admin['nama_lengkap'];
-                    $_SESSION['admin_role'] = $admin['role'];
-                    $_SESSION['flash'] = 'Selamat datang, Admin ' . $admin['nama_lengkap'] . '!';
+                    $_SESSION['admin_id'] = $adminCheck['id_admin'];
+                    $_SESSION['admin_username'] = $adminCheck['username'];
+                    $_SESSION['admin_name'] = $adminCheck['nama_lengkap'];
+                    $_SESSION['admin_role'] = $adminCheck['role'];
+                    $_SESSION['flash'] = 'Selamat datang, Admin ' . $adminCheck['nama_lengkap'] . '!';
                     
                     header('Location: index.php?module=admin&action=dashboard');
                     exit();
@@ -106,10 +96,8 @@ class AuthController {
         }
     }
 
-    // Show Register Form - WITH VALIDATION
     public function register() {
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // VALIDASI KOMPREHENSIF
             $validator = new Validator($_POST);
             $validator
                 ->required('username', 'Username wajib diisi')
@@ -122,7 +110,6 @@ class AuthController {
                 ->required('nama_lengkap', 'Nama lengkap wajib diisi')
                 ->min('nama_lengkap', 3, 'Nama lengkap minimal 3 karakter');
             
-            // Validasi unique username & email
             if(isset($_POST['username'])) {
                 $validator->unique('username', 'User', 'username', $this->db, null, 'Username sudah digunakan');
             }
@@ -131,7 +118,6 @@ class AuthController {
                 $validator->unique('email', 'User', 'email', $this->db, null, 'Email sudah digunakan');
             }
             
-            // Validasi no_telpon jika diisi
             if(!empty($_POST['no_telpon'])) {
                 $validator
                     ->numeric('no_telpon', 'No. telepon harus berupa angka')
@@ -139,20 +125,17 @@ class AuthController {
                     ->max('no_telpon', 15, 'No. telepon maksimal 15 digit');
             }
             
-            // Validasi tanggal lahir jika diisi
             if(!empty($_POST['tanggal_lahir'])) {
                 $validator->date('tanggal_lahir', 'Y-m-d', 'Format tanggal tidak valid');
             }
             
-            // Cek hasil validasi
             if($validator->fails()) {
                 $error = $validator->firstError();
-                $errors = $validator->errors(); // untuk tampilkan semua error
+                $errors = $validator->errors();
                 require_once 'views/auth/register.php';
                 return;
             }
 
-            // Jika validasi lolos, create user
             $username = trim($_POST['username']);
             $email = trim($_POST['email']);
             $password = $_POST['password'];
@@ -180,36 +163,35 @@ class AuthController {
         }
     }
 
-    // FIXED LOGOUT - Pastikan semua session dihapus dengan benar
+    // ✅ FIXED LOGOUT - SUPER CRITICAL
     public function logout() {
-        // Start session jika belum dimulai
+        // STEP 1: Start session jika belum
         if(session_status() == PHP_SESSION_NONE) {
             session_start();
         }
         
-        // Simpan info untuk flash message sebelum session dihancurkan
-        $wasAdmin = isset($_SESSION['admin_id']);
-        $wasUser = isset($_SESSION['user_id']);
+        // STEP 2: DESTROY SEMUA session variables
+        $_SESSION = array();
         
-        // CRITICAL: Hapus SEMUA session variables
-        $_SESSION = array(); // Reset semua session ke array kosong
-        
-        // Hapus session cookie jika ada
-        if (isset($_COOKIE[session_name()])) {
-            setcookie(session_name(), '', time()-42000, '/');
+        // STEP 3: Hapus session cookie
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
         }
         
-        // Hancurkan session
+        // STEP 4: Destroy session
         session_destroy();
         
-        // CRITICAL: Start session baru untuk flash message
+        // STEP 5: Start session BARU untuk flash message
         session_start();
         $_SESSION['flash'] = 'Anda telah logout';
         
-        // CRITICAL: Redirect ke halaman public (film)
-        // Menggunakan absolute path untuk memastikan redirect berhasil
-        header('Location: index.php?module=film', true, 302);
-        exit(); // CRITICAL: Pastikan tidak ada kode yang dijalankan setelah redirect
+        // STEP 6: Redirect ke halaman PUBLIC
+        header('Location: index.php?module=film');
+        exit();
     }
 }
 ?>

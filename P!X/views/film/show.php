@@ -1,7 +1,7 @@
-<?php require_once 'views/layouts/header.php'; ?>
+<?php require_once 'views/layouts/header_public.php'; ?>
 
 <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
-    <a href="index.php?module=film" class="btn btn-secondary" style="margin-bottom: 20px;">Kembali</a>
+    <a href="index.php?module=film" class="btn btn-secondary" style="margin-bottom: 20px;">← Kembali</a>
     
     <div class="film-detail" style="display: grid; grid-template-columns: 300px 1fr; gap: 40px; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
         <!-- Poster -->
@@ -61,15 +61,15 @@
             <!-- Status Badge Modern -->
             <?php if($filmStatus == 'sedang_tayang'): ?>
             <div style="display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #1e3a8a, #1e40af); color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);">
-                SEDANG TAYANG HARI INI
+                🎬 SEDANG TAYANG HARI INI
             </div>
             <?php elseif($filmStatus == 'besok'): ?>
             <div style="display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #764ba2, #667eea); color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4);">
-                TAYANG BESOK
+                ⏭️ TAYANG BESOK
             </div>
             <?php elseif($filmStatus == 'presale'): ?>
             <div style="display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);">
-                PRE-SALE - BOOKING TERSEDIA
+                ⚡ PRE-SALE - BOOKING TERSEDIA
             </div>
             <?php endif; ?>
             
@@ -99,48 +99,57 @@
                 </p>
             </div>
             
-            <!-- Tombol Booking -->
+            <!-- Tombol Booking dengan Protection -->
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <?php 
                 if(session_status() == PHP_SESSION_NONE) session_start();
                 
+                // CRITICAL: Cek apakah user sudah login
                 if(isset($_SESSION['user_id']) && in_array($filmStatus, ['sedang_tayang', 'besok', 'presale'])): ?>
+                    <!-- USER SUDAH LOGIN - Tampilkan tombol booking -->
                     <a href="index.php?module=transaksi&action=pilihJadwal&id_film=<?php echo $filmData['id_film']; ?>" 
                        class="btn btn-primary" style="padding: 15px 30px; font-size: 16px; <?php echo $filmStatus == 'presale' ? 'background: linear-gradient(135deg, #f59e0b, #d97706);' : ''; ?>">
                         <?php 
                         if($filmStatus == 'sedang_tayang') {
-                            echo 'Booking Tiket Sekarang';
+                            echo '🎫 Booking Tiket Sekarang';
                         } elseif($filmStatus == 'besok') {
-                            echo 'Booking untuk Besok';
+                            echo '🎫 Booking untuk Besok';
                         } else {
-                            echo 'Pre-Sale Booking';
+                            echo '⚡ Pre-Sale Booking';
                         }
                         ?>
                     </a>
                 <?php elseif(!isset($_SESSION['user_id']) && !isset($_SESSION['admin_id']) && in_array($filmStatus, ['sedang_tayang', 'besok', 'presale'])): ?>
+                    <!-- BELUM LOGIN - Tampilkan tombol login -->
                     <a href="index.php?module=auth&action=index" 
-                       class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
-                        Login untuk Booking
+                       class="btn btn-primary" style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        🔒 Login untuk Booking Tiket
                     </a>
+                    <div style="width: 100%; padding: 15px; background: #fff3cd; color: #856404; border-radius: 8px; margin-top: 10px; text-align: center;">
+                        <strong>ℹ️ Perhatian:</strong> Anda harus login sebagai user untuk dapat melakukan booking tiket.
+                        <a href="index.php?module=auth&action=register" style="color: #856404; font-weight: 700; text-decoration: underline;">Belum punya akun? Daftar di sini</a>
+                    </div>
                 <?php elseif($filmStatus == 'tidak_ada_jadwal'): ?>
+                    <!-- BELUM ADA JADWAL -->
                     <div style="padding: 15px 30px; background: #f8d7da; color: #721c24; border-radius: 5px; font-weight: 600;">
-                        Belum ada jadwal tayang
+                        📅 Belum ada jadwal tayang
                     </div>
                 <?php endif; ?>
                 
                 <?php if(isset($_SESSION['admin_id'])): ?>
+                    <!-- ADMIN CONTROLS -->
                     <a href="index.php?module=admin&action=editFilm&id=<?php echo $filmData['id_film']; ?>" 
-                       class="btn btn-warning" style="padding: 15px 20px;">Edit</a>
+                       class="btn btn-warning" style="padding: 15px 20px;">✏️ Edit</a>
                     <a href="index.php?module=admin&action=deleteFilm&id=<?php echo $filmData['id_film']; ?>" 
                        class="btn btn-danger" style="padding: 15px 20px;"
-                       onclick="return confirm('Yakin hapus film ini?')">Hapus</a>
+                       onclick="return confirm('Yakin hapus film ini?')">🗑️ Hapus</a>
                 <?php endif; ?>
             </div>
             
             <!-- Info tambahan untuk Pre-Sale -->
             <?php if($filmStatus == 'presale' && $nearestDate): ?>
             <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 2px solid #ffc107;">
-                <strong style="color: #856404; font-size: 14px;">Info Pre-Sale</strong>
+                <strong style="color: #856404; font-size: 14px;">📅 Info Pre-Sale</strong>
                 <p style="margin: 5px 0 0 0; color: #856404; font-size: 13px;">
                     Film ini akan tayang pada <strong><?php echo date('d F Y', strtotime($nearestDate)); ?></strong>. 
                     Anda dapat membeli tiket sekarang untuk penayangan tersebut.
