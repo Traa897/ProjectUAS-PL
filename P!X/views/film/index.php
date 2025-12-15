@@ -1,4 +1,7 @@
-<?php require_once 'views/layouts/header_public.php'; ?>
+<?php 
+// FIXED: Ganti dari header_public.php ke header.php
+require_once 'views/layouts/header.php'; 
+?>
 
 <!-- Hero Section -->
 <div style="background: linear-gradient(rgba(13, 37, 63, 0.8), rgba(13, 37, 63, 0.8)), url('assets/bakcground film/Belakang-Kiri-1024x576.jpg') center/cover; padding: 100px 20px; color: white; position: relative;">
@@ -13,7 +16,7 @@
                    value="<?php echo htmlspecialchars($search ?? ''); ?>"
                    style="flex: 1; padding: 18px 30px; border: none; font-size: 16px; outline: none; color: #333;">
             <button type="submit" style="padding: 18px 25px; background: linear-gradient(135deg, #0d95a6, #14b8c9); color: white; border: none; font-weight: 600; cursor: pointer; font-size: 16px; transition: all 0.3s;">
-                Cari
+                🔍 Cari
             </button>
         </form>
     </div>
@@ -26,7 +29,7 @@
         <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin;">
             <a href="index.php?module=film" 
                style="flex-shrink: 0; padding: 10px 20px; background: <?php echo empty($genre_filter) ? '#032541' : '#e0e0e0'; ?>; color: <?php echo empty($genre_filter) ? 'white' : '#666'; ?>; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; white-space: nowrap; font-size: 14px;">
-                Semua Genre
+                🎬 Semua Genre
             </a>
             <?php foreach($genres as $genre): ?>
                 <a href="index.php?module=film&genre=<?php echo $genre['id_genre']; ?>" 
@@ -41,10 +44,7 @@
     <?php if(empty($films)): ?>
         <div style="text-align: center; padding: 80px 20px; background: #f8f9fa; border-radius: 15px;">
             <div style="width: 80px; height: 80px; background: #e0e0e0; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #999;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                    <polyline points="17 2 12 7 7 2"></polyline>
-                </svg>
+                🎬
             </div>
             <h3 style="font-size: 24px; color: #6c757d; margin: 0 0 10px 0;">Tidak ada film ditemukan</h3>
             <p style="color: #999; margin: 0 0 20px 0;">
@@ -55,7 +55,7 @@
                 <?php endif; ?>
             </p>
             <a href="index.php?module=film" style="display: inline-block; padding: 12px 30px; background: #032541; color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">
-                Reset Filter
+                🔄 Reset Filter
             </a>
         </div>
     <?php else: ?>
@@ -85,7 +85,7 @@
                             if($selisihHari >= 2):
                         ?>
                             <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
-                                PRE-SALE
+                                ⚡ PRE-SALE
                             </div>
                         <?php 
                             endif;
@@ -103,12 +103,12 @@
                             <?php echo htmlspecialchars($film['judul_film']); ?>
                         </h3>
                         <p style="margin: 0 0 10px 0; color: #999; font-size: 12px;">
-                            <?php echo $film['tahun_rilis']; ?>
+                            <?php echo $film['tahun_rilis']; ?> • <?php echo $film['durasi_menit']; ?> min
                         </p>
                         
                         <a href="index.php?module=film&action=show&id=<?php echo $film['id_film']; ?>" 
                            style="display: block; text-align: center; padding: 8px; background: #032541; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; transition: all 0.3s;">
-                            Lihat Detail
+                            📄 Lihat Detail
                         </a>
                     </div>
                 </div>

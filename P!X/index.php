@@ -1,5 +1,5 @@
 <?php
-// index.php - MINIMAL FIX (Tidak ubah logic film)
+// index.php - FIXED: Default ke halaman public (film) bukan admin
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -13,15 +13,18 @@ require_once __DIR__ . '/controllers/UserController.php';
 require_once __DIR__ . '/controllers/TransaksiController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 
-// ✅ HANYA INI YANG DIUBAH: Default ke film (public)
+// FIXED: Default ke 'film' (halaman public), bukan 'admin'
 $module = isset($_GET['module']) ? $_GET['module'] : 'film';
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 try {
-    // Batasi akses admin
+    // Batasi akses admin - TIDAK BOLEH block dashboard admin!
     $admin_only_actions = [
-        'admin' => ['dashboard', 'createFilm', 'storeFilm', 'editFilm', 'updateFilm', 'deleteFilm', 'kelolaUser', 'detailUser', 'toggleUserStatus', 'detailTransaksi', 'updateStatus']
+        'admin' => ['createFilm', 'storeFilm', 'editFilm', 'updateFilm', 'deleteFilm', 'kelolaUser', 'detailUser', 'toggleUserStatus', 'detailTransaksi', 'updateStatus']
     ];
+    
+    // PENTING: 'dashboard' TIDAK ada di list admin_only_actions
+    // Karena AdminController::__construct() sudah handle proteksi
     
     if(isset($admin_only_actions[$module]) && in_array($action, $admin_only_actions[$module])) {
         if(!isset($_SESSION['admin_id'])) {

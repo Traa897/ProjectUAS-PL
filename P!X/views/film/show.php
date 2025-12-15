@@ -1,4 +1,7 @@
-<?php require_once 'views/layouts/header_public.php'; ?>
+<?php 
+// FIXED: Ganti dari header_public.php ke header.php
+require_once 'views/layouts/header.php'; 
+?>
 
 <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
     <a href="index.php?module=film" class="btn btn-secondary" style="margin-bottom: 20px;">← Kembali</a>
@@ -104,7 +107,7 @@
                 <?php 
                 if(session_status() == PHP_SESSION_NONE) session_start();
                 
-                // CRITICAL: Cek apakah user sudah login
+                // CRITICAL: Cek role user
                 if(isset($_SESSION['user_id']) && in_array($filmStatus, ['sedang_tayang', 'besok', 'presale'])): ?>
                     <!-- USER SUDAH LOGIN - Tampilkan tombol booking -->
                     <a href="index.php?module=transaksi&action=pilihJadwal&id_film=<?php echo $filmData['id_film']; ?>" 

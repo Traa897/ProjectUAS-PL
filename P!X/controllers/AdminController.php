@@ -17,8 +17,12 @@ class AdminController {
         $this->transaksi = new Transaksi($this->db);
         $this->qb = new QueryBuilder($this->db);
         
-        if(session_status() == PHP_SESSION_NONE) session_start();
+        // FIXED: Start session kalau belum
+        if(session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
         
+        // FIXED: Proteksi admin - pastikan tidak redirect ke auth jika sudah login
         if(!isset($_SESSION['admin_id'])) {
             $_SESSION['flash'] = 'Anda harus login sebagai admin!';
             header("Location: index.php?module=auth&action=index");
@@ -86,7 +90,6 @@ class AdminController {
         $monthlyRevenue = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // FIXED: Dashboard hanya tampilkan film baru (belum ada jadwal)
-        // Film yang sudah punya jadwal akan hilang dari dashboard
         $query = "SELECT f.*, g.nama_genre 
                   FROM Film f
                   LEFT JOIN Genre g ON f.id_genre = g.id_genre
@@ -99,9 +102,8 @@ class AdminController {
         $stmt->execute();
         $films = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Set status untuk setiap film (untuk compatibility)
         foreach($films as $key => &$film) {
-            $film['status'] = null; // Film baru belum punya status
+            $film['status'] = null;
         }
         unset($film);
         
